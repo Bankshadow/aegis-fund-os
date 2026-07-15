@@ -60,6 +60,11 @@
   with `nodejs_compat`; Wrangler 4.110.0 is locked and its dry-run bundles 89
   modules successfully. The dashboard stays read-only/demo on Workers until a
   future R2-backed snapshot reader replaces the local filesystem path.
+- Added GitHub Actions deployment path (2026-07-16): pushing `main` runs the
+  frontend tests, builds the Worker, then deploys via `wrangler-action` with
+  GitHub secrets `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`. This avoids
+  the currently failing Cloudflare Git-clone integration; it remains blocked
+  until a user-owned GitHub remote is created and the branch is pushed.
 
 - Criteria before experiment; ≥3 seeds; held-out; log negatives.
 - ValidationGate thresholds are not negotiable downward.

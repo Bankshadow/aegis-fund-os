@@ -40,6 +40,21 @@ read-only `AEGIS_OPERATIONS_SNAPSHOT_JSON` value as a Worker secret or allow
 the dashboard's explicit demo fallback. Never store exchange credentials in
 `wrangler.jsonc`, Git, or a browser-exposed `VITE_*` variable.
 
+### Automated deploys with GitHub Actions
+
+`.github/workflows/deploy-cloudflare.yml` is deliberately independent of
+Cloudflare's Git integration. After a push to `main`, it runs frontend checks,
+builds the Worker, and deploys it with Wrangler. Add these repository secrets
+in GitHub before merging to `main`:
+
+- `CLOUDFLARE_API_TOKEN`: a narrowly scoped token with **Edit Cloudflare
+  Workers** permission for the target account.
+- `CLOUDFLARE_ACCOUNT_ID`: the target Cloudflare account ID.
+
+Never add either value to source files, GitHub Actions workflow text, or a
+`VITE_*` variable. The workflow can also be triggered manually from GitHub's
+**Actions** tab.
+
 ## Verified baseline
 
 - Production build succeeds with Vite 8 / TanStack Start.
