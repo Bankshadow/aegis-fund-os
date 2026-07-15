@@ -65,7 +65,9 @@
   GitHub secrets `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`. This avoids
   the currently failing Cloudflare Git-clone integration. Remote GitHub push
   succeeded to `Bankshadow/aegis-fund-os` branch `codex/cloudflare-release`;
-  deployment still requires user-created GitHub secrets and a merge to `main`.
+  the workflow now reports a skipped deployment instead of failing while those
+  user-created GitHub secrets are absent. `main` is being established as the
+  production branch.
 
 - Criteria before experiment; ≥3 seeds; held-out; log negatives.
 - ValidationGate thresholds are not negotiable downward.
