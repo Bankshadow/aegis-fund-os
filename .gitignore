@@ -1,0 +1,34 @@
+# Secrets and local configuration
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Python runtime artifacts
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Generated reports, stores, and logs
+*.log
+*.sqlite
+*.sqlite3
+*.db
+results/operations_snapshot.json
+results/fund_ops_daily_report.json
+results/q_table*.json
+
+# Frontend generated/local state
+fund-command-center-local/node_modules/
+fund-command-center-local/.output/
+fund-command-center-local/.tanstack/
+fund-command-center-local/.wrangler/
+fund-command-center-local/.nitro/
+fund-command-center-local/.env.local
+fund-command-center-local/*.log
+fund-command-center-local/start-dev.cmd
+
+# Local package-manager cache
+.pnpm-store/

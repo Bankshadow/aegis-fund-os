@@ -1,0 +1,17 @@
+param,value
+levels,9
+atr_mult,2.61
+risk_per_zone,0.022
+stop_mult,1.059
+shift_trigger,0.622
+anomaly_z,2.273
+consolidation_scale,1.273
+cooldown_bars,57
+tp_mult,2.115
+trend_k,5.193
+regime_m_threshold,0.792
+regime_vol_hi,1.661
+hv_risk_scale,0.334
+hv_spacing_scale,1.235
+up_risk_scale,1.298
+robust_score,-0.1444

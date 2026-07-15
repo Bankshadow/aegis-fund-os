@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Virtual Office — Grid Trading Agents</title>
+<style>
+  :root{
+    --bg:#10141c; --panel:#171d29; --panel2:#1e2635; --line:#2a3448;
+    --text:#dce4f2; --dim:#7d8aa5; --accent:#e8a15c;
+    --green:#4ade80; --red:#f87171; --amber:#fbbf24; --gray:#64748b; --blue:#60a5fa;
+    font-size:14px;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{background:var(--bg); color:var(--text);
+       font-family:"Segoe UI",system-ui,sans-serif; height:100vh;
+       display:flex; flex-direction:column; overflow:hidden;}
+
+  header{display:flex; align-items:center; gap:16px; padding:10px 18px;
+         background:var(--panel); border-bottom:1px solid var(--line);}
+  header h1{font-size:16px; font-weight:600; letter-spacing:.4px;}
+  header h1 span{color:var(--accent);}
+  .hstat{display:flex; gap:18px; margin-left:auto; font-size:12.5px; color:var(--dim);}
+  .hstat b{color:var(--text); font-variant-numeric:tabular-nums;}
+  #regimeBadge{padding:3px 12px; border-radius:20px; font-size:12px;
+               font-weight:600; background:var(--gray); color:#0b0e14;}
+
+  main{flex:1; display:grid; grid-template-columns:1fr 320px; min-height:0;}
+  /* canvas is absolutely positioned so its bitmap size can never feed back
+     into layout height (that feedback loop made the canvas grow unbounded) */
+  #officeWrap{position:relative; min-width:0; overflow:hidden;}
+  canvas{position:absolute; inset:0; width:100%; height:100%; display:block;}
+
+  aside{background:var(--panel); border-left:1px solid var(--line);
+        display:flex; flex-direction:column; min-height:0;}
+  aside h2{font-size:12px; text-transform:uppercase; letter-spacing:1px;
+           color:var(--dim); padding:12px 14px 6px;}
+  #feed{flex:1; overflow-y:auto; padding:0 10px 10px; font-size:12px;}
+  .ev{padding:7px 9px; border-radius:8px; background:var(--panel2);
+      margin-bottom:6px; border-left:3px solid var(--gray); line-height:1.45;
+      animation:pop .25s ease;}
+  @keyframes pop{from{transform:translateY(-6px); opacity:0;} to{transform:none; opacity:1;}}
+  .ev .who{font-weight:700;} .ev .bar{color:var(--dim); float:right;}
+  .ev .why{color:var(--dim);}
+
+  footer{display:flex; align-items:center; gap:14px; padding:10px 18px;
+         background:var(--panel); border-top:1px solid var(--line);}
+  button{background:var(--panel2); color:var(--text); border:1px solid var(--line);
+         border-radius:8px; padding:6px 16px; font-size:13px; cursor:pointer;}
+  button:hover{border-color:var(--accent);}
+  button.primary{background:var(--accent); color:#1a1208; font-weight:700; border:none;}
+  input[type=range]{flex:1; accent-color:var(--accent);}
+  #barLabel{min-width:130px; font-variant-numeric:tabular-nums; color:var(--dim); font-size:12.5px;}
+  select{background:var(--panel2); color:var(--text); border:1px solid var(--line);
+         border-radius:8px; padding:5px 8px;}
+
+  #dropHint{position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+            flex-direction:column; gap:10px; background:rgba(16,20,28,.92); z-index:5;
+            text-align:center; padding:30px;}
+  #dropHint p{color:var(--dim); max-width:520px; line-height:1.7;}
+  #dropHint code{color:var(--accent);}
+</style>
+</head>
+<body>
+<header>
+  <h1>🏢 Virtual Office — <span>Grid Trading Agents</span></h1>
+  <div id="regimeBadge">–</div>
+  <div class="hstat">
+    <div>Bar <b id="hBar">0</b></div>
+    <div>Price <b id="hPrice">–</b></div>
+    <div>Portfolio <b id="hEquity">–</b></div>
+    <div>Events <b id="hEvents">0</b></div>
+  </div>
+</header>
+
+<main>
+  <div id="officeWrap">
+    <canvas id="office"></canvas>
+    <div id="dropHint">
+      <h2 style="font-size:18px;color:var(--text)">โหลด Decision Log</h2>
+      <p>รัน <code>python logging_demo.py</code> เพื่อสร้าง log แล้วเปิดหน้านี้ผ่าน
+         <code>python -m http.server</code> (โหลดอัตโนมัติ)<br>
+         หรือ ลากไฟล์ <code>results/decision_events.jsonl</code> มาวางที่นี่ /
+         <button id="pickBtn" class="primary" style="margin-top:8px">เลือกไฟล์ .jsonl</button>
+         <input type="file" id="fileInput" accept=".jsonl,.json,.txt" hidden>
+      </p>
+    </div>
+  </div>
+  <aside>
+    <h2>Decision Feed (Shared Memory)</h2>
+    <div id="feed"></div>
+  </aside>
+</main>
+
+<footer>
+  <button id="playBtn" class="primary">▶ Play</button>
+  <select id="speed">
+    <option value="1">x1</option><option value="4" selected>x4</option>
+    <option value="12">x12</option><option value="40">x40</option>
+  </select>
+  <input type="range" id="scrub" min="0" max="1999" value="0">
+  <div id="barLabel">bar 0 / 0</div>
+</footer>
+
+<script>
+"use strict";
+/* ============================================================
+   Virtual Office — อ่าน decision_events.jsonl (จาก event_log.py)
+   แล้ว animate สถานะของแต่ละ agent (fast / core / wide) ต่อ bar
+   ============================================================ */
+
+const AGENT_META = {
+  fast:{label:"FAST",  desc:"scalp noise",  color:"#60a5fa", x:.22, y:.42},
+  core:{label:"CORE",  desc:"main engine",  color:"#e8a15c", x:.50, y:.64},
+  wide:{label:"WIDE",  desc:"swing hunter", color:"#a78bfa", x:.78, y:.42},
+  orchestrator:{label:"ORCHESTRATOR", desc:"risk governor (memory loop)",
+                color:"#4ade80", x:.50, y:.87},
+};
+const STATE_STYLE = {
+  active:  {color:"#4ade80", label:"TRADING"},
+  cooldown:{color:"#f87171", label:"COOLDOWN"},
+  blocked: {color:"#fbbf24", label:"WAIT (regime)"},
+  idle:    {color:"#64748b", label:"IDLE"},
+};
+const REGIME_COLOR = {trend_up:"#4ade80", trend_down:"#f87171",
+                      high_vol:"#fbbf24", sideways:"#60a5fa", off:"#64748b"};
+const EV_ICON = {build_zone:"🏗️", skip_build:"🚫", fill:"🟢", entry_block:"✋",
+                 take_profit:"💰", stop_out:"🛑", consolidate:"🧲", recenter:"🎯",
+                 risk_cut:"⚖️", risk_restore:"🔓"};
+
+let events=[], byBar=new Map(), maxBar=0, curBar=0, playing=false, speed=4;
+let agents={};                       // runtime state per agent
+let priceTrail=[];                   // [bar, price]
+let lastRegime="–";
+let bubbles=[];                      // floating speech bubbles
+let feedCount=0;
+
+/* ---------- data loading ---------- */
+function parseJSONL(text){
+  const evs = text.split(/\r?\n/).filter(Boolean).map(l=>JSON.parse(l));
+  if(!evs.length) throw new Error("empty log");
+  init(evs);
+}
+async function tryFetch(){
+  try{
+    const r = await fetch("results/decision_events.jsonl");
+    if(!r.ok) throw 0;
+    parseJSONL(await r.text());
+  }catch(_){/* stay on drop hint */}
+}
+document.getElementById("pickBtn").onclick = ()=>document.getElementById("fileInput").click();
+document.getElementById("fileInput").onchange = e=>{
+  const f=e.target.files[0]; if(!f) return;
+  f.text().then(parseJSONL).catch(err=>alert("อ่านไฟล์ไม่ได้: "+err));
+};
+const wrap=document.getElementById("officeWrap");
+wrap.addEventListener("dragover",e=>e.preventDefault());
+wrap.addEventListener("drop",e=>{
+  e.preventDefault();
+  const f=e.dataTransfer.files[0]; if(!f) return;
+  f.text().then(parseJSONL).catch(err=>alert("อ่านไฟล์ไม่ได้: "+err));
+});
+
+function init(evs){
+  events=evs; byBar=new Map();
+  for(const e of evs){
+    if(!byBar.has(e.bar)) byBar.set(e.bar,[]);
+    byBar.get(e.bar).push(e);
+  }
+  maxBar = evs.reduce((m,e)=>Math.max(m,e.bar),0);
+  document.getElementById("scrub").max=maxBar;
+  document.getElementById("hEvents").textContent=evs.length;
+  // discover agents present in the log (works for any agent set, not just 3)
+  agents={};
+  const ids=[...new Set(evs.map(e=>e.agent_id))];
+  ids.forEach((id,i)=>{
+    const meta = AGENT_META[id] ||
+      {label:id.toUpperCase(), desc:"agent", color:"#34d399",
+       x:.2+.6*(i/Math.max(ids.length-1,1)), y:.5};
+    agents[id]={meta, state:"idle", equity:null, lastDecision:"—",
+                pulse:0, tp:0, fills:0, stops:0};
+  });
+  document.getElementById("dropHint").style.display="none";
+  seekTo(0); draw();
+}
+
+/* ---------- state machine per bar ---------- */
+function applyBar(bar){
+  const evs = byBar.get(bar); if(!evs) return;
+  for(const e of evs){
+    const a=agents[e.agent_id]; if(!a) continue;
+    a.equity=e.equity; a.lastDecision=e.decision; a.pulse=1;
+    switch(e.decision){
+      case "build_zone": case "recenter": a.state="active"; break;
+      case "stop_out": a.state="cooldown"; a.stops++; break;
+      case "skip_build": a.state="blocked"; break;
+      case "take_profit": a.tp++; break;
+      case "fill": a.fills++; break;
+    }
+    lastRegime=e.regime;
+    pushPrice(e);
+    if(e.decision!=="fill" && e.decision!=="take_profit" || Math.random()<.25)
+      bubbles.push({agent:e.agent_id, text:(EV_ICON[e.decision]||"")+" "+e.decision,
+                    life:1});
+    addFeed(e);
+  }
+}
+/* only market-price decisions feed the price line — fill/TP/stop carry
+   level/stop prices, which drew as vertical spikes when mixed in */
+const MARKET_PRICE_EV = new Set(["build_zone","skip_build","recenter",
+                                 "entry_block","consolidate"]);
+function pushPrice(e){
+  if(!MARKET_PRICE_EV.has(e.decision)) return;
+  const last = priceTrail[priceTrail.length-1];
+  if(last && last[0]===e.bar){ last[1]=e.price; return; }  // one point per bar
+  priceTrail.push([e.bar, e.price]);
+  if(priceTrail.length>420) priceTrail.shift();
+}
+function addFeed(e){
+  const feed=document.getElementById("feed");
+  const div=document.createElement("div");
+  div.className="ev";
+  const col=(agents[e.agent_id]||{}).meta?.color||"#64748b";
+  div.style.borderLeftColor=col;
+  div.innerHTML=`<span class="who" style="color:${col}">${e.agent_id}</span>
+    <span class="bar">bar ${e.bar}</span><br>
+    ${EV_ICON[e.decision]||""} <b>${e.decision}</b>
+    <span class="why">— ${e.reason}</span>`;
+  feed.prepend(div);
+  while(feed.children.length>60) feed.lastChild.remove();
+}
+function seekTo(bar){
+  // rebuild deterministic state from 0..bar (log is small; this is instant)
+  document.getElementById("feed").innerHTML="";
+  for(const a of Object.values(agents)){
+    a.state="idle"; a.equity=null; a.tp=0; a.fills=0; a.stops=0; a.pulse=0;
+  }
+  priceTrail=[]; bubbles=[];lastRegime="–";
+  for(let b=0;b<=bar;b++){
+    if(b<bar-40){ // fast path: suppress feed DOM/bubbles during long seeks
+      const evs=byBar.get(b); if(!evs) continue;
+      for(const e of evs){
+        const a=agents[e.agent_id]; if(!a) continue;
+        a.equity=e.equity; a.lastDecision=e.decision;
+        if(e.decision==="build_zone"||e.decision==="recenter")a.state="active";
+        else if(e.decision==="stop_out"){a.state="cooldown";a.stops++;}
+        else if(e.decision==="skip_build")a.state="blocked";
+        else if(e.decision==="take_profit")a.tp++;
+        else if(e.decision==="fill")a.fills++;
+        lastRegime=e.regime; pushPrice(e);
+      }
+    } else applyBar(b);
+  }
+  curBar=bar; syncHud();
+}
+
+/* ---------- render ---------- */
+const cv=document.getElementById("office"), ctx=cv.getContext("2d");
+function resize(){cv.width=cv.clientWidth*devicePixelRatio; cv.height=cv.clientHeight*devicePixelRatio;
+                  ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);}
+addEventListener("resize",resize);
+
+function draw(){
+  // resize only when the element actually changed (not every frame)
+  if(cv.width!==cv.clientWidth*devicePixelRatio ||
+     cv.height!==cv.clientHeight*devicePixelRatio) resize();
+  const W=cv.clientWidth, H=cv.clientHeight;
+  ctx.clearRect(0,0,W,H);
+
+  // floor grid
+  ctx.strokeStyle="rgba(120,140,180,.07)";
+  for(let x=0;x<W;x+=42){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
+  for(let y=0;y<H;y+=42){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
+
+  // price ticker wall (top strip)
+  drawPrice(W,H);
+
+  // desks & agents
+  for(const [id,a] of Object.entries(agents)) drawAgent(id,a,W,H);
+
+  // orchestrator hub in middle-top + links
+  drawHub(W,H);
+
+  // bubbles
+  bubbles=bubbles.filter(b=>b.life>0);
+  for(const b of bubbles){
+    const a=agents[b.agent]; if(!a) continue;
+    const x=a.meta.x*W, y=a.meta.y*H-86-(1-b.life)*26;
+    ctx.globalAlpha=Math.min(1,b.life*2);
+    ctx.font="12px Segoe UI"; const w=ctx.measureText(b.text).width+16;
+    ctx.fillStyle="#0b0e14"; roundRect(x-w/2,y-13,w,22,8); ctx.fill();
+    ctx.fillStyle="#dce4f2"; ctx.textAlign="center"; ctx.fillText(b.text,x,y+3);
+    ctx.globalAlpha=1; b.life-=0.012*speed;
+  }
+  requestAnimationFrame(draw);
+}
+function roundRect(x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);
+  ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);
+  ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();}
+
+function drawPrice(W,H){
+  if(priceTrail.length<2) return;
+  const ph=H*0.16, py=14, px=20, pw=W-40;
+  const ps=priceTrail.map(p=>p[1]);
+  const mn=Math.min(...ps), mx=Math.max(...ps), rng=(mx-mn)||1;
+  ctx.strokeStyle="rgba(232,161,92,.9)"; ctx.lineWidth=1.6; ctx.beginPath();
+  priceTrail.forEach((p,i)=>{
+    const x=px+pw*i/(priceTrail.length-1);
+    const y=py+ph-(p[1]-mn)/rng*ph;
+    i?ctx.lineTo(x,y):ctx.moveTo(x,y);
+  });
+  ctx.stroke(); ctx.lineWidth=1;
+  ctx.fillStyle="rgba(125,138,165,.9)"; ctx.font="11px Segoe UI"; ctx.textAlign="left";
+  ctx.fillText("PRICE (from event stream)", px, py+ph+16);
+}
+
+function drawHub(W,H){
+  const hx=W*.5, hy=H*.30;
+  for(const a of Object.values(agents)){
+    ctx.strokeStyle="rgba(120,140,180,.18)";
+    ctx.setLineDash([4,6]); ctx.beginPath();
+    ctx.moveTo(hx,hy+26); ctx.lineTo(a.meta.x*W, a.meta.y*H-58); ctx.stroke();
+    ctx.setLineDash([]);
+  }
+  ctx.fillStyle="#1e2635"; roundRect(hx-92,hy-24,184,50,12); ctx.fill();
+  ctx.strokeStyle="#2a3448"; roundRect(hx-92,hy-24,184,50,12); ctx.stroke();
+  ctx.fillStyle="#dce4f2"; ctx.font="600 13px Segoe UI"; ctx.textAlign="center";
+  ctx.fillText("🧠 Shared Memory / Cognee", hx, hy-2);
+  ctx.fillStyle="#7d8aa5"; ctx.font="11px Segoe UI";
+  ctx.fillText("knowledge graph · decision log", hx, hy+15);
+}
+
+function drawAgent(id,a,W,H){
+  const x=a.meta.x*W, y=a.meta.y*H;
+  const st=STATE_STYLE[a.state];
+  // status glow
+  const g=ctx.createRadialGradient(x,y,6,x,y,64+8*Math.sin(Date.now()/300));
+  g.addColorStop(0, st.color+"55"); g.addColorStop(1,"transparent");
+  ctx.fillStyle=g; ctx.beginPath(); ctx.arc(x,y,80,0,7); ctx.fill();
+
+  // desk
+  ctx.fillStyle="#242e42"; roundRect(x-58,y+16,116,14,6); ctx.fill();
+  // monitor
+  ctx.fillStyle="#0b0e14"; roundRect(x-24,y-6,48,30,4); ctx.fill();
+  ctx.strokeStyle=a.meta.color; roundRect(x-24,y-6,48,30,4); ctx.stroke();
+  // tiny equity sparkline on the monitor
+  ctx.fillStyle=st.color; ctx.font="10px Segoe UI"; ctx.textAlign="center";
+  ctx.fillText(a.equity!=null?fmt(a.equity):"–", x, y+13);
+
+  // body (round head + shoulders)
+  const bob=a.pulse>0?Math.sin(Date.now()/90)*2*a.pulse:0;
+  ctx.fillStyle=a.meta.color;
+  ctx.beginPath(); ctx.arc(x,y-34+bob,13,0,7); ctx.fill();          // head
+  roundRect(x-16,y-20+bob,32,18,8); ctx.fill();                     // torso
+  a.pulse=Math.max(0,a.pulse-0.02*speed);
+
+  // labels
+  ctx.fillStyle="#dce4f2"; ctx.font="700 13px Segoe UI";
+  ctx.fillText(a.meta.label, x, y+48);
+  ctx.fillStyle="#7d8aa5"; ctx.font="11px Segoe UI";
+  ctx.fillText(a.meta.desc, x, y+62);
+  // status pill
+  ctx.font="700 10px Segoe UI";
+  const w=ctx.measureText(st.label).width+16;
+  ctx.fillStyle=st.color; roundRect(x-w/2,y-72,w,17,8); ctx.fill();
+  ctx.fillStyle="#0b0e14"; ctx.fillText(st.label,x,y-60);
+  // mini stats
+  ctx.fillStyle="#7d8aa5"; ctx.font="10.5px Segoe UI";
+  ctx.fillText(`TP ${a.tp} · fills ${a.fills} · stops ${a.stops}`, x, y+76);
+}
+const fmt=v=>v>=1000?(v/1000).toFixed(2)+"k":v.toFixed(1);
+
+/* ---------- HUD & playback ---------- */
+function syncHud(){
+  document.getElementById("hBar").textContent=curBar;
+  document.getElementById("barLabel").textContent=`bar ${curBar} / ${maxBar}`;
+  document.getElementById("scrub").value=curBar;
+  const p=priceTrail.length?priceTrail[priceTrail.length-1][1]:null;
+  document.getElementById("hPrice").textContent=p?p.toFixed(2):"–";
+  const eq=Object.values(agents).reduce((s,a)=>s+(a.equity||0),0);
+  document.getElementById("hEquity").textContent=eq?fmt(eq):"–";
+  const badge=document.getElementById("regimeBadge");
+  badge.textContent=lastRegime; badge.style.background=REGIME_COLOR[lastRegime]||"#64748b";
+}
+let acc=0;
+setInterval(()=>{
+  if(!playing||!events.length) return;
+  acc+=speed/10;
+  while(acc>=1 && curBar<maxBar){ curBar++; applyBar(curBar); acc-=1; }
+  if(curBar>=maxBar){playing=false; document.getElementById("playBtn").textContent="▶ Play";}
+  syncHud();
+},100);
+
+document.getElementById("playBtn").onclick=function(){
+  if(!events.length) return;
+  if(curBar>=maxBar) seekTo(0);
+  playing=!playing; this.textContent=playing?"⏸ Pause":"▶ Play";
+};
+document.getElementById("speed").onchange=e=>speed=+e.target.value;
+document.getElementById("scrub").oninput=e=>{playing=false;
+  document.getElementById("playBtn").textContent="▶ Play"; seekTo(+e.target.value);};
+
+tryFetch(); resize(); draw();
+</script>
+</body>
+</html>

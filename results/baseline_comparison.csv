@@ -1,0 +1,13 @@
+scenario,engine,total_return,max_drawdown,mar,n_tp,n_stopouts,n_rebuilds,n_consolidations,final_equity
+sideways,static,0.162790,0.103661,1.5704,82,0,1,0,11627.90
+sideways,dynamic,-0.004355,0.127808,-0.0341,120,30,30,0,9956.45
+uptrend,static,0.095302,0.125743,0.7579,42,0,1,0,10953.02
+uptrend,dynamic,-0.040187,0.124348,-0.3232,107,30,39,0,9598.13
+downtrend,static,-0.761088,0.771965,-0.9859,2,0,1,0,2389.12
+downtrend,dynamic,-0.197882,0.232061,-0.8527,61,48,20,0,8021.18
+crash,static,-0.463897,0.548923,-0.8451,6,0,1,0,5361.03
+crash,dynamic,-0.210931,0.250969,-0.8405,86,48,30,0,7890.69
+regime_switch,static,0.130587,0.130315,1.0021,69,0,1,0,11305.87
+regime_switch,dynamic,-0.140513,0.165490,-0.8491,92,42,37,0,8594.87
+high_vol,static,-0.208760,0.258469,-0.8077,2,0,1,0,7912.40
+high_vol,dynamic,-0.107288,0.153202,-0.7003,104,36,28,0,8927.12
