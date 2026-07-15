@@ -55,6 +55,23 @@ Never add either value to source files, GitHub Actions workflow text, or a
 `VITE_*` variable. The workflow can also be triggered manually from GitHub's
 **Actions** tab.
 
+## Binance Spot Testnet on Cloudflare
+
+The deployed app accepts only same-origin HTTPS requests for its Binance probe
+and keeps credentials inside the Worker. It makes only the public time request
+and the signed, read-only account summary request; no order, transfer, or
+withdrawal path exists.
+
+To enable it, add these GitHub repository secrets and trigger the deployment
+workflow again:
+
+- `BINANCE_TESTNET_API_KEY`
+- `BINANCE_TESTNET_API_SECRET`
+
+Create them in the official Binance Spot Testnet, not on Binance mainnet. Keep
+withdrawal permissions disabled and never copy either value into source code,
+browser-visible variables, chat, or screenshots.
+
 ## Verified baseline
 
 - Production build succeeds with Vite 8 / TanStack Start.

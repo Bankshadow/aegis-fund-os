@@ -71,6 +71,11 @@
   automation run passed (2026-07-16); it will deploy only after both secrets
   are configured. Both secrets were configured and production deployment
   succeeded at `https://aegis-fund-os.bankshadow30.workers.dev` (2026-07-16).
+- Binance Spot Testnet cloud connection prepared (2026-07-16): the deployed
+  probe now accepts only same-origin HTTPS requests, remains read-only, and
+  GitHub Actions can set the two Binance Testnet credentials as Worker secrets.
+  It awaits user-created `BINANCE_TESTNET_API_KEY` and
+  `BINANCE_TESTNET_API_SECRET` GitHub secrets; no mainnet credential is allowed.
 
 - Criteria before experiment; ≥3 seeds; held-out; log negatives.
 - ValidationGate thresholds are not negotiable downward.

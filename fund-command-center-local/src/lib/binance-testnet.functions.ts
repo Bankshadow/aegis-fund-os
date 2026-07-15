@@ -5,20 +5,25 @@ import { probeBinanceSpotTestnet } from "./binance-testnet.server";
 
 const LOOPBACK_HOSTS = new Set(["127.0.0.1", "localhost", "::1"]);
 
-function assertLocalSameOriginRequest() {
+function assertTrustedSameOriginRequest() {
   const request = getRequest();
   const requestUrl = new URL(request.url);
-  if (!LOOPBACK_HOSTS.has(requestUrl.hostname)) {
-    throw new Error("Binance Testnet integration is restricted to local development.");
+  const isLoopback = LOOPBACK_HOSTS.has(requestUrl.hostname);
+
+  if (!isLoopback && requestUrl.protocol !== "https:") {
+    throw new Error("Binance Testnet integration requires HTTPS outside local development.");
   }
 
   const origin = request.headers.get("origin");
-  if (origin && new URL(origin).host !== requestUrl.host) {
+  if (!origin && !isLoopback) {
+    throw new Error("Binance Testnet integration requires a same-origin browser request.");
+  }
+  if (origin && new URL(origin).origin !== requestUrl.origin) {
     throw new Error("Cross-origin integration requests are not allowed.");
   }
 }
 
 export const testBinanceTestnetConnection = createServerFn({ method: "POST" }).handler(async () => {
-  assertLocalSameOriginRequest();
+  assertTrustedSameOriginRequest();
   return probeBinanceSpotTestnet();
 });
