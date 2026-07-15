@@ -63,8 +63,9 @@
 - Added GitHub Actions deployment path (2026-07-16): pushing `main` runs the
   frontend tests, builds the Worker, then deploys via `wrangler-action` with
   GitHub secrets `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`. This avoids
-  the currently failing Cloudflare Git-clone integration; it remains blocked
-  until a user-owned GitHub remote is created and the branch is pushed.
+  the currently failing Cloudflare Git-clone integration. Remote GitHub push
+  succeeded to `Bankshadow/aegis-fund-os` branch `codex/cloudflare-release`;
+  deployment still requires user-created GitHub secrets and a merge to `main`.
 
 - Criteria before experiment; ≥3 seeds; held-out; log negatives.
 - ValidationGate thresholds are not negotiable downward.
