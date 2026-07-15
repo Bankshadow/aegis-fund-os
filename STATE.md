@@ -69,7 +69,8 @@
   user-created GitHub secrets are absent. `main` is being established as the
   production branch. `main` is now the GitHub default branch and its first
   automation run passed (2026-07-16); it will deploy only after both secrets
-  are configured.
+  are configured. Both secrets were configured and production deployment
+  succeeded at `https://aegis-fund-os.bankshadow30.workers.dev` (2026-07-16).
 
 - Criteria before experiment; ≥3 seeds; held-out; log negatives.
 - ValidationGate thresholds are not negotiable downward.
