@@ -1,2 +1,6 @@
+allowBuilds:
+  esbuild: true
+  sharp: false
+  workerd: true
 minimumReleaseAgeExclude:
   - '@lovable.dev/vite-tanstack-config@2.7.3'

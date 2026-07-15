@@ -51,6 +51,15 @@
   remains SHIP. Git discovery shows this folder is inside a parent repository
   rooted at `C:\Users\User`, so do not stage or push until the user confirms
   whether to create a standalone repository for this project.
+- Standalone repository initialized and initial commit created (2026-07-16):
+  `dc2272c chore: initial dynamic grid and fund operations baseline`; active
+  branch is `codex/cloudflare-release`. GitHub CLI is installed but not logged
+  in, so private remote creation/push awaits `gh auth login` by the user.
+- Cloudflare Workers deployment prepared and verified (2026-07-16):
+  `fund-command-center-local/wrangler.jsonc` pins the `aegis-fund-os` Worker
+  with `nodejs_compat`; Wrangler 4.110.0 is locked and its dry-run bundles 89
+  modules successfully. The dashboard stays read-only/demo on Workers until a
+  future R2-backed snapshot reader replaces the local filesystem path.
 
 - Criteria before experiment; ≥3 seeds; held-out; log negatives.
 - ValidationGate thresholds are not negotiable downward.

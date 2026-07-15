@@ -21,6 +21,25 @@ pnpm run dev -- --host 127.0.0.1 --port 8940
 
 The first development start can take longer while Vite optimizes dependencies.
 
+## Cloudflare Workers deployment
+
+This app uses SSR and TanStack server functions, so deploy it as a Cloudflare
+Worker rather than a static Pages project. The committed `wrangler.jsonc`
+deploys the Nitro-generated Worker (`.output/server/index.mjs`) and public
+assets (`.output/public`).
+
+1. Authenticate locally: `pnpm exec wrangler login`.
+2. Confirm the target account: `pnpm run cf:whoami`.
+3. Build and validate the upload without publishing: `pnpm run cf:dry-run`.
+4. Publish only after the checks pass: `pnpm run deploy`.
+
+The initial Worker intentionally has no durable data binding. On Cloudflare,
+`AEGIS_OPERATIONS_SNAPSHOT_PATH` is not available because Workers have no local
+filesystem. Until an R2-backed snapshot reader is added, configure a small
+read-only `AEGIS_OPERATIONS_SNAPSHOT_JSON` value as a Worker secret or allow
+the dashboard's explicit demo fallback. Never store exchange credentials in
+`wrangler.jsonc`, Git, or a browser-exposed `VITE_*` variable.
+
 ## Verified baseline
 
 - Production build succeeds with Vite 8 / TanStack Start.
