@@ -157,6 +157,12 @@
 
 ## Last session
 
+- Cloud Worker Binance Spot Testnet probe was deployed and tested through the
+  hosted Integrations page (2026-07-16). Worker-secret synchronization from
+  GitHub Actions succeeded, but Binance rejected the signed read-only request.
+  Replace the GitHub secrets with a newly generated **Spot Testnet** key pair
+  (never a mainnet key) and check any Testnet IP restriction before retrying.
+
 - Added deterministic daily-close control (2026-07-15): NAV can lock only
   after data, prices, reconciliation, FX and fee checks pass and an independent
   reviewer differs from the maker. The Portfolio page now derives approval
