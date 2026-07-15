@@ -67,7 +67,9 @@
   succeeded to `Bankshadow/aegis-fund-os` branch `codex/cloudflare-release`;
   the workflow now reports a skipped deployment instead of failing while those
   user-created GitHub secrets are absent. `main` is being established as the
-  production branch.
+  production branch. `main` is now the GitHub default branch and its first
+  automation run passed (2026-07-16); it will deploy only after both secrets
+  are configured.
 
 - Criteria before experiment; ≥3 seeds; held-out; log negatives.
 - ValidationGate thresholds are not negotiable downward.
