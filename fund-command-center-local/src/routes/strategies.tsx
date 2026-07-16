@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
+import { useEffect, useMemo, useState } from "react";
 import { AppShell, PageHeader, Panel } from "@/components/app-shell";
 import { MetricCard } from "@/components/metric-card";
 import { SafetyBanner } from "@/components/safety-banner";
@@ -7,8 +8,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { CheckCircle2, FlaskConical, GitCompareArrows, LockKeyhole, XCircle } from "lucide-react";
-import { toast } from "sonner";
+import { CheckCircle2, LockKeyhole, ShieldCheck, XCircle } from "lucide-react";
+import { getLoopLineageSnapshot } from "@/lib/loop-lineage.functions";
 
 export const Route = createFileRoute("/strategies")({
   head: () => ({ meta: [{ title: "Strategy Lab · Aegis Fund OS" }] }),
@@ -85,13 +86,44 @@ function toneClass(tone: string) {
   return "border-info/35 text-info";
 }
 
+function decisionTone(decision: string) {
+  if (decision === "paper_review") return "border-positive/35 text-positive";
+  if (decision === "kill") return "border-destructive/35 text-destructive";
+  return "border-warning/35 text-warning";
+}
+
+function decisionLabel(decision: string) {
+  if (decision === "paper_review") return "Paper review";
+  if (decision === "kill") return "Killed";
+  if (decision === "revise") return "Revise";
+  return "Unresolved";
+}
+
 function StrategyLabPage() {
+  const readLineage = useServerFn(getLoopLineageSnapshot);
+  const [lineage, setLineage] = useState<
+    Awaited<ReturnType<typeof getLoopLineageSnapshot>> | null
+  >(null);
+  const [lineageError, setLineageError] = useState(false);
+  useEffect(() => {
+    void readLineage()
+      .then((snapshot) => {
+        setLineage(snapshot);
+        setLineageError(false);
+      })
+      .catch(() => {
+        setLineage(null);
+        setLineageError(true);
+      });
+  }, [readLineage]);
   const [selectedId, setSelectedId] = useState("STR-001");
   const selected = useMemo(
     () => strategies.find((s) => s.id === selectedId) ?? strategies[0],
     [selectedId],
   );
   const passed = gates.filter((g) => g.pass).length;
+  const persisted = lineage?.source === "verified_loop_lineage";
+  const verdicts = lineage?.summary.verdictCounts;
 
   return (
     <AppShell>
@@ -101,16 +133,12 @@ function StrategyLabPage() {
         subtitle="Compare deterministic candidates, preserve negative results and promote only through scripted validation gates."
         actions={
           <>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => toast("Comparison workspace prepared (demo)")}
-            >
-              <GitCompareArrows className="h-3.5 w-3.5" /> Compare
-            </Button>
-            <Button size="sm" onClick={() => toast.success("Research run drafted (demo)")}>
-              <FlaskConical className="h-3.5 w-3.5" /> New research run
-            </Button>
+            <Badge variant="outline" className={persisted ? "border-positive/40 text-positive" : "border-warning/40 text-warning"}>
+              {persisted ? "Verified lineage" : lineageError ? "Lineage unavailable" : "Demo fallback"}
+            </Badge>
+            <Badge variant="outline" className="border-info/40 text-info">
+              <ShieldCheck className="mr-1 h-3.5 w-3.5" /> Read-only
+            </Badge>
           </>
         }
       />
@@ -121,15 +149,114 @@ function StrategyLabPage() {
         />
 
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-          <MetricCard label="Candidates" value="4" sub="1 baseline · 1 blocked" />
-          <MetricCard label="Paper eligible" value="1" tone="positive" sub="Deterministic only" />
           <MetricCard
-            label="Open hypotheses"
-            value="1"
-            tone="warning"
-            sub="Criteria not declared"
+            label="Experiments"
+            value={lineage?.summary.experimentCount ?? "—"}
+            sub={persisted ? "Verified hash chain" : "Lineage not configured"}
+            demo={!persisted}
           />
-          <MetricCard label="Validation policy" value="5 gates" sub="Thresholds locked" />
+          <MetricCard
+            label="Paper approved"
+            value={lineage?.summary.reviewCounts.approved_for_paper ?? "—"}
+            tone="positive"
+            sub={`${lineage?.summary.reviewCounts.pending ?? 0} pending independent review`}
+            demo={!persisted}
+          />
+          <MetricCard
+            label="Killed / revise"
+            value={verdicts ? `${verdicts.kill ?? 0} / ${verdicts.revise ?? 0}` : "—"}
+            tone="warning"
+            sub="Negative evidence retained"
+            demo={!persisted}
+          />
+          <MetricCard
+            label="Drift tasks"
+            value={lineage?.summary.openDriftTaskCount ?? "—"}
+            sub="Research queue only"
+            demo={!persisted}
+          />
+        </div>
+
+        <div className="grid gap-6 xl:grid-cols-[1.55fr_1fr]">
+          <Panel
+            title="Loop experiment lineage"
+            subtitle={persisted ? `Verified · generated ${lineage.generatedAt}` : "Configure AEGIS_LOOP_SNAPSHOT_JSON or server path"}
+          >
+            {lineageError ? (
+              <div className="rounded-md border border-destructive/35 bg-destructive/5 p-4 text-sm text-destructive">
+                The configured lineage snapshot failed server-side validation. No experiment data was displayed.
+              </div>
+            ) : lineage?.experiments.length ? (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm tabular">
+                  <thead className="text-[11px] uppercase tracking-wider text-muted-foreground">
+                    <tr className="border-b border-border/60">
+                      <th className="py-2 pr-4 text-left font-medium">Experiment</th>
+                      <th className="py-2 pr-4 text-left font-medium">Datasets</th>
+                      <th className="py-2 pr-4 text-right font-medium">Robust score</th>
+                      <th className="py-2 text-left font-medium">Verdict</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {lineage.experiments.map((experiment) => (
+                      <tr key={experiment.recordHash} className="border-b border-border/40">
+                        <td className="py-3 pr-4">
+                          <div className="font-mono text-xs font-semibold">{experiment.experimentId}</div>
+                          <div className="max-w-xl text-xs text-muted-foreground">{experiment.hypothesis}</div>
+                          <div className="mt-1 text-[10px] text-muted-foreground">Maker: {experiment.maker}</div>
+                          <div className="mt-1 font-mono text-[10px] text-muted-foreground">{experiment.recordHash.slice(0, 12)}…</div>
+                        </td>
+                        <td className="py-3 pr-4 text-xs text-muted-foreground">{experiment.datasets.join(", ")}</td>
+                        <td className="py-3 pr-4 text-right font-mono">
+                          {experiment.meanRobustScore == null ? "—" : pct(experiment.meanRobustScore)}
+                        </td>
+                        <td className="py-3">
+                          <Badge variant="outline" className={decisionTone(experiment.decision)}>
+                            {decisionLabel(experiment.decision)}
+                          </Badge>
+                          {experiment.reasons[0] && <div className="mt-1 max-w-xs text-[10px] text-muted-foreground">{experiment.reasons[0]}</div>}
+                          {experiment.paperReview && (
+                            <div className="mt-2 max-w-xs rounded border border-border/50 p-2 text-[10px] text-muted-foreground">
+                              <div className="font-medium text-foreground">
+                                {experiment.paperReview.decision === "approved_for_paper" ? "Approved for paper" : "Paper review rejected"}
+                              </div>
+                              <div>Reviewer: {experiment.paperReview.reviewer}</div>
+                              <div>{experiment.paperReview.rationale}</div>
+                            </div>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div className="rounded-md border border-border/60 bg-background/35 p-4 text-sm text-muted-foreground">
+                No persisted Loop experiments are configured. Static strategy metadata below remains demo-only.
+              </div>
+            )}
+          </Panel>
+
+          <Panel title="Drift research queue" subtitle="Alerts cannot change strategy parameters">
+            {lineage?.driftTasks.length ? (
+              <ul className="space-y-2">
+                {lineage.driftTasks.map((task) => (
+                  <li key={task.taskId} className="rounded-md border border-border/60 bg-background/35 p-3">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="font-medium">{task.strategy}</span>
+                      <Badge variant="outline" className="border-warning/35 text-warning">Research only</Badge>
+                    </div>
+                    <div className="mt-1 text-xs text-muted-foreground">{task.dataset} · {task.observedAt}</div>
+                    <div className="mt-2 flex flex-wrap gap-1">
+                      {task.signals.map((signal) => <Badge key={signal} variant="secondary" className="text-[10px]">{signal}</Badge>)}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <div className="rounded-md border border-border/60 p-4 text-sm text-muted-foreground">No open drift research tasks.</div>
+            )}
+          </Panel>
         </div>
 
         <div className="grid gap-6 xl:grid-cols-[1.55fr_1fr]">

@@ -19,6 +19,10 @@ venv/
 results/operations_snapshot.json
 results/fund_ops_daily_report.json
 results/q_table*.json
+results/experiment_memory.jsonl
+results/drift_research_tasks.jsonl
+results/loop_snapshot.json
+results/paper_review_ledger.jsonl
 
 # Frontend generated/local state
 fund-command-center-local/node_modules/

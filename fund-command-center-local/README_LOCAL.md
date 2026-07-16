@@ -55,6 +55,29 @@ Never add either value to source files, GitHub Actions workflow text, or a
 `VITE_*` variable. The workflow can also be triggered manually from GitHub's
 **Actions** tab.
 
+### Required external-team access gate
+
+Before exposing the Worker to anyone outside the core team, protect the
+production hostname with a **Cloudflare Zero Trust Access** application. This
+is the authentication and session gate for every application route; do not
+replace it with a browser-side login screen or a header check in the Worker.
+
+1. In Cloudflare Zero Trust, create an Access application that protects the
+   `aegis-fund-os` Worker directly (including every route), or protect its
+   production custom domain. A custom domain is preferred for production over
+   a `workers.dev` hostname.
+2. Add an **Email one-time PIN** identity provider.
+3. Create an Allow policy for explicitly approved team email addresses or
+   domains; set a session duration appropriate for the role (8 hours is the
+   current UI policy baseline).
+4. Add a deny-all fallback policy and test with an unauthorised browser.
+5. Only then publish the external-team URL. Access must protect the hostname
+   itself, including server-function requests, instead of relying on UI-only
+   routing.
+
+The Cloudflare dashboard is the source of truth for this policy. It requires
+an account administrator and cannot be safely committed as a Worker secret.
+
 ## Binance Spot Testnet on Cloudflare
 
 The deployed app accepts only same-origin HTTPS requests for its Binance probe
@@ -97,6 +120,16 @@ browser-visible variables, chat, or screenshots.
 Bind the local demo screens to authenticated APIs and durable storage, beginning
 with read-only adapter status, approval/audit persistence, and paper execution
 events. Live execution remains out of scope.
+
+## Loop Engineering lineage
+
+The server-only `getLoopLineageSnapshot` reader accepts either
+`AEGIS_LOOP_SNAPSHOT_PATH` for local/server filesystems or
+`AEGIS_LOOP_SNAPSHOT_JSON` for Workers. It validates schema version 1,
+verified-chain status and explicit no-mutation/no-approval/no-order
+capabilities. If neither value is configured it returns a clearly labelled
+read-only demo fallback. Browser code never receives the configured path and
+the reader exposes no write method.
 
 ## Binance Spot Testnet
 

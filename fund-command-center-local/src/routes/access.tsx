@@ -7,7 +7,14 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { KeyRound, LockKeyhole, ShieldCheck, UserPlus, UsersRound } from "lucide-react";
+import {
+  CalendarClock,
+  KeyRound,
+  LockKeyhole,
+  ShieldCheck,
+  UserPlus,
+  UsersRound,
+} from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/access")({
@@ -24,6 +31,7 @@ const users = [
     mfa: true,
     status: "Active",
     seen: "Now",
+    expiresAt: null,
   },
   {
     initials: "NS",
@@ -33,6 +41,7 @@ const users = [
     mfa: true,
     status: "Active",
     seen: "12m ago",
+    expiresAt: null,
   },
   {
     initials: "RC",
@@ -42,6 +51,7 @@ const users = [
     mfa: true,
     status: "Active",
     seen: "1h ago",
+    expiresAt: null,
   },
   {
     initials: "PT",
@@ -51,6 +61,7 @@ const users = [
     mfa: true,
     status: "Time-bound",
     seen: "2d ago",
+    expiresAt: "2025-11-21 17:00 UTC",
   },
   {
     initials: "DV",
@@ -60,6 +71,7 @@ const users = [
     mfa: false,
     status: "Suspended",
     seen: "18d ago",
+    expiresAt: null,
   },
 ];
 
@@ -114,6 +126,12 @@ const roles = [
 function AccessPage() {
   const [enforceMfa, setEnforceMfa] = useState(true);
   const [sessionHours, setSessionHours] = useState(8);
+  const [renewedUsers, setRenewedUsers] = useState<string[]>([]);
+
+  const renewTimeBoundAccess = (email: string) => {
+    setRenewedUsers((current) => [...new Set([...current, email])]);
+    toast.success("30-day renewal drafted for maker/checker review (demo)");
+  };
 
   return (
     <AppShell>
@@ -154,6 +172,7 @@ function AccessPage() {
                       <th className="py-2 pr-4 text-left">Role</th>
                       <th className="py-2 pr-4 text-left">MFA</th>
                       <th className="py-2 pr-4 text-left">Status</th>
+                      <th className="py-2 pr-4 text-left">Expiry / renewal</th>
                       <th className="py-2 text-left">Last active</th>
                     </tr>
                   </thead>
@@ -183,6 +202,31 @@ function AccessPage() {
                         </td>
                         <td className="py-3 pr-4">
                           <Badge variant="outline">{user.status}</Badge>
+                        </td>
+                        <td className="py-3 pr-4">
+                          {user.expiresAt ? (
+                            <div className="flex min-w-[190px] items-center gap-2">
+                              <CalendarClock className="h-3.5 w-3.5 shrink-0 text-warning" />
+                              <div className="text-xs">
+                                <div className="font-medium">Ends {user.expiresAt}</div>
+                                <div className="text-muted-foreground">
+                                  {renewedUsers.includes(user.email)
+                                    ? "Renewal drafted"
+                                    : "Sponsor renewal required"}
+                                </div>
+                              </div>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                disabled={renewedUsers.includes(user.email)}
+                                onClick={() => renewTimeBoundAccess(user.email)}
+                              >
+                                Renew 30d
+                              </Button>
+                            </div>
+                          ) : (
+                            <span className="text-xs text-muted-foreground">No expiry</span>
+                          )}
                         </td>
                         <td className="py-3 text-xs text-muted-foreground">{user.seen}</td>
                       </tr>

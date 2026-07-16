@@ -30,6 +30,17 @@ from .validation import ValidationGate, ValidationReport, combinatorial_purged_s
 from .research import (ExecutionProfile, MultiStrategyResearchFramework,
                        ResearchDataset, StrategySpec, default_strategies)
 from .core_engine import CoreStatus, CoreTradingEngine
+from .loop_snapshot import (LOOP_SNAPSHOT_SCHEMA_VERSION, build_loop_snapshot,
+                            write_loop_snapshot)
+from .loop_engineering import (DriftMonitor, DriftPolicy, DriftResearchQueue,
+                               DriftSnapshot, EvaluationEvidence, ExperimentContract,
+                               ExperimentMemory, ExperimentMemoryRecord,
+                               ExperimentRunResult, LoopDecision, LoopVerdict,
+                               OneContractResearchRunner, ResearchTaskDraft,
+                               PaperReviewDecision, PaperReviewLedger,
+                               PaperReviewRecord,
+                               deterministic_verdict,
+                               sha256_file, sha256_paths)
 from .fund_ops import (AppendOnlyLedger, ConnectorSync, EventType, LedgerEvent,
                        PlatformBalance, PnLSnapshot, Position,
                        ReadOnlyPlatformConnector)
@@ -66,6 +77,14 @@ __all__ = [
     "ExecutionProfile", "MultiStrategyResearchFramework", "ResearchDataset",
     "StrategySpec", "default_strategies",
     "CoreStatus", "CoreTradingEngine",
+    "LOOP_SNAPSHOT_SCHEMA_VERSION", "build_loop_snapshot", "write_loop_snapshot",
+    "DriftMonitor", "DriftPolicy", "DriftResearchQueue", "DriftSnapshot",
+    "EvaluationEvidence", "ExperimentContract", "ExperimentMemory",
+    "ExperimentMemoryRecord", "ExperimentRunResult", "LoopDecision",
+    "LoopVerdict", "OneContractResearchRunner", "ResearchTaskDraft",
+    "PaperReviewDecision", "PaperReviewLedger", "PaperReviewRecord",
+    "deterministic_verdict",
+    "sha256_file", "sha256_paths",
     "AppendOnlyLedger", "ConnectorSync", "EventType", "LedgerEvent",
     "PlatformBalance", "PnLSnapshot", "Position", "ReadOnlyPlatformConnector",
     "SQLiteLedgerStore", "BinanceReadOnlyCredentials", "BinanceSpotReadOnlyConnector",

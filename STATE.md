@@ -157,6 +157,99 @@
 
 ## Last session
 
+- Added verified Loop snapshot CLI (2026-07-16):
+  `python -m dynamic_grid.loop_cli` accepts only explicit memory, drift queue,
+  paper-review ledger and output paths. It verifies all three evidence sources
+  before atomic output replacement, preserves an existing snapshot when source
+  integrity fails, and exposes no strategy mutation, approval or order command.
+  Four focused CLI tests pass.
+
+- Projected independent paper reviews into Loop snapshots and Aegis
+  (2026-07-16): snapshots now verify the review ledger, expose review-chain
+  integrity/hash/counts, maker, reviewer, rationale and paper-only decision,
+  and count approved/rejected/pending reviews. The Aegis validator rejects
+  self-review and review-to-experiment hash mismatches; Strategy Lab displays
+  review evidence read-only. Snapshot/review tests, frontend tests (9/9),
+  TypeScript, production build and full gate pass. Next Loop task: CLI for
+  verified snapshot export.
+
+- Added independent paper-review decision ledger (2026-07-16): each experiment
+  contract now declares a maker; only deterministic `paper_review` verdicts are
+  eligible, maker/reviewer equality is rejected case-insensitively, rationale
+  is required, and one final `approved_for_paper` or `rejected` decision is
+  bound to the experiment record hash in a separate append-only SHA-256 chain.
+  Reviews are revalidated against experiment memory on every read and there is
+  no live decision. Six review tests, all Loop tests and the full gate pass.
+  Next Loop task: project review status into the snapshot and Aegis UI.
+
+- Bound verified Loop lineage to Aegis Strategy Lab (2026-07-16): the page now
+  reads only through the server function and renders integrity source,
+  experiment/verdict counts, newest-first hypotheses, robust scores, failure
+  reasons, record hashes and drift research tasks. Unconfigured and invalid
+  snapshots are explicit, static registry evidence remains demo-labelled, and
+  prior demo create/compare actions were removed. Frontend tests (8/8),
+  TypeScript, production build and the full gate pass. Next Loop task: an
+  independent paper-review decision ledger.
+
+- Added server-only Aegis Loop-lineage reader (2026-07-16): a serializable,
+  typed schema validator accepts only version-1 verified read-only snapshots
+  whose mutation, approval and order capabilities are all false. The server
+  function reads only `AEGIS_LOOP_SNAPSHOT_PATH`/`_JSON`, returns an explicit
+  unconfigured fallback, and exposes no write operation or filesystem path to
+  browser code. Frontend tests (8/8), TypeScript and production build pass;
+  full strategy gate passes. Next Loop task: bind lineage to Strategy Lab UI.
+
+- Added read-only Loop lineage snapshot exporter (2026-07-16): verified
+  experiment memory and drift queue are projected to versioned, newest-first
+  Aegis JSON with verdict counts, failure reasons, validation summaries, source
+  hashes and explicit no-mutation/no-approval/no-order capabilities. Tampered
+  memory fails closed and output replacement is atomic. Twenty-one focused
+  Loop tests and the full gate pass. Next Loop task: server-only Aegis reader
+  for the lineage snapshot.
+
+- Added research-only drift monitoring (2026-07-16): declared thresholds cover
+  robust-score decay, drawdown increase, execution-cost increase and data gaps;
+  minimum sample size and same-dataset comparison are enforced. Alerts are
+  immutable `open_research_task` drafts written to an idempotent append-only
+  queue; the API contains no parameter mutation or execution operation.
+  Seventeen focused Loop tests and the full gate pass. Next Loop task: export a
+  read-only experiment-lineage snapshot for Aegis.
+
+- Added one-contract Loop research runner (2026-07-16): it validates the
+  preregistered contract and exact dataset mapping before evaluation, hashes
+  code/data before and after the run, calls one evaluator, enforces the declared
+  trial cap, and stores summarized validation evidence plus deterministic
+  verdict in the hash-chained memory. Input mutation and budget overrun fail
+  closed without recording a misleading result. Twelve focused Loop tests and
+  the full gate pass. Next Loop task: drift monitor that may open research tasks
+  but cannot change strategy parameters.
+
+- Added append-only Loop experiment memory (2026-07-16):
+  `ExperimentMemory` persists canonical JSONL records chained by SHA-256,
+  requires code and named dataset hashes, rejects duplicate experiment IDs,
+  and verifies the full chain before reads or appends. Tampering with prior
+  hypotheses/results fails closed. Eight focused Loop tests and the full gate
+  pass. Next Loop task: one-contract research runner with immutable output.
+
+- Added fail-closed Loop Engineering foundation (2026-07-16): studied the
+  referenced cwayinvestment video and Thai summary, then translated Memory +
+  Agent Harness + Learning Loop into a research-only contract. Experiments now
+  require a preregistered hypothesis, cash benchmark, named real datasets,
+  held-out split, >=3 distinct seeds, fixed robust-score formula and bounded
+  trials. Deterministic verdicts stop at independent paper review and reject
+  live targets. Four focused tests and `gate/verify.ps1` pass. Next loop task:
+  append-only JSONL experiment memory with code/data hashes.
+
+- Improved Aegis external-team readiness (2026-07-16): audit fixture events
+  now remain newest-first, degraded/disconnected adapter status deep-links to
+  Integrations, and Access shows time-bound expiry plus a demo renewal draft.
+  Sidebar already covered all 15 existing routes. Documented Cloudflare Access
+  Email OTP as the required hostname-level session gate before external use;
+  dashboard policy configuration remains an administrator action.
+- Sanitized `fund-command-center-local/.env.example` (2026-07-16): it now
+  contains placeholders only. The local `.env.local` remains ignored and was
+  not inspected.
+
 - Cloud Worker Binance Spot Testnet probe was deployed and tested through the
   hosted Integrations page (2026-07-16). Worker-secret synchronization from
   GitHub Actions succeeded, but Binance rejected the signed read-only request.
