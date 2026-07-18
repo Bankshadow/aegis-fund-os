@@ -78,6 +78,25 @@ export type PaperAccount = {
   maxDrawdown: string;
   completedCycles: number;
 };
+export type PaperFillModel = "TOUCH" | "CONSERVATIVE" | "VOLUME_AWARE";
+export type PaperPriceEvent = {
+  eventId: string;
+  price: string;
+  availableVolume: string;
+  fillModel: PaperFillModel;
+  oneWayCostPct: string;
+  slippagePct: string;
+};
+export type PaperFillResult = {
+  eventId: string;
+  orderId: string;
+  side: PaperSide;
+  quantity: string;
+  price: string;
+  grossAmount: string;
+  cost: string;
+  slippage: string;
+};
 
 const d = (value: string | number | Decimal) => new Decimal(value);
 const tick = d(AOT_PAPER_RULES.tickSize);
@@ -262,6 +281,8 @@ export function simulatePaperFill(
   account: PaperAccount,
   price: string,
   quantity: string,
+  costPct = "0.20",
+  slippagePct = "0.00",
 ): { order: PaperOrder; account: PaperAccount } {
   const fillQty = d(quantity),
     remaining = d(order.remainingQuantity),
@@ -269,7 +290,8 @@ export function simulatePaperFill(
   if (!fillQty.gt(0) || fillQty.gt(remaining))
     throw new Error("Fill quantity exceeds remaining paper order quantity");
   const notional = fillQty.mul(fillPrice),
-    cost = notional.mul("0.002");
+    cost = notional.mul(d(costPct).div(100)),
+    slippage = notional.mul(d(slippagePct).div(100));
   const nextFilled = d(order.filledQuantity).add(fillQty),
     nextRemaining = remaining.sub(fillQty);
   let cash = d(account.cash),
@@ -277,16 +299,18 @@ export function simulatePaperFill(
     averageCost = d(account.averageCost),
     realizedAssetPnl = d(account.realizedAssetPnl);
   if (order.side === "BUY") {
-    if (cash.lt(notional.add(cost))) throw new Error("Insufficient paper cash");
-    cash = cash.sub(notional).sub(cost);
+    if (cash.lt(notional.add(cost).add(slippage))) throw new Error("Insufficient paper cash");
+    cash = cash.sub(notional).sub(cost).sub(slippage);
     averageCost = inventory.add(fillQty).eq(0)
       ? d(0)
       : inventory.mul(averageCost).add(notional).div(inventory.add(fillQty));
     inventory = inventory.add(fillQty);
   } else {
     if (inventory.lt(fillQty)) throw new Error("Insufficient paper inventory");
-    cash = cash.add(notional).sub(cost);
-    realizedAssetPnl = realizedAssetPnl.add(fillPrice.sub(averageCost).mul(fillQty));
+    cash = cash.add(notional).sub(cost).sub(slippage);
+    realizedAssetPnl = realizedAssetPnl.add(
+      fillPrice.sub(averageCost).mul(fillQty).sub(cost).sub(slippage),
+    );
     inventory = inventory.sub(fillQty);
   }
   const nextOrder = {
@@ -305,7 +329,122 @@ export function simulatePaperFill(
       averageCost: fixed(averageCost),
       realizedAssetPnl: fixed(realizedAssetPnl),
       costs: fixed(d(account.costs).add(cost)),
+      slippage: fixed(d(account.slippage).add(slippage)),
       currentPrice: fixed(fillPrice),
     },
   };
+}
+
+const canFill = (order: PaperOrder, price: Decimal, model: PaperFillModel) =>
+  model === "CONSERVATIVE"
+    ? order.side === "BUY"
+      ? price.lt(order.limitPrice)
+      : price.gt(order.limitPrice)
+    : order.side === "BUY"
+      ? price.lte(order.limitPrice)
+      : price.gte(order.limitPrice);
+
+/**
+ * Deterministic paper-only fill planner. It consumes at most the supplied
+ * simulated volume, never overfills an order, and emits a paired order only
+ * when a source order is fully filled. Event-level idempotency belongs to the
+ * repository, so a replay must persist this result at most once.
+ */
+export function applyPaperPriceEvent(
+  orders: readonly PaperOrder[],
+  account: PaperAccount,
+  levels: readonly PaperGridLevel[],
+  event: PaperPriceEvent,
+): {
+  orders: PaperOrder[];
+  account: PaperAccount;
+  fills: PaperFillResult[];
+  pairedOrders: PaperOrder[];
+} {
+  let available = d(event.availableVolume);
+  if (!available.gte(0)) throw new Error("Simulated available volume cannot be negative");
+  const price = d(event.price);
+  if (!price.gt(0)) throw new Error("Simulated price must be positive");
+  let nextAccount = account;
+  const nextOrders = orders.map((item) => ({ ...item }));
+  const fills: PaperFillResult[] = [];
+  const pairedOrders: PaperOrder[] = [];
+  for (let index = 0; index < nextOrders.length; index += 1) {
+    const order = nextOrders[index];
+    if (
+      !(["OPEN", "PARTIALLY_FILLED"] as PaperOrderStatus[]).includes(order.status) ||
+      !canFill(order, price, event.fillModel)
+    )
+      continue;
+    const remaining = d(order.remainingQuantity);
+    const requested =
+      event.fillModel === "VOLUME_AWARE"
+        ? remaining.lt(available)
+          ? remaining
+          : available
+        : remaining;
+    const fillQty = event.fillModel === "VOLUME_AWARE" ? floorLot(requested) : requested;
+    if (!fillQty.gt(0)) continue;
+    const result = simulatePaperFill(
+      order,
+      nextAccount,
+      event.price,
+      fillQty.toFixed(0),
+      event.oneWayCostPct,
+      event.slippagePct,
+    );
+    nextOrders[index] = result.order;
+    nextAccount = result.account;
+    available = available.sub(fillQty);
+    const notional = fillQty.mul(price),
+      cost = notional.mul(d(event.oneWayCostPct).div(100)),
+      slippage = notional.mul(d(event.slippagePct).div(100));
+    fills.push({
+      eventId: event.eventId,
+      orderId: order.id,
+      side: order.side,
+      quantity: fillQty.toFixed(0),
+      price: fixed(price),
+      grossAmount: fixed(notional),
+      cost: fixed(cost),
+      slippage: fixed(slippage),
+    });
+    if (result.order.status !== "FILLED") continue;
+    const source = levels.find((level) => level.index === order.gridIndex);
+    if (!source?.pairedPrice) continue;
+    if (order.side === "SELL")
+      nextAccount = {
+        ...nextAccount,
+        realizedGridProfit: fixed(d(nextAccount.realizedGridProfit).add(source.netProfit)),
+        completedCycles: nextAccount.completedCycles + 1,
+      };
+    const pairedLevel = levels.find(
+      (level) => level.price === source.pairedPrice && level.side !== "REFERENCE",
+    );
+    if (!pairedLevel) continue;
+    const pairedSide: PaperSide = order.side === "BUY" ? "SELL" : "BUY";
+    const duplicateOpen = [...nextOrders, ...pairedOrders].some(
+      (candidate) =>
+        candidate.gridIndex === pairedLevel.index &&
+        candidate.side === pairedSide &&
+        ["OPEN", "PARTIALLY_FILLED"].includes(candidate.status),
+    );
+    if (duplicateOpen) continue;
+    const quantity = result.order.originalQuantity;
+    const paired: PaperOrder = {
+      id: `PAIR-${event.eventId}-${order.id}`,
+      gridIndex: pairedLevel.index,
+      side: pairedSide,
+      limitPrice: pairedLevel.price,
+      originalQuantity: quantity,
+      filledQuantity: "0",
+      remainingQuantity: quantity,
+      averageFillPrice: "0.00",
+      status: "OPEN",
+      reservedAmount: pairedLevel.notional,
+    };
+    pairedOrders.push(paired);
+    nextOrders.push(paired);
+  }
+  return { orders: nextOrders, account: nextAccount, fills, pairedOrders };
 }
