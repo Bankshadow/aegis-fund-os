@@ -611,3 +611,9 @@
   `bankshadow30@gmail.com`. Post-deploy unauthenticated `/bots` smoke returned
   HTTP 302 to the `broad-brook-0f63.cloudflareaccess.com` login, confirming
   Access remained enforced after deployment.
+
+- Deployed the grid-runtime reconciliation and approved capital-FX controls
+  (2026-07-19): commit `057deaa` fast-forwarded `main`; GitHub Actions run
+  29653594182 completed successfully, including Worker deployment and Testnet
+  secret configuration. An unauthenticated `/bots` request still returns HTTP
+  302 to Cloudflare Access. No live-order action was taken.
