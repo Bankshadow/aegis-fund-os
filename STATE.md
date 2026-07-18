@@ -622,3 +622,9 @@
   entry, and its command-palette entry were deleted. The generated route tree
   no longer exposes this path; frontend checks, production build, and
   `gate/verify.ps1` passed before release.
+
+- Removed the Cloudflare Access application for
+  `aegis-fund-os.bankshadow30.workers.dev` at the user's explicit request
+  (2026-07-19). An unauthenticated browser check reaches `/bots` directly;
+  the production Worker is public until an Access application or equivalent
+  edge control is restored.
