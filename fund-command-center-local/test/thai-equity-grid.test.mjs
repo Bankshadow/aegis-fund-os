@@ -17,6 +17,7 @@ test("AOT paper grid rounds every row to the SET-style tick and 100-share board 
   assert.equal(rows.length, 8);
   assert.ok(rows.every((row) => Number(row.quantity) % 100 === 0));
   assert.ok(rows.every((row) => Number(row.price) / 0.25 === Math.round(Number(row.price) / 0.25)));
+  assert.ok(rows.every((row) => Number(row.estimatedNetProfit) > 0));
 });
 
 test("AOT paper grid rejects manual prices outside the paper tick", () => {

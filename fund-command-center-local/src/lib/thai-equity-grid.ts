@@ -1,5 +1,5 @@
 import Decimal from "decimal.js-light";
-import { buildExactGridPreview, type GridMode, type GridPreviewRow } from "./grid-bot-domain.ts";
+import type { GridMode, GridPreviewRow } from "./grid-bot-domain.ts";
 
 export const AOT_PAPER_MARKET = {
   symbol: "AOT",
@@ -19,6 +19,8 @@ export type AotPaperGridInput = {
 };
 
 const isTickAligned = (value: string) => new Decimal(value).mod(AOT_PAPER_MARKET.tickSize).eq(0);
+const floorIncrement = (value: Decimal, increment: Decimal) =>
+  value.div(increment).toDecimalPlaces(0, Decimal.ROUND_FLOOR).mul(increment);
 
 /**
  * Local-only AOT grid preview. This has no broker, order, credential, or
@@ -34,17 +36,56 @@ export function buildAotPaperGrid(input: AotPaperGridInput): GridPreviewRow[] {
     if (!isTickAligned(value)) throw new Error(`${label} must use the ฿${AOT_PAPER_MARKET.tickSize} paper tick`);
   }
 
-  const minimumBoardLotValue = new Decimal(input.upperPrice).mul(AOT_PAPER_MARKET.boardLot).toFixed(2);
-  return buildExactGridPreview({
-    lowerPrice: input.lowerPrice,
-    upperPrice: input.upperPrice,
-    currentPrice: input.referencePrice,
-    investment: input.investment,
-    gridCount: input.gridCount,
-    mode: input.mode,
-    feeRatePct: input.assumedOneWayCostPct,
-    tickSize: AOT_PAPER_MARKET.tickSize,
-    stepSize: AOT_PAPER_MARKET.boardLot,
-    minNotional: minimumBoardLotValue,
+  const lower = new Decimal(input.lowerPrice);
+  const upper = new Decimal(input.upperPrice);
+  const current = new Decimal(input.referencePrice);
+  const capital = new Decimal(input.investment);
+  const costRate = new Decimal(input.assumedOneWayCostPct).div(100);
+  const tick = new Decimal(AOT_PAPER_MARKET.tickSize);
+  const lot = new Decimal(AOT_PAPER_MARKET.boardLot);
+  if (!lower.gt(0) || !upper.gt(lower) || !current.gte(lower) || !current.lte(upper))
+    throw new Error("Reference price must be inside the configured range");
+  if (!Number.isInteger(input.gridCount) || input.gridCount < 2 || input.gridCount > 200)
+    throw new Error("Grid count must be between 2 and 200");
+
+  const perGrid = capital.div(input.gridCount);
+  const minimumBoardLotValue = upper.mul(lot);
+  if (perGrid.lt(minimumBoardLotValue))
+    throw new Error("Investment per grid is below minimum notional for one AOT board lot");
+  const ratio = upper.div(lower).pow(new Decimal(1).div(input.gridCount));
+  const prices = Array.from({ length: input.gridCount + 1 }, (_, index) =>
+    floorIncrement(
+      input.mode === "GEOMETRIC"
+        ? lower.mul(ratio.pow(index))
+        : lower.add(upper.sub(lower).mul(index).div(input.gridCount)),
+      tick,
+    ),
+  );
+  const nearest = prices.reduce(
+    (best, price, index) => (price.sub(current).abs().lt(prices[best].sub(current).abs()) ? index : best),
+    0,
+  );
+
+  return prices.flatMap((price, index) => {
+    if (index === nearest) return [];
+    const side = price.lt(current) ? "BUY" : "SELL";
+    const pairedPrice = side === "BUY" ? prices[index + 1] : prices[index - 1];
+    const quantity = floorIncrement(perGrid.div(price), lot);
+    const quote = price.mul(quantity);
+    if (quantity.lt(lot) || quote.lt(minimumBoardLotValue))
+      throw new Error("Quantized order is below minimum notional for one AOT board lot");
+    const fee = quote.mul(costRate);
+    const pairedFee = pairedPrice.mul(quantity).mul(costRate);
+    const net = pairedPrice.sub(price).abs().mul(quantity).sub(fee).sub(pairedFee);
+    return [{
+      grid: index + 1,
+      side,
+      price: price.toFixed(2),
+      quantity: quantity.toFixed(0),
+      quoteValue: quote.toFixed(2),
+      estimatedFee: fee.toFixed(2),
+      estimatedNetProfit: net.toFixed(2),
+      initialState: "PREVIEW" as const,
+    }];
   });
 }
