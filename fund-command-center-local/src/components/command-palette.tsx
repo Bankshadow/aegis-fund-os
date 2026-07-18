@@ -18,6 +18,7 @@ import {
   ShieldAlert,
   FileText,
   ScrollText,
+  ChartNoAxesCombined,
   Settings,
   Lock,
   Search,
@@ -37,6 +38,7 @@ const groups = [
     heading: "Trading & Research",
     items: [
       { icon: Bot, label: "Bots & Orders", to: "/bots" },
+      { icon: ChartNoAxesCombined, label: "AOT Paper Grid", to: "/aot-paper-grid" },
       { icon: RadioTower, label: "Signals", to: "/signals" },
     ],
   },

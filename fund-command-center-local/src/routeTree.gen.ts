@@ -20,6 +20,7 @@ import { Route as IntegrationsRouteImport } from './routes/integrations'
 import { Route as BotsRouteImport } from './routes/bots'
 import { Route as AuditRouteImport } from './routes/audit'
 import { Route as ApprovalsRouteImport } from './routes/approvals'
+import { Route as AotPaperGridRouteImport } from './routes/aot-paper-grid'
 import { Route as AccountsRouteImport } from './routes/accounts'
 import { Route as AccessRouteImport } from './routes/access'
 import { Route as IndexRouteImport } from './routes/index'
@@ -84,6 +85,11 @@ const ApprovalsRoute = ApprovalsRouteImport.update({
   path: '/approvals',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AotPaperGridRoute = AotPaperGridRouteImport.update({
+  id: '/aot-paper-grid',
+  path: '/aot-paper-grid',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AccountsRoute = AccountsRouteImport.update({
   id: '/accounts',
   path: '/accounts',
@@ -129,6 +135,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/access': typeof AccessRoute
   '/accounts': typeof AccountsRoute
+  '/aot-paper-grid': typeof AotPaperGridRoute
   '/approvals': typeof ApprovalsRoute
   '/audit': typeof AuditRoute
   '/bots': typeof BotsRoute
@@ -150,6 +157,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/access': typeof AccessRoute
   '/accounts': typeof AccountsRoute
+  '/aot-paper-grid': typeof AotPaperGridRoute
   '/approvals': typeof ApprovalsRoute
   '/audit': typeof AuditRoute
   '/bots': typeof BotsRoute
@@ -172,6 +180,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/access': typeof AccessRoute
   '/accounts': typeof AccountsRoute
+  '/aot-paper-grid': typeof AotPaperGridRoute
   '/approvals': typeof ApprovalsRoute
   '/audit': typeof AuditRoute
   '/bots': typeof BotsRoute
@@ -195,6 +204,7 @@ export interface FileRouteTypes {
     | '/'
     | '/access'
     | '/accounts'
+    | '/aot-paper-grid'
     | '/approvals'
     | '/audit'
     | '/bots'
@@ -216,6 +226,7 @@ export interface FileRouteTypes {
     | '/'
     | '/access'
     | '/accounts'
+    | '/aot-paper-grid'
     | '/approvals'
     | '/audit'
     | '/bots'
@@ -237,6 +248,7 @@ export interface FileRouteTypes {
     | '/'
     | '/access'
     | '/accounts'
+    | '/aot-paper-grid'
     | '/approvals'
     | '/audit'
     | '/bots'
@@ -259,6 +271,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AccessRoute: typeof AccessRoute
   AccountsRoute: typeof AccountsRoute
+  AotPaperGridRoute: typeof AotPaperGridRoute
   ApprovalsRoute: typeof ApprovalsRoute
   AuditRoute: typeof AuditRoute
   BotsRoute: typeof BotsRoute
@@ -356,6 +369,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApprovalsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/aot-paper-grid': {
+      id: '/aot-paper-grid'
+      path: '/aot-paper-grid'
+      fullPath: '/aot-paper-grid'
+      preLoaderRoute: typeof AotPaperGridRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/accounts': {
       id: '/accounts'
       path: '/accounts'
@@ -419,6 +439,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AccessRoute: AccessRoute,
   AccountsRoute: AccountsRoute,
+  AotPaperGridRoute: AotPaperGridRoute,
   ApprovalsRoute: ApprovalsRoute,
   AuditRoute: AuditRoute,
   BotsRoute: BotsRoute,

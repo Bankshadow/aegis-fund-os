@@ -8,6 +8,7 @@ import {
   ShieldAlert,
   FileText,
   ScrollText,
+  ChartNoAxesCombined,
   Settings,
   CircleDot,
   Bot,
@@ -40,6 +41,7 @@ const NAV_GROUPS = [
     label: "Trading & Research",
     items: [
       { title: "Bots & Orders", url: "/bots", icon: Bot },
+      { title: "AOT Paper Grid", url: "/aot-paper-grid", icon: ChartNoAxesCombined },
       { title: "Signals", url: "/signals", icon: RadioTower },
     ],
   },
