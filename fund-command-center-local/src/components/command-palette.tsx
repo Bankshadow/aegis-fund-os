@@ -21,7 +21,6 @@ import {
   Settings,
   Lock,
   Search,
-  FlaskConical,
   Bot,
   RadioTower,
   PlugZap,
@@ -37,7 +36,6 @@ const groups = [
   {
     heading: "Trading & Research",
     items: [
-      { icon: FlaskConical, label: "Strategy Lab", to: "/strategies" },
       { icon: Bot, label: "Bots & Orders", to: "/bots" },
       { icon: RadioTower, label: "Signals", to: "/signals" },
     ],

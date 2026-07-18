@@ -9,7 +9,6 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as StrategiesRouteImport } from './routes/strategies'
 import { Route as SignalsRouteImport } from './routes/signals'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as RiskRouteImport } from './routes/risk'
@@ -30,11 +29,6 @@ import { Route as BotsBotIdProfitRouteImport } from './routes/bots_.$botId_.prof
 import { Route as BotsBotIdOrdersRouteImport } from './routes/bots_.$botId_.orders'
 import { Route as BotsBotIdEventsRouteImport } from './routes/bots_.$botId_.events'
 
-const StrategiesRoute = StrategiesRouteImport.update({
-  id: '/strategies',
-  path: '/strategies',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const SignalsRoute = SignalsRouteImport.update({
   id: '/signals',
   path: '/signals',
@@ -146,7 +140,6 @@ export interface FileRoutesByFullPath {
   '/risk': typeof RiskRoute
   '/settings': typeof SettingsRoute
   '/signals': typeof SignalsRoute
-  '/strategies': typeof StrategiesRoute
   '/bots/$botId': typeof BotsBotIdRoute
   '/bots/new': typeof BotsNewRoute
   '/bots/$botId/events': typeof BotsBotIdEventsRoute
@@ -168,7 +161,6 @@ export interface FileRoutesByTo {
   '/risk': typeof RiskRoute
   '/settings': typeof SettingsRoute
   '/signals': typeof SignalsRoute
-  '/strategies': typeof StrategiesRoute
   '/bots/$botId': typeof BotsBotIdRoute
   '/bots/new': typeof BotsNewRoute
   '/bots/$botId/events': typeof BotsBotIdEventsRoute
@@ -191,7 +183,6 @@ export interface FileRoutesById {
   '/risk': typeof RiskRoute
   '/settings': typeof SettingsRoute
   '/signals': typeof SignalsRoute
-  '/strategies': typeof StrategiesRoute
   '/bots_/$botId': typeof BotsBotIdRoute
   '/bots_/new': typeof BotsNewRoute
   '/bots_/$botId_/events': typeof BotsBotIdEventsRoute
@@ -215,7 +206,6 @@ export interface FileRouteTypes {
     | '/risk'
     | '/settings'
     | '/signals'
-    | '/strategies'
     | '/bots/$botId'
     | '/bots/new'
     | '/bots/$botId/events'
@@ -237,7 +227,6 @@ export interface FileRouteTypes {
     | '/risk'
     | '/settings'
     | '/signals'
-    | '/strategies'
     | '/bots/$botId'
     | '/bots/new'
     | '/bots/$botId/events'
@@ -259,7 +248,6 @@ export interface FileRouteTypes {
     | '/risk'
     | '/settings'
     | '/signals'
-    | '/strategies'
     | '/bots_/$botId'
     | '/bots_/new'
     | '/bots_/$botId_/events'
@@ -282,7 +270,6 @@ export interface RootRouteChildren {
   RiskRoute: typeof RiskRoute
   SettingsRoute: typeof SettingsRoute
   SignalsRoute: typeof SignalsRoute
-  StrategiesRoute: typeof StrategiesRoute
   BotsBotIdRoute: typeof BotsBotIdRoute
   BotsNewRoute: typeof BotsNewRoute
   BotsBotIdEventsRoute: typeof BotsBotIdEventsRoute
@@ -292,13 +279,6 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/strategies': {
-      id: '/strategies'
-      path: '/strategies'
-      fullPath: '/strategies'
-      preLoaderRoute: typeof StrategiesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/signals': {
       id: '/signals'
       path: '/signals'
@@ -450,7 +430,6 @@ const rootRouteChildren: RootRouteChildren = {
   RiskRoute: RiskRoute,
   SettingsRoute: SettingsRoute,
   SignalsRoute: SignalsRoute,
-  StrategiesRoute: StrategiesRoute,
   BotsBotIdRoute: BotsBotIdRoute,
   BotsNewRoute: BotsNewRoute,
   BotsBotIdEventsRoute: BotsBotIdEventsRoute,

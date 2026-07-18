@@ -617,3 +617,8 @@
   29653594182 completed successfully, including Worker deployment and Testnet
   secret configuration. An unauthenticated `/bots` request still returns HTTP
   302 to Cloudflare Access. No live-order action was taken.
+
+- Removed the Strategy Lab logic page (2026-07-19): `/strategies`, its sidebar
+  entry, and its command-palette entry were deleted. The generated route tree
+  no longer exposes this path; frontend checks, production build, and
+  `gate/verify.ps1` passed before release.

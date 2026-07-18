@@ -10,7 +10,6 @@ import {
   ScrollText,
   Settings,
   CircleDot,
-  FlaskConical,
   Bot,
   RadioTower,
   PlugZap,
@@ -40,7 +39,6 @@ const NAV_GROUPS = [
   {
     label: "Trading & Research",
     items: [
-      { title: "Strategy Lab", url: "/strategies", icon: FlaskConical },
       { title: "Bots & Orders", url: "/bots", icon: Bot },
       { title: "Signals", url: "/signals", icon: RadioTower },
     ],
