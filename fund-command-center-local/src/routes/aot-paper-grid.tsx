@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { AOT_PAPER_MARKET, buildAotPaperGrid } from "@/lib/thai-equity-grid";
+import { runAotPaperGridSimulation } from "@/lib/aot-paper-simulation";
 import type { GridMode } from "@/lib/grid-bot-domain";
 import { ArrowLeft, Calculator, ShieldAlert } from "lucide-react";
 import { toast } from "sonner";
@@ -29,6 +30,7 @@ function AotPaperGridPage() {
   const [gridCount, setGridCount] = useState(8);
   const [mode, setMode] = useState<GridMode>("ARITHMETIC");
   const [costPct, setCostPct] = useState("0.20");
+  const [simulation, setSimulation] = useState<ReturnType<typeof runAotPaperGridSimulation> | null>(null);
   const preview = useMemo(() => {
     try {
       return { rows: buildAotPaperGrid({ lowerPrice, upperPrice, referencePrice, investment, gridCount, mode, assumedOneWayCostPct: costPct }), error: "" };
@@ -69,6 +71,15 @@ function AotPaperGridPage() {
           <div className="flex items-end"><Button className="w-full" variant="outline" onClick={() => toast.success("Paper-grid preview recalculated locally. No order sent.")}><Calculator className="h-4 w-4" />Recalculate preview</Button></div>
         </div>
         {preview.error && <p className="mt-4 text-sm text-destructive">{preview.error}</p>}
+      </Panel>
+      <Panel title="Synthetic opening test" subtitle="Three deterministic synthetic OHLCV paths; 80% validation window and 20% held-out window. This is a system check, not market evidence.">
+        <div className="flex flex-wrap items-center gap-3"><Button disabled={Boolean(preview.error)} onClick={() => {
+          try {
+            setSimulation(runAotPaperGridSimulation({ lowerPrice, upperPrice, referencePrice, investment, gridCount, mode, assumedOneWayCostPct: costPct }));
+            toast.success("Three synthetic paths completed locally. No broker or market-data request was made.");
+          } catch (error) { toast.error(error instanceof Error ? error.message : "Synthetic test failed closed"); }
+        }}>Run 3-seed opening test</Button><span className="text-xs text-muted-foreground">Seeds: 101, 202, 303 · 120 bars/path · synthetic volume only</span></div>
+        {simulation && <div className="mt-4 grid gap-3 md:grid-cols-3">{simulation.map((result) => <div className="rounded-md border bg-background/40 p-3" key={result.seed}><div className="font-semibold">Seed {result.seed}</div><div className="mt-2 space-y-1 text-sm text-muted-foreground"><div>Train / hold-out: {result.trainBars} / {result.holdoutBars} bars</div><div>Fill candidates: {result.trainFillCandidates} / {result.holdoutFillCandidates}</div><div>Opening inventory reserve: {result.requiredOpeningInventoryShares} shares</div></div></div>)}</div>}
       </Panel>
       <Panel title="AOT paper ladder" subtitle="All quantities are rounded down to whole 100-share board lots.">
         {preview.rows.length === 0 ? <div className="py-8 text-sm text-muted-foreground">Fix the paper parameters to generate a compliant preview.</div> : <div className="overflow-x-auto"><table className="w-full min-w-[760px] text-sm"><thead className="border-b text-left text-xs uppercase text-muted-foreground"><tr>{["Grid", "Side", "Price", "Shares", "Notional", "Est. one-way cost", "Est. cycle net", "Status"].map((heading) => <th className="p-2" key={heading}>{heading}</th>)}</tr></thead><tbody>{preview.rows.map((row) => <tr className="border-b border-border/50" key={`${row.grid}-${row.side}`}><td className="p-2 font-mono">{row.grid}</td><td className="p-2"><Badge variant="outline" className={row.side === "BUY" ? "border-positive/40 text-positive" : "border-warning/40 text-warning"}>{row.side}</Badge></td><td className="p-2 font-mono">฿{row.price}</td><td className="p-2 font-mono">{row.quantity}</td><td className="p-2">{thb(row.quoteValue)}</td><td className="p-2">{thb(row.estimatedFee)}</td><td className="p-2 text-positive">{thb(row.estimatedNetProfit)}</td><td className="p-2"><Badge variant="secondary">PREVIEW</Badge></td></tr>)}</tbody></table></div>}
