@@ -100,7 +100,8 @@ class BinanceSpotReadOnlyConnector:
                  portfolio_id: str, symbols: tuple[str, ...],
                  reporting_asset: str = "USDT", strategy_id: str | None = None,
                  transport: BinanceTransport | None = None,
-                 fee_converter: Callable[[str, float, datetime], float] | None = None):
+                 fee_converter: Callable[[str, float, datetime], float] | None = None,
+                 capital_fx: Callable[[str, float, datetime], float] | None = None):
         self.credentials = credentials
         self.account_id = account_id
         self.portfolio_id = portfolio_id
@@ -109,6 +110,7 @@ class BinanceSpotReadOnlyConnector:
         self.strategy_id = strategy_id
         self.transport = transport or UrllibBinanceTransport()
         self.fee_converter = fee_converter
+        self.capital_fx = capital_fx
 
     def _signed(self, params: Mapping[str, str]) -> dict[str, str]:
         values = dict(params)
@@ -145,6 +147,32 @@ class BinanceSpotReadOnlyConnector:
             params["startTime"] = cursor
         return params
 
+    def _capital_amount(self, coin: str, amount: float,
+                        occurred_at: datetime) -> tuple[float, dict[str, str]]:
+        """Value a capital flow in the reporting asset.
+
+        A reporting-asset flow passes through unchanged. A foreign-asset flow is
+        converted with the operator-approved ``capital_fx`` policy and the
+        original asset, amount and applied rate are recorded in metadata for
+        audit. Without an approved policy a foreign flow fails closed so cash can
+        never be silently mis-valued.
+        """
+        if coin == self.reporting_asset:
+            return float(amount), {}
+        if self.capital_fx is None:
+            raise ValueError(
+                f"non-reporting capital asset {coin}; "
+                f"multi-currency capital flows are out of scope until FX policy exists")
+        reporting = self.capital_fx(coin, float(amount), occurred_at)
+        if reporting <= 0:
+            raise ValueError(f"approved capital FX for {coin} must be positive")
+        rate = reporting / float(amount) if amount else 0.0
+        return float(reporting), {
+            "original_asset": coin,
+            "original_amount": repr(float(amount)),
+            "fx_rate": repr(rate),
+        }
+
     def _sync_deposits(self, cursor: str | None) -> list[LedgerEvent]:
         raw = self._get("/sapi/v1/capital/deposit/hisrec", self._capital_params(cursor))
         if not isinstance(raw, list):
@@ -155,14 +183,11 @@ class BinanceSpotReadOnlyConnector:
             status = int(item.get("status", -1))
             if status not in self._DEPOSIT_OK:
                 continue
-            if coin != self.reporting_asset:
-                raise ValueError(
-                    f"non-reporting deposit asset {coin}; "
-                    f"multi-currency capital flows are out of scope until FX policy exists")
             deposit_id = str(item["id"])
-            amount = float(item["amount"])
             occurred_at = datetime.fromtimestamp(
                 int(item["insertTime"]) / 1000, tz=timezone.utc)
+            amount, metadata = self._capital_amount(
+                coin, float(item["amount"]), occurred_at)
             events.append(LedgerEvent.cash_event(
                 event_id=f"binance:deposit:{deposit_id}",
                 external_id=f"binance:deposit:{deposit_id}",
@@ -171,7 +196,7 @@ class BinanceSpotReadOnlyConnector:
                 portfolio_id=self.portfolio_id, strategy_id=self.strategy_id,
                 cash_amount=amount,
                 source_ref=str(item.get("txId") or deposit_id),
-                occurred_at=occurred_at))
+                occurred_at=occurred_at, metadata=metadata))
         return events
 
     def _sync_withdrawals(self, cursor: str | None) -> list[LedgerEvent]:
@@ -184,10 +209,6 @@ class BinanceSpotReadOnlyConnector:
             status = int(item.get("status", -1))
             if status not in self._WITHDRAW_OK:
                 continue
-            if coin != self.reporting_asset:
-                raise ValueError(
-                    f"non-reporting withdraw asset {coin}; "
-                    f"multi-currency capital flows are out of scope until FX policy exists")
             withdraw_id = str(item["id"])
             amount = float(item["amount"])
             fee = float(item.get("transactionFee", 0.0) or 0.0)
@@ -200,15 +221,53 @@ class BinanceSpotReadOnlyConnector:
             else:
                 occurred_at = datetime.strptime(
                     str(apply_time), "%Y-%m-%d %H:%M:%S").replace(tzinfo=timezone.utc)
+            reporting_amount, metadata = self._capital_amount(
+                coin, amount + fee, occurred_at)
             events.append(LedgerEvent.cash_event(
                 event_id=f"binance:withdraw:{withdraw_id}",
                 external_id=f"binance:withdraw:{withdraw_id}",
                 event_type=EventType.TRANSFER,
                 platform=self.platform, account_id=self.account_id,
                 portfolio_id=self.portfolio_id, strategy_id=self.strategy_id,
-                cash_amount=-(amount + fee),
+                cash_amount=-reporting_amount,
                 source_ref=str(item.get("txId") or withdraw_id),
-                occurred_at=occurred_at))
+                occurred_at=occurred_at, metadata=metadata))
+        return events
+
+    def _sync_dividends(self, cursor: str | None) -> list[LedgerEvent]:
+        """Import Spot distribution income (airdrops, launchpool, referral rebates).
+
+        Binance returns these as asset-dividend rows. A reporting-asset payout is
+        recorded at face value; a foreign-asset payout is valued with the approved
+        ``capital_fx`` policy and otherwise fails closed. All rows land in the
+        carry-P/L bucket as REBATE income, never as a capital TRANSFER.
+        """
+        raw = self._get("/sapi/v1/asset/assetDividend", self._capital_params(cursor))
+        if not isinstance(raw, dict):
+            raise ValueError("Binance asset-dividend response must be an object")
+        rows = raw.get("rows", [])
+        if not isinstance(rows, list):
+            raise ValueError("Binance asset-dividend rows must be a list")
+        events: list[LedgerEvent] = []
+        for item in rows:
+            coin = str(item.get("asset", ""))
+            dividend_id = str(item["id"])
+            occurred_at = datetime.fromtimestamp(
+                int(item["divTime"]) / 1000, tz=timezone.utc)
+            amount, metadata = self._capital_amount(
+                coin, float(item["amount"]), occurred_at)
+            info = item.get("enInfo")
+            if info:
+                metadata = {**metadata, "info": str(info)}
+            events.append(LedgerEvent.cash_event(
+                event_id=f"binance:dividend:{dividend_id}",
+                external_id=f"binance:dividend:{dividend_id}",
+                event_type=EventType.REBATE,
+                platform=self.platform, account_id=self.account_id,
+                portfolio_id=self.portfolio_id, strategy_id=self.strategy_id,
+                cash_amount=amount,
+                source_ref=str(item.get("tranId") or dividend_id),
+                occurred_at=occurred_at, metadata=metadata))
         return events
 
     def sync(self, cursor: str | None = None) -> ConnectorSync:
@@ -247,5 +306,6 @@ class BinanceSpotReadOnlyConnector:
 
         events.extend(self._sync_deposits(cursor))
         events.extend(self._sync_withdrawals(cursor))
+        events.extend(self._sync_dividends(cursor))
         return ConnectorSync(self.platform, self.account_id, datetime.now(timezone.utc),
                              newest, balances, tuple(events))

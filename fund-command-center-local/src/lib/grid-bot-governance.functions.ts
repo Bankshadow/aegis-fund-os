@@ -3,9 +3,15 @@ import { getRequest } from "@tanstack/react-start/server";
 import { z } from "zod";
 import { GridBotRepository, type D1DatabaseLike } from "./grid-bot-repository";
 import { verifyGovernanceChains } from "./grid-bot-governance";
-import { cancelTestnetOrder, OrphanedTestnetOrdersError, placeTestnetGrid } from "./binance-testnet-execution";
+import {
+  cancelTestnetOrder,
+  OrphanedTestnetOrdersError,
+  placeSingleTestnetOrder,
+  placeTestnetGrid,
+} from "./binance-testnet-execution";
 import { projectGridCycleProfit, projectedGridProfitTotal } from "./grid-profit";
 import { getBinanceTestnetGridStatus } from "./binance-testnet.server";
+import { planGridReconciliation } from "./grid-runtime";
 
 type CloudflareRequest = Request & {
   runtime?: { cloudflare?: { env?: { GOVERNANCE_DB?: D1DatabaseLike } } };
@@ -173,6 +179,83 @@ export const startBinanceTestnetGridBot = createServerFn({ method: "POST" })
       if (orphaned.length > 0) throw new OrphanedTestnetOrdersError(error, orphaned);
       throw error;
     }
+  });
+
+/**
+ * One iteration of the grid runtime loop: poll the exchange, mark filled and
+ * externally-cancelled ledger orders, and place the paired replenishment order
+ * for each fill so the grid keeps cycling. Restricted to a RUNNING Binance Spot
+ * Testnet BTCUSDT bot and fail-closed on identity. A replenishment placement
+ * that fails leaves its source fill un-terminal so the next poll retries it,
+ * and the error is surfaced only after the ledger is made consistent.
+ */
+export const syncBinanceTestnetGridBot = createServerFn({ method: "POST" })
+  .validator(z.object({ botId: z.string().min(1), actorId: z.string().trim().min(1).optional() }))
+  .handler(async ({ data }) => {
+    const repo = repository();
+    const actorId = actorIdentity(data.actorId);
+    const bot = await repo.getBot(data.botId);
+    if (!bot || bot.environment !== "BINANCE_TESTNET" || bot.pair !== "BTCUSDT")
+      throw new Error("Binance Spot Testnet bot not found");
+    if (bot.runtimeState !== "RUNNING") throw new Error("Only a RUNNING bot can reconcile grid fills");
+
+    const [orders, remote] = await Promise.all([
+      repo.listOrders(bot.id),
+      getBinanceTestnetGridStatus("BTCUSDT"),
+    ]);
+    const plan = await planGridReconciliation(
+      bot.id,
+      orders,
+      remote.openOrders.map((order) => ({ clientOrderId: order.clientOrderId, status: order.status })),
+      remote.trades.map((trade) => ({ exchangeOrderId: String(trade.orderId) })),
+    );
+
+    const targetedSources = new Set(plan.replenishments.map((item) => item.sourceClientOrderId));
+    const placedSources = new Set<string>();
+    const placements: Array<{
+      clientOrderId: string; exchangeOrderId: string; side: "BUY" | "SELL";
+      price: string; quantity: string; gridIndex: number; status: string;
+    }> = [];
+    let placementError: unknown = null;
+    for (const replenishment of plan.replenishments) {
+      try {
+        const placed = await placeSingleTestnetOrder(bot.pair, replenishment);
+        placements.push({
+          clientOrderId: replenishment.clientOrderId,
+          exchangeOrderId: String(placed.orderId),
+          side: replenishment.side,
+          price: replenishment.price,
+          quantity: replenishment.quantity,
+          gridIndex: replenishment.gridIndex,
+          status: placed.status,
+        });
+        placedSources.add(replenishment.sourceClientOrderId);
+      } catch (error) {
+        placementError = error;
+        break;
+      }
+    }
+    // Commit a fill only if it needs no replenishment (grid boundary) or its
+    // replenishment was actually placed; otherwise leave it for the next poll.
+    const filled = plan.filled.filter(
+      (fill) => !targetedSources.has(fill.clientOrderId) || placedSources.has(fill.clientOrderId),
+    );
+    const result = await repo.recordGridSync(bot.id, actorId, {
+      statusUpdates: plan.statusUpdates,
+      filled,
+      reconciliationRequired: plan.reconciliationRequired,
+      placements,
+    });
+    if (placementError) throw placementError;
+    return {
+      ...result,
+      summary: {
+        filled: filled.length,
+        placed: placements.length,
+        statusUpdated: plan.statusUpdates.length,
+        reconciliationRequired: plan.reconciliationRequired.length,
+      },
+    };
   });
 
 export const stopBinanceTestnetGridBot = createServerFn({ method: "POST" })

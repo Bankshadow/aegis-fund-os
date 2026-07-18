@@ -7,7 +7,7 @@ import {
   type GovernanceEvent,
   type GovernanceState,
   type RuntimeState,
-} from "./grid-bot-governance";
+} from "./grid-bot-governance.ts";
 
 export interface D1Result<T = unknown> {
   success: boolean;
@@ -120,7 +120,11 @@ const eventFromRow = (row: AuditRow): GovernanceEvent => ({
 const id = (prefix: string) => `${prefix}-${crypto.randomUUID()}`;
 
 export class GridBotRepository {
-  constructor(private readonly db: D1DatabaseLike) {}
+  private readonly db: D1DatabaseLike;
+
+  constructor(db: D1DatabaseLike) {
+    this.db = db;
+  }
 
   async getBot(botId: string) {
     const row = await this.db
@@ -200,6 +204,111 @@ export class GridBotRepository {
     ];
     await this.db.batch(statements);
     return { bot: { ...current, runtimeState: next, version: nextVersion, updatedAt: now }, orders: await this.listOrders(botId) };
+  }
+
+  /**
+   * Persist one grid runtime reconciliation atomically: mark filled and
+   * externally-cancelled orders, apply exchange status changes, insert the
+   * paired replenishment orders under the same active execution, and append a
+   * single hash-chained `testnet.grid_synced` event. A poll that found nothing
+   * writes nothing (no empty audit noise, no version churn).
+   */
+  async recordGridSync(
+    botId: string,
+    actorId: string,
+    sync: {
+      statusUpdates: Array<{ clientOrderId: string; status: string }>;
+      filled: Array<{ clientOrderId: string }>;
+      reconciliationRequired: Array<{ clientOrderId: string }>;
+      placements: Array<{
+        clientOrderId: string;
+        exchangeOrderId: string;
+        side: "BUY" | "SELL";
+        price: string;
+        quantity: string;
+        gridIndex: number;
+        status: string;
+      }>;
+    },
+  ) {
+    const current = await this.requireBot(botId);
+    if (current.environment !== "BINANCE_TESTNET") throw new Error("Bot is not a Binance Testnet bot");
+    if (current.runtimeState !== "RUNNING") throw new Error("Only a RUNNING bot can reconcile grid fills");
+    const changeCount =
+      sync.statusUpdates.length + sync.filled.length + sync.reconciliationRequired.length + sync.placements.length;
+    if (changeCount === 0) return { bot: current, orders: await this.listOrders(botId), changed: false };
+
+    const execution = await this.db
+      .prepare("SELECT id FROM grid_bot_executions WHERE bot_id=? AND status='ACTIVE'")
+      .bind(botId)
+      .first<{ id: string }>();
+    if (!execution) throw new Error("No active Testnet execution to reconcile");
+
+    const now = new Date().toISOString();
+    const nextVersion = current.version + 1;
+    const previous = (await this.listEvents(botId)).at(-1);
+    const event = await appendGovernanceEvent(previous ? [previous] : [], {
+      eventId: id("EVT"),
+      botId,
+      eventType: "testnet.grid_synced",
+      actorId,
+      payload: {
+        filled: sync.filled.length,
+        placed: sync.placements.length,
+        statusUpdated: sync.statusUpdates.length,
+        reconciliationRequired: sync.reconciliationRequired.length,
+        environment: "BINANCE_TESTNET",
+      },
+      occurredAt: now,
+    });
+    const statements: D1Statement[] = [
+      ...sync.filled.map((order) =>
+        this.db
+          .prepare("UPDATE grid_bot_orders SET status='FILLED',updated_at=? WHERE bot_id=? AND client_order_id=?")
+          .bind(now, botId, order.clientOrderId),
+      ),
+      ...sync.reconciliationRequired.map((order) =>
+        this.db
+          .prepare("UPDATE grid_bot_orders SET status='RECONCILIATION_REQUIRED',updated_at=? WHERE bot_id=? AND client_order_id=?")
+          .bind(now, botId, order.clientOrderId),
+      ),
+      ...sync.statusUpdates.map((order) =>
+        this.db
+          .prepare("UPDATE grid_bot_orders SET status=?,updated_at=? WHERE bot_id=? AND client_order_id=?")
+          .bind(order.status, now, botId, order.clientOrderId),
+      ),
+      ...sync.placements.map((order) =>
+        this.db
+          .prepare(
+            "INSERT INTO grid_bot_orders (id,execution_id,bot_id,symbol,exchange_order_id,client_order_id,grid_index,side,price,quantity,status,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
+          )
+          .bind(
+            id("ORD"),
+            execution.id,
+            botId,
+            current.pair,
+            order.exchangeOrderId,
+            order.clientOrderId,
+            order.gridIndex,
+            order.side,
+            order.price,
+            order.quantity,
+            order.status,
+            now,
+            now,
+          ),
+      ),
+      this.db
+        .prepare("UPDATE grid_bots SET version=?,updated_at=? WHERE id=? AND runtime_state='RUNNING' AND version=?")
+        .bind(nextVersion, now, botId, current.version),
+      this.auditInsert(event, nextVersion),
+    ];
+    await this.db.batch(statements);
+    return {
+      bot: { ...current, version: nextVersion, updatedAt: now },
+      orders: await this.listOrders(botId),
+      changed: true,
+    };
   }
 
   async recordTestnetStop(botId: string, actorId: string, statuses: Map<string, string>) {

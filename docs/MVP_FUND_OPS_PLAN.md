@@ -18,7 +18,15 @@
 - **Spot deposit/withdraw sync** → `EventType.TRANSFER` (`/sapi/v1/capital/deposit/hisrec`,
   `/sapi/v1/capital/withdraw/history`); non-reporting capital flows fail-closed
 - **USDⓈ-M Futures funding sync** → `EventType.FUNDING` (`/fapi/v1/income`,
-  `incomeType=FUNDING_FEE`) ใน account scope แยกจาก Spot
+  `incomeType=FUNDING_FEE`) ใน account scope แยกจาก Spot; รวม collateral
+  `TRANSFER` และ USDⓈ-M `userTrades` → `DERIVATIVE_FILL`
+- **Spot distribution income sync** → `EventType.REBATE`
+  (`/sapi/v1/asset/assetDividend`; launchpool/airdrop/referral) เข้า carry-P/L
+  bucket ไม่ใช่ capital transfer (2026-07-18)
+- **Multi-currency capital FX policy** (2026-07-18): deposit/withdraw/dividend
+  ที่ไม่ใช่ reporting asset แปลงด้วย `capital_fx` mark ที่ผู้อนุมัติ แล้วบันทึก
+  `original_asset/original_amount/fx_rate` ใน metadata; ไม่มี mark → fail-closed
+  เหมือนเดิม. CLI ใช้ `--mark` ชุดเดียวเป็นทั้ง fee converter และ capital FX
 - reconciliation สำหรับ spot inventory เทียบกับยอดแพลตฟอร์ม; mismatch จะทำให้ report เป็น `provisional`
 - reporting-currency cash ledger: deposits/withdrawals, fills, fees, funding และ adjustments
   มีผลต่อยอด cash แต่ transfer ไม่ถูกนับเป็น performance P/L
@@ -28,10 +36,13 @@
 ## งานหลัง MVP ตามลำดับ
 
 1. ~~เพิ่ม Binance funding/transfers และ fee conversion ที่อ้างอิง price source ที่อนุมัติ~~
-   **บางส่วนเสร็จ (2026-07-15):** fee conversion + Spot TRANSFER sync
-   **เสร็จเพิ่ม:** USDⓈ-M Futures funding sync
-   **ยังค้าง:** derivatives fills/positions และ collateral transfers
-2. ขยาย ledger เป็น derivatives, FX และ multi-currency พร้อม valuation policy
+   **เสร็จ (2026-07-15 → 07-18):** fee conversion + Spot TRANSFER sync,
+   USDⓈ-M Futures funding + collateral transfer + derivatives fills,
+   Spot distribution income และ multi-currency capital FX policy
+2. ~~ขยาย ledger เป็น derivatives, FX และ multi-currency พร้อม valuation policy~~
+   **เสร็จ:** derivatives fills/positions, `ApprovedFxValuation` สำหรับ balances,
+   และ capital FX สำหรับ transfer/income. **ยังค้าง:** persisted derivatives
+   position valuation แบบ end-to-end เข้า daily-close
 3. เพิ่ม reconciliation ของ cash/fills และ exception review/approval persistence
 4. เพิ่ม NAV, TWR/MWR, benchmark, strategy attribution และ reporting-period lock
 5. ต่อ dashboard เข้ากับ service ภายในที่อ่านจาก SQLite เท่านั้น ไม่เรียก platform ใน browser

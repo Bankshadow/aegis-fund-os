@@ -32,7 +32,8 @@ def fill(event_id="fill-1", side="buy", quantity=1.0, price=100.0):
 class FakeBinanceTransport:
     """Minimal Binance GET stub for Spot account, trades, and capital history."""
 
-    def __init__(self, *, trades=None, deposits=None, withdraws=None, balances=None):
+    def __init__(self, *, trades=None, deposits=None, withdraws=None, balances=None,
+                 dividends=None):
         self.trades = trades if trades is not None else [{
             "id": 77, "orderId": 88, "time": 1784073600000, "isBuyer": True,
             "qty": "1", "price": "100", "commission": "0.1",
@@ -40,6 +41,7 @@ class FakeBinanceTransport:
         }]
         self.deposits = deposits if deposits is not None else []
         self.withdraws = withdraws if withdraws is not None else []
+        self.dividends = dividends if dividends is not None else []
         self.balances = balances if balances is not None else [
             {"asset": "BTC", "free": "1.0", "locked": "0"},
             {"asset": "USDT", "free": "100", "locked": "0"},
@@ -57,6 +59,8 @@ class FakeBinanceTransport:
             return list(self.deposits)
         if path == "/sapi/v1/capital/withdraw/history":
             return list(self.withdraws)
+        if path == "/sapi/v1/asset/assetDividend":
+            return {"rows": list(self.dividends), "total": len(self.dividends)}
         raise AssertionError(f"unexpected path {path}")
 
 
@@ -206,7 +210,65 @@ class FundMvpWeeksTwoToEightTests(unittest.TestCase):
             portfolio_id="main", symbols=("BTCUSDT",), transport=transport)
         with self.assertRaises(ValueError) as ctx:
             connector.sync()
-        self.assertIn("non-reporting deposit asset BTC", str(ctx.exception))
+        self.assertIn("non-reporting capital asset BTC", str(ctx.exception))
+
+    def test_binance_non_reporting_capital_uses_approved_fx(self):
+        transport = FakeBinanceTransport(
+            deposits=[{
+                "id": "dep-btc", "coin": "BTC", "amount": "0.5", "status": 1,
+                "insertTime": 1784073600000, "txId": "tx-btc",
+            }],
+            withdraws=[{
+                "id": "wd-eth", "coin": "ETH", "amount": "2",
+                "transactionFee": "0.01", "status": 6,
+                "applyTime": "2026-07-15 00:00:00", "txId": "tx-eth",
+            }],
+        )
+        rates = {"BTC/USDT": 100_000.0, "ETH/USDT": 3_000.0}
+        connector = BinanceSpotReadOnlyConnector(
+            BinanceReadOnlyCredentials("key", "secret"), account_id="acct-1",
+            portfolio_id="main", symbols=("BTCUSDT",), transport=transport,
+            capital_fx=lambda asset, amount, when: amount * rates[f"{asset}/USDT"])
+        sync = connector.sync()
+        by_id = {e.external_id: e for e in sync.events}
+        deposit = by_id["binance:deposit:dep-btc"]
+        self.assertEqual(deposit.event_type, EventType.TRANSFER)
+        self.assertAlmostEqual(deposit.cash_amount, 50_000.0)  # 0.5 BTC * 100k
+        self.assertEqual(deposit.metadata["original_asset"], "BTC")
+        withdraw = by_id["binance:withdraw:wd-eth"]
+        self.assertAlmostEqual(withdraw.cash_amount, -6_030.0)  # (2 + 0.01) ETH * 3k
+
+    def test_binance_syncs_reporting_dividend_as_rebate(self):
+        transport = FakeBinanceTransport(dividends=[{
+            "id": "div-1", "asset": "USDT", "amount": "12.5",
+            "divTime": 1784073600000, "tranId": "tran-1", "enInfo": "Launchpool",
+        }])
+        connector = BinanceSpotReadOnlyConnector(
+            BinanceReadOnlyCredentials("key", "secret"), account_id="acct-1",
+            portfolio_id="main", symbols=("BTCUSDT",), transport=transport)
+        sync = connector.sync()
+        rebates = [e for e in sync.events if e.event_type is EventType.REBATE]
+        self.assertEqual(len(rebates), 1)
+        self.assertAlmostEqual(rebates[0].cash_amount, 12.5)
+        self.assertEqual(rebates[0].external_id, "binance:dividend:div-1")
+        # carry income lifts net P/L but is not a capital transfer
+        ledger = AppendOnlyLedger()
+        for event in sync.events:
+            ledger.append(event)
+        snap = ledger.snapshot({})
+        self.assertAlmostEqual(snap.carry_pnl, 12.5)
+
+    def test_binance_foreign_dividend_fails_closed_without_fx(self):
+        transport = FakeBinanceTransport(dividends=[{
+            "id": "div-2", "asset": "BNB", "amount": "0.3",
+            "divTime": 1784073600000, "tranId": "tran-2",
+        }])
+        connector = BinanceSpotReadOnlyConnector(
+            BinanceReadOnlyCredentials("key", "secret"), account_id="acct-1",
+            portfolio_id="main", symbols=("BTCUSDT",), transport=transport)
+        with self.assertRaises(ValueError) as ctx:
+            connector.sync()
+        self.assertIn("non-reporting capital asset BNB", str(ctx.exception))
 
     def test_binance_transfer_events_are_idempotent_in_store(self):
         transport = FakeBinanceTransport(deposits=[{

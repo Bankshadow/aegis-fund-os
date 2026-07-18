@@ -130,8 +130,13 @@
   signals already failed standalone (E17, E18) and no new mechanism was
   proposed. Reopening requires a mechanism-level hypothesis per
   `docs/VALIDATION_LOG.md` § D1. Effort pivots to fund-ops ledger.
-- Fund ops: Spot fee conversion + TRANSFER sync done (2026-07-15). Still missing
-  futures/Spot income → `EventType.FUNDING`; multi-currency capital FX policy.
+- ~~Fund ops: Spot fee conversion + TRANSFER sync done (2026-07-15). Still missing
+  futures/Spot income → `EventType.FUNDING`; multi-currency capital FX policy.~~
+  **CLOSED (2026-07-18)**: futures FUNDING_FEE/TRANSFER/fills were already synced;
+  added Spot distribution income (`/sapi/v1/asset/assetDividend` → `REBATE` carry)
+  and a fail-closed `capital_fx` policy so foreign-asset deposits/withdrawals/
+  dividends convert via operator-approved marks (audit metadata records original
+  asset/amount/rate) instead of hard-failing. CLI reuses `--mark` as the FX policy.
 
 ## Lessons learned
 
@@ -199,6 +204,68 @@
   confirming DNS/network access from the actual host.
 
 ## Last session
+
+- Built the grid-bot runtime loop — fill tracking + replenishment (2026-07-19,
+  Task 4). New pure planner `src/lib/grid-runtime.ts::planGridReconciliation`
+  reconciles the durable order ledger against the exchange's open orders and
+  trades: a filled BUY plans a SELL one grid line up, a filled SELL plans a BUY
+  one line down (same base qty), boundary fills place nothing, orders missing
+  with no matching trade are flagged RECONCILIATION_REQUIRED, and replenishment
+  clientOrderIds are deterministic so a replayed poll never double-places.
+  Added `placeSingleTestnetOrder` (execution module), repository
+  `recordGridSync` (atomic: FILLED/reconciliation/status updates + paired-order
+  inserts under the active execution + one hash-chained `testnet.grid_synced`
+  event + version bump; a no-change poll writes nothing), and governed server fn
+  `syncBinanceTestnetGridBot` (RUNNING BTCUSDT BINANCE_TESTNET only, fail-closed
+  identity; a failed replenishment placement leaves its source fill un-terminal
+  for the next poll and rethrows only after the ledger is consistent). Wired a
+  human-triggered "Reconcile fills" button on the grid-profit route (shows only
+  for a RUNNING testnet bot). Refactored `GridBotRepository` constructor off a
+  TS parameter property and gave its governance import a `.ts` extension so the
+  class is loadable under `node --test`. Added 12 tests (8 planner, 4
+  repository); frontend suite 39/39, TypeScript clean, production build and
+  `gate/verify.ps1` (SHIP) pass. Browser check on local wrangler confirmed the
+  button renders for the seeded RUNNING testnet bot and the click invokes the
+  server fn (it then reaches out to testnet.binance.vision and fails closed
+  without credentials). NOTE: no automatic cron/Durable Object was added — the
+  loop is deliberately human-triggered per iteration; an always-on scheduler is
+  an unmade governance decision. Full fill→replenish E2E still needs a live
+  testnet bot with real fills.
+
+- Task 2 (production four-eyes approval + Testnet start) NOT executed by the
+  agent (2026-07-19): it requires an Email-OTP login to Cloudflare Access as the
+  second identity (`bankshadow31@gmail.com`) and a human maker/checker approval
+  + start — both are prohibited agent actions (entering credentials / completing
+  authentication, and executing a governed start). Readiness is in place:
+  Access policy `Allow Aegis Maker and Checker` already lists both identities,
+  and production mutation handlers fail closed without verified `cf-access-*`
+  headers. Runbook for the user: (1) sign in to
+  `aegis-fund-os.bankshadow30.workers.dev` as bankshadow31, (2) open a
+  PENDING_APPROVAL BINANCE_TESTNET bot in `/approvals` and approve it as the
+  independent checker (maker != checker enforced), (3) Start it from `/bots`,
+  (4) use the new "Reconcile fills" button on the bot's Grid Profit page to
+  drive each loop iteration and watch fills → replenishments. This also
+  exercises the orphaned-fill handling deployed 2026-07-17.
+
+- Closed the fund-ops income + multi-currency FX gap (2026-07-18). Verified
+  futures already synced FUNDING_FEE income, collateral TRANSFER and USDⓈ-M
+  fills. Added to the Spot connector: (1) `_sync_dividends` importing
+  `/sapi/v1/asset/assetDividend` distribution income as `EventType.REBATE`
+  carry (launchpool/airdrop/referral), and (2) a fail-closed `capital_fx`
+  policy — deposits, withdrawals and dividends in a non-reporting asset now
+  convert to the reporting currency via operator-approved marks and record
+  `original_asset/original_amount/fx_rate` in event metadata, instead of the
+  previous hard fail. No approved mark still fails closed (unchanged doctrine).
+  `LedgerEvent.cash_event` gained an optional `metadata` param. CLI wires the
+  existing `--mark` table as the capital FX policy (same approved marks, no new
+  flags). Added 3 tests (approved-FX capital, reporting dividend → REBATE,
+  foreign dividend fail-closed) and updated one changed error-message
+  assertion. Fund-ops discovery 35/35, strategy 25/25, eval gate SHIP,
+  `gate/verify.ps1` exits 0. No order/execution surface added. Task-5 triage:
+  Bybit testnet base URL `https://api-testnet.bybit.com` is the correct
+  official endpoint (STATE's earlier failure was this machine's DNS, not a
+  code bug); Rebalancing card is intentionally fail-closed; Workers R2 snapshot
+  reader remains infra work — none are code defects.
 
 - Rewrote `/audit` to use the real governance hash chain (2026-07-17). It
   previously rendered the `AUDIT_EVENTS` fixture (22 fabricated rows) yet

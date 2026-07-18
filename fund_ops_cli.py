@@ -62,10 +62,12 @@ def main(argv: list[str] | None = None) -> int:
     if args.source == "spot":
         fee_converter = ApprovedMarksFeeConverter(
             marks, reporting_asset=args.reporting_asset)
+        # The same approved marks value any foreign capital flow or distribution
+        # income; missing a mark still fails closed inside the converter.
         connector = BinanceSpotReadOnlyConnector(
             credentials, account_id=args.account_id, portfolio_id=args.portfolio_id,
             symbols=tuple(args.symbol), reporting_asset=args.reporting_asset,
-            fee_converter=fee_converter)
+            fee_converter=fee_converter, capital_fx=fee_converter)
     else:
         connector = BinanceUsdmFundingReadOnlyConnector(
             credentials, account_id=args.account_id, portfolio_id=args.portfolio_id,

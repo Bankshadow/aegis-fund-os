@@ -1,7 +1,14 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
+import { useState } from "react";
+import { toast } from "sonner";
 import { AppShell, PageHeader, Panel } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
-import { getGridBotGovernance, getGridBotOrders, getGridBotTestnetStatus } from "@/lib/grid-bot-governance.functions";
+import {
+  getGridBotGovernance,
+  getGridBotOrders,
+  getGridBotTestnetStatus,
+  syncBinanceTestnetGridBot,
+} from "@/lib/grid-bot-governance.functions";
 import { projectGridCycleProfit, projectedGridProfitTotal } from "@/lib/grid-profit";
 
 export const Route = createFileRoute("/bots_/$botId_/profit")({
@@ -23,8 +30,30 @@ export const Route = createFileRoute("/bots_/$botId_/profit")({
 function GridProfitPage() {
   const { bot, projections, exchangeStatus, exchangeError } = Route.useLoaderData();
   const { botId } = Route.useParams();
+  const router = useRouter();
+  const [reconciling, setReconciling] = useState(false);
   const total = projectedGridProfitTotal(projections);
-  return <AppShell><PageHeader kicker={botId} title="Grid Profit per Cycle" subtitle={bot ? `${bot.name} ยท fee-aware Testnet projection` : "Bot not found"} actions={<Button variant="outline" asChild><Link to="/bots/$botId" params={{ botId }}>Bot detail</Link></Button>} />
+  // The grid runtime loop is human-triggered here: one click polls the exchange,
+  // marks fills, and places the paired replenishment orders that keep the grid
+  // cycling. It fails closed on a non-RUNNING bot and appends a durable event.
+  const canReconcile = bot?.environment === "BINANCE_TESTNET" && bot.runtimeState === "RUNNING";
+  const reconcile = async () => {
+    setReconciling(true);
+    try {
+      const result = await syncBinanceTestnetGridBot({ data: { botId, actorId: "local-operator@aegis" } });
+      toast.success(
+        result.changed
+          ? `Reconciled: ${result.summary.filled} filled, ${result.summary.placed} replenished, ${result.summary.reconciliationRequired} to review.`
+          : "No grid change since last poll.",
+      );
+      await router.invalidate();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Grid reconciliation failed closed");
+    } finally {
+      setReconciling(false);
+    }
+  };
+  return <AppShell><PageHeader kicker={botId} title="Grid Profit per Cycle" subtitle={bot ? `${bot.name} ยท fee-aware Testnet projection` : "Bot not found"} actions={<div className="flex gap-2">{canReconcile && <Button disabled={reconciling} onClick={reconcile}>{reconciling ? "Reconciling..." : "Reconcile fills"}</Button>}<Button variant="outline" asChild><Link to="/bots/$botId" params={{ botId }}>Bot detail</Link></Button></div>} />
     <div className="space-y-6 p-6"><Panel title="Profit status" subtitle="Only completed and reconciled fills can become realized P/L."><div className="grid gap-3 md:grid-cols-3">
       <div className="rounded-md border p-4"><div className="text-xs text-muted-foreground">Active grid orders</div><div className="mt-1 text-2xl font-semibold">{projections.length}</div></div>
       <div className="rounded-md border p-4"><div className="text-xs text-muted-foreground">Maximum projected cycles</div><div className="mt-1 text-2xl font-semibold text-positive">{total} USDT</div></div>

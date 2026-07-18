@@ -89,12 +89,14 @@ class LedgerEvent:
                    platform: str, account_id: str, portfolio_id: str,
                    cash_amount: float, strategy_id: str | None = None,
                    source_ref: str | None = None,
-                   occurred_at: datetime | None = None) -> "LedgerEvent":
+                   occurred_at: datetime | None = None,
+                   metadata: Mapping[str, str] | None = None) -> "LedgerEvent":
         if event_type is EventType.TRADE_FILL:
             raise ValueError("use trade_fill for trade events")
         return cls(event_id, external_id, occurred_at or datetime.now(timezone.utc),
                    event_type, platform, account_id, portfolio_id, strategy_id,
-                   cash_amount=cash_amount, source_ref=source_ref)
+                   cash_amount=cash_amount, source_ref=source_ref,
+                   metadata=dict(metadata) if metadata else {})
 
 
 @dataclass(frozen=True)

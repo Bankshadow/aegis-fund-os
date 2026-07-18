@@ -11,7 +11,8 @@ export type GovernanceEventType =
   | "runtime.resumed"
   | "runtime.stopped"
   | "testnet.orders_placed"
-  | "testnet.orders_cancelled";
+  | "testnet.orders_cancelled"
+  | "testnet.grid_synced";
 
 export interface GovernedBot {
   id: string;

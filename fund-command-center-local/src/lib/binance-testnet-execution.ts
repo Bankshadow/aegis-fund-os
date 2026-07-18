@@ -173,6 +173,28 @@ export async function placeTestnetGrid(bot: BotRecord, fetcher: Fetcher = fetch)
   }
 }
 
+/**
+ * Place one GTC LIMIT replenishment order. Used by the grid runtime loop to
+ * re-arm a grid line after its paired order filled. The timestamp self-syncs per
+ * call because a sync places only a handful of orders, not a full grid.
+ */
+export async function placeSingleTestnetOrder(
+  symbol: string,
+  order: { side: "BUY" | "SELL"; price: string; quantity: string; clientOrderId: string },
+  fetcher: Fetcher = fetch,
+) {
+  return signedRequest<{ orderId: number; clientOrderId: string; status: string }>(fetcher, "POST", "/api/v3/order", {
+    symbol,
+    side: order.side,
+    type: "LIMIT",
+    timeInForce: "GTC",
+    quantity: order.quantity,
+    price: order.price,
+    newClientOrderId: order.clientOrderId,
+    newOrderRespType: "RESULT",
+  });
+}
+
 export async function cancelTestnetOrder(symbol: string, clientOrderId: string, fetcher: Fetcher = fetch) {
   return signedRequest<{ status: string }>(fetcher, "DELETE", "/api/v3/order", {
     symbol,
