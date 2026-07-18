@@ -4,6 +4,39 @@
 
 ---
 
+## 0. อ่านก่อน — สถานะสด ณ 2026-07-17 (session handoff)
+
+**⚠️ มี fix ที่ verify แล้วค้างใน working tree ยังไม่ commit และยังไม่ deploy —
+production เสิร์ฟ bundle เก่าที่มีบั๊กจริงอยู่.** งานแรกของ session ถัดไปควรเป็น
+commit + push (ขออนุญาต user ก่อน push เพราะกระทบ production public) แล้วปล่อยทั้งชุด:
+
+Deploy queue (ทุกตัว: tsc สะอาด · frontend tests 27/27 · build ผ่าน · gate SHIP):
+
+1. Orphaned-fill rollback — `placeTestnetGrid` + `startBinanceTestnetGridBot`
+   โยน `OrphanedTestnetOrdersError` แทนกลืน error เมื่อ cancel ล้ม (fill แล้ว)
+2. N+1 serverTime — sync `/api/v3/time` ครั้งเดียวต่อการวางกริด
+3. **Route un-nesting** — `bots_.$botId_.orders.tsx` / `_.events.tsx`
+   (เดิม nested ใต้ detail ที่ไม่มี `<Outlet/>` → สองหน้านี้เข้าไม่ถึงบน prod)
+4. Toast เมื่อ Save Draft ยังไม่ติ๊ก risk ack (`bots_.new.tsx`)
+5. Route titles ให้ bot detail / orders / events
+6. **`/audit` ใช้ hash chain จริง** — เลิกโชว์ "verified" ปลอมจาก `AUDIT_EVENTS`
+   fixture (ลบ fixture แล้ว); + แก้ latent type bug `profitByBot` ใน `bots.tsx`
+
+**ยังไม่ทำ (แนะนำทำในชุด deploy เดียวกัน):**
+- หน้า Bot Audit Events ต่อบอท (`/bots/$botId/events`) ยังทิ้ง `event.payload`
+  ทั้งหมด — ย้าย pattern payload+hash จาก `/audit` ที่เพิ่งทำมาใช้
+- TOCTOU: re-check balance ก่อนวางแต่ละออเดอร์ (execution slice, ข้อ 4 ของ audit)
+
+**สถานะ auth:** production กลับมาอยู่หลัง Cloudflare Access แล้ว (ทุก route redirect
+ไป Email-OTP) — ช่องโหว่ public-access เดิมดูเหมือนถูกแก้แล้ว. ทดสอบ prod ตรงๆ
+ไม่ได้ ให้ใช้ local `wrangler dev` + local D1 (migrations 0001–0003 apply ไว้แล้ว).
+launch.json มี `fund-command-center` (vite) และ `fund-command-center-worker`
+(wrangler :8787).
+
+รายละเอียดเต็มของสิ่งที่ทำ: `docs/WORKLOG_2026-07-17.md` + `STATE.md` (Last session).
+
+---
+
 ## 1. เป้าหมายใหม่
 
 เปลี่ยนจาก research engine อย่างเดียว ไปสู่ **multi-platform trading operations**
@@ -23,12 +56,15 @@ execution หรือ reporting ทุกครั้ง
 
 ---
 
-## 3. สถานะปัจจุบัน (v3.19 / E25, 2026-07-15)
+## 3. สถานะปัจจุบัน (v3.19 / D1, 2026-07-17)
 
 **แนะนำ (วิจัยสาย A)**: Dual 75/25 **rule-based** + percentile-rank regime  
-**สาย B**: `dual_pct` wired; จูนแล้ว (E23–E25) แต่ **ยังแพ้ cash** — E23 ดีสุด (−0.0078)  
+**สาย B**: 🔒 **default = cash (D1, 2026-07-17)** — dual จูนครบทุก candidate ที่ประกาศ
+(E21–E25) แล้วยังแพ้ cash; ปิดสาย dual tuning จนกว่ามีสมมติฐานระดับกลไกใหม่
+(เงื่อนไขใน `VALIDATION_LOG.md` § D1)  
 **ไม่แนะนำ**: RL เป็น default; `require_edge` อย่างเดียว; ลดเกณฑ์ ValidationGate;
-แยก short_cfg เป็น default (E24 แย่กว่า); conservative-only search (E25 ยัง < 0)
+แยก short_cfg เป็น default (E24 แย่กว่า); conservative-only search (E25 ยัง < 0);
+reuse funding/relative (E17/E18 fail เดี่ยวทั้งคู่) โดยไม่มีกลไกใหม่
 
 | # | ผลสั้นๆ |
 |---|---|
@@ -42,8 +78,8 @@ execution หรือ reporting ทุกครั้ง
 
 ## 4. งานที่ควรทำต่อ
 
-1. Dual Line-B: geometry-only (E23–E25) หมดแรงแล้ว — ทดลองสมมติฐานใหม่ที่ประกาศก่อนรัน
-   (เช่น funding/relative A/B) หรือยอมรับ cash เป็น default สาย B แล้วหันไป fund-ops
+1. ~~Dual Line-B~~ **ปิดแล้ว (D1)** — cash คือ default สาย B; อย่ากลับมาจูน dual
+   เว้นแต่มีสมมติฐานระดับกลไกใหม่ที่ผ่านเงื่อนไข D1; แรงหลักไป fund-ops (ข้อ 3)
 2. ถ้ากลับมาทำ RL: เปลี่ยนสมมติฐาน (state/reward) แล้ว walk-forward ใหม่
 3. **Fund-ops (ลำดับปัจจุบัน):** Spot fee conversion + TRANSFER sync และ USDⓈ-M
    funding sync เสร็จแล้ว — ถัดไป derivatives fills/positions + collateral transfer

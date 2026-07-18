@@ -6,6 +6,14 @@
     "binding": "ASSETS",
     "directory": ".output/public"
   },
+  "d1_databases": [
+    {
+      "binding": "GOVERNANCE_DB",
+      "database_name": "aegis-fund-os-governance",
+      "database_id": "74c0d2d0-315a-4cbc-8ee1-0d1fc26db951",
+      "migrations_dir": "migrations"
+    }
+  ],
   "compatibility_date": "2026-07-15",
   "compatibility_flags": ["nodejs_compat"],
   "observability": {

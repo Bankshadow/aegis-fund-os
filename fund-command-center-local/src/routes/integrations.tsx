@@ -22,6 +22,7 @@ import { toast } from "sonner";
 
 export const Route = createFileRoute("/integrations")({
   head: () => ({ meta: [{ title: "Integrations · Aegis Fund OS" }] }),
+  loader: () => testBinanceTestnetConnection(),
   component: IntegrationsPage,
 });
 
@@ -124,12 +125,34 @@ function statusClass(status: Adapter["status"]) {
   return "border-border text-muted-foreground";
 }
 
+function withBinanceProbe(
+  adapters: Adapter[],
+  result: Awaited<ReturnType<typeof testBinanceTestnetConnection>>,
+) {
+  return adapters.map((adapter) =>
+    adapter.id === "ADP-001"
+      ? {
+          ...adapter,
+          status: (result.status === "connected"
+            ? "Healthy"
+            : result.status === "needs_credentials"
+              ? "Needs credentials"
+              : "Degraded") as Adapter["status"],
+          freshness: result.latencyMs === null ? "Unavailable" : `${result.latencyMs}ms probe`,
+        }
+      : adapter,
+  );
+}
+
 function IntegrationsPage() {
-  const [adapters, setAdapters] = useState(initialAdapters);
+  const initialBinanceResult = Route.useLoaderData();
+  const [adapters, setAdapters] = useState(() =>
+    withBinanceProbe(initialAdapters, initialBinanceResult),
+  );
   const [testing, setTesting] = useState<string | null>(null);
   const [binanceResult, setBinanceResult] = useState<Awaited<
     ReturnType<typeof testBinanceTestnetConnection>
-  > | null>(null);
+  > | null>(initialBinanceResult);
   const [hyperliquidResult, setHyperliquidResult] = useState<Awaited<
     ReturnType<typeof testHyperliquidConnection>
   > | null>(null);
@@ -151,23 +174,7 @@ function IntegrationsPage() {
       try {
         const result = await testBinanceConnection();
         setBinanceResult(result);
-        setAdapters((items) =>
-          items.map((item) =>
-            item.id === adapter.id
-              ? {
-                  ...item,
-                  status:
-                    result.status === "connected"
-                      ? "Healthy"
-                      : result.status === "needs_credentials"
-                        ? "Needs credentials"
-                        : "Degraded",
-                  freshness:
-                    result.latencyMs === null ? "Unavailable" : `${result.latencyMs}ms probe`,
-                }
-              : item,
-          ),
-        );
+        setAdapters((items) => withBinanceProbe(items, result));
         if (result.status === "connected") {
           toast.success("Binance Spot Testnet authenticated in read-only mode");
         } else if (result.status === "needs_credentials") {

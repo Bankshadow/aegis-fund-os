@@ -1,350 +1,328 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { AppShell, PageHeader, Panel } from "@/components/app-shell";
 import { MetricCard, fmtMoney } from "@/components/metric-card";
 import { SafetyBanner } from "@/components/safety-banner";
+import { BotStateBadge, EnvironmentBadge } from "@/components/bots/bot-status";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Bot, CirclePause, CirclePlay, LockKeyhole, Search, ShieldX } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  getGridBotGovernance,
+  startBinanceTestnetGridBot,
+  stopBinanceTestnetGridBot,
+  transitionGridBotRuntime,
+} from "@/lib/grid-bot-governance.functions";
+import type { RuntimeState } from "@/lib/grid-bot-governance";
+import type { BotRecord } from "@/lib/grid-bot-repository";
+import { Bot, ChartNoAxesCombined, CircleDollarSign, Clock3, Landmark, Plus, ShieldCheck, StopCircle } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/bots")({
-  head: () => ({ meta: [{ title: "Bots & Orders · Aegis Fund OS" }] }),
-  component: BotsPage,
+  head: () => ({ meta: [{ title: "Grid Bot Cockpit · Aegis Fund OS" }] }),
+  loader: async () => {
+    try {
+      return { ...(await getGridBotGovernance()), storageAvailable: true as const, error: "" };
+    } catch (error) {
+      return {
+        bots: [],
+        events: [],
+        profitByBot: {} as Record<string, { orderCount: number; estimatedCycleProfit: string }>,
+        auditValid: false,
+        storageAvailable: false as const,
+        error: error instanceof Error ? error.message : "Governance storage unavailable",
+      };
+    }
+  },
+  component: BotsCockpit,
 });
 
-type BotRow = {
-  id: string;
-  name: string;
-  strategy: string;
-  venue: string;
-  mode: string;
-  state: "Running" | "Paused" | "Stopped";
-  pnl: number;
-  capital: number;
-  last: string;
+const numberConfig = (value: string | number | boolean | null | undefined) => {
+  const parsed = Number(value ?? 0);
+  return Number.isFinite(parsed) ? parsed : 0;
 };
 
-const initialBots: BotRow[] = [
-  {
-    id: "BOT-P-104",
-    name: "BTC Dual Grid",
-    strategy: "Dual Grid 75/25",
-    venue: "Binance Testnet",
-    mode: "Paper",
-    state: "Paused",
-    pnl: 1842,
-    capital: 125000,
-    last: "18s ago",
-  },
-  {
-    id: "BOT-P-105",
-    name: "ETH Regime Grid",
-    strategy: "Percentile Router",
-    venue: "IBKR Paper",
-    mode: "Paper",
-    state: "Running",
-    pnl: 734,
-    capital: 90000,
-    last: "4s ago",
-  },
-  {
-    id: "BOT-R-012",
-    name: "Funding RV Observer",
-    strategy: "Funding Relative Value",
-    venue: "Read-only feed",
-    mode: "Observe",
-    state: "Running",
-    pnl: 0,
-    capital: 0,
-    last: "2s ago",
-  },
-];
+type ProfitSummary = { orderCount: number; estimatedCycleProfit: string };
 
-const orders = [
-  {
-    id: "ORD-P-8821",
-    time: "10:42:18",
-    bot: "ETH Regime Grid",
-    symbol: "ETH/USDT",
-    side: "BUY",
-    type: "LIMIT",
-    qty: "1.80",
-    price: "3,216.40",
-    status: "Filled",
-  },
-  {
-    id: "ORD-P-8820",
-    time: "10:39:02",
-    bot: "BTC Dual Grid",
-    symbol: "BTC/USDT",
-    side: "SELL",
-    type: "LIMIT",
-    qty: "0.08",
-    price: "102,440.00",
-    status: "Cancelled",
-  },
-  {
-    id: "ORD-P-8819",
-    time: "10:31:47",
-    bot: "ETH Regime Grid",
-    symbol: "ETH/USDT",
-    side: "SELL",
-    type: "LIMIT",
-    qty: "1.75",
-    price: "3,248.20",
-    status: "Filled",
-  },
-  {
-    id: "ORD-P-8818",
-    time: "10:18:11",
-    bot: "BTC Dual Grid",
-    symbol: "BTC/USDT",
-    side: "BUY",
-    type: "LIMIT",
-    qty: "0.08",
-    price: "101,920.00",
-    status: "Filled",
-  },
-];
+function CompactStatus({ bot }: { bot: BotRecord }) {
+  const iconClass = "h-4 w-4";
+  return (
+    <TooltipProvider delayDuration={150}>
+      <div className="flex items-center gap-2 text-muted-foreground">
+        <Tooltip><TooltipTrigger aria-label={`Environment: ${bot.environment}`}><Landmark className={`${iconClass} ${bot.environment === "BINANCE_TESTNET" ? "text-info" : ""}`} /></TooltipTrigger><TooltipContent>Environment: {bot.environment.replaceAll("_", " ")}</TooltipContent></Tooltip>
+        <Tooltip><TooltipTrigger aria-label={`Approval: ${bot.state}`}><ShieldCheck className={`${iconClass} ${bot.state === "APPROVED" ? "text-positive" : "text-warning"}`} /></TooltipTrigger><TooltipContent>Approval: {bot.state.replaceAll("_", " ")}</TooltipContent></Tooltip>
+        <Tooltip><TooltipTrigger aria-label={`Runtime: ${bot.runtimeState}`}><Clock3 className={`${iconClass} ${bot.runtimeState === "RUNNING" ? "text-positive" : ""}`} /></TooltipTrigger><TooltipContent>Runtime: {bot.runtimeState}</TooltipContent></Tooltip>
+      </div>
+    </TooltipProvider>
+  );
+}
 
-function BotsPage() {
-  const [bots, setBots] = useState(initialBots);
+function DetailMetric({ label, value, note }: { label: string; value: string; note?: string }) {
+  return <div><div className="text-xs text-muted-foreground">{label}</div><div className="mt-1 font-medium">{value}</div>{note && <div className="mt-1 text-[11px] text-muted-foreground">{note}</div>}</div>;
+}
+
+function BotCard({ bot, profit, working, command }: { bot: BotRecord; profit?: ProfitSummary; working: boolean; command: (next: Exclude<RuntimeState, "IDLE">) => void }) {
+  const projected = profit && profit.orderCount > 0 ? Number(profit.estimatedCycleProfit).toFixed(2) : null;
+  const tp = String(bot.configuration.takeProfit || "—");
+  const sl = String(bot.configuration.stopLoss || "—");
+  return <article className="rounded-xl border border-border/70 bg-card/50 p-5 shadow-sm">
+    <div className="flex flex-wrap items-start justify-between gap-3">
+      <div className="flex min-w-0 items-center gap-3"><div className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-info/30 bg-info/10 text-info"><Bot className="h-5 w-5" /></div><div className="min-w-0"><Link to="/bots/$botId" params={{ botId: bot.id }} className="block truncate font-semibold hover:text-primary">{bot.name}</Link><div className="mt-0.5 font-mono text-sm text-muted-foreground">{bot.pair} · {bot.id}</div></div></div>
+      <CompactStatus bot={bot} />
+    </div>
+    <div className="mt-5 grid overflow-hidden rounded-lg border md:grid-cols-2">
+      <div className="bg-background/30 p-4"><div className="text-xs text-muted-foreground">Actual investment</div><div className="mt-1 text-2xl font-semibold">{fmtMoney(numberConfig(bot.configuration.investment))}</div><div className="mt-1 text-xs text-muted-foreground">Allocated Testnet capital</div></div>
+      <div className="border-t bg-positive/5 p-4 md:border-l md:border-t-0"><div className="flex items-center gap-1 text-xs text-muted-foreground"><ChartNoAxesCombined className="h-3.5 w-3.5" /> Grid profit potential</div><div className="mt-1 text-2xl font-semibold text-positive">{projected ? `~$${projected}` : "—"}</div><div className="mt-1 text-xs text-muted-foreground">{projected ? "Estimate across active grid cycles" : "No acknowledged exchange orders"}</div></div>
+    </div>
+    <div className="mt-5 grid gap-x-6 gap-y-5 sm:grid-cols-2 lg:grid-cols-4">
+      <DetailMetric label="Grid profit" value={projected ? `~$${projected}` : "—"} note="Estimate · awaiting fills" />
+      <DetailMetric label="Realized P/L" value="Awaiting reconciliation" note="No fill is treated as realized profit" />
+      <DetailMetric label="Price range" value={`${String(bot.configuration.lower ?? "—")} – ${String(bot.configuration.upper ?? "—")}`} note={`${String(bot.configuration.grids ?? "—")} grids · ${String(bot.configuration.mode ?? "—")}`} />
+      <DetailMetric label="Active orders" value={`${profit?.orderCount ?? 0} orders`} note={bot.runtimeState === "RUNNING" ? "Exchange acknowledged" : "Not running"} />
+      <DetailMetric label="Take profit / Stop loss" value={`${tp} / ${sl}`} />
+      <DetailMetric label="Last update" value={new Date(bot.updatedAt).toLocaleString()} />
+      <DetailMetric label="Bot version" value={`v${bot.version}`} />
+      <DetailMetric label="Cycle status" value={bot.runtimeState === "RUNNING" ? "Monitoring orders" : bot.runtimeState} />
+    </div>
+    <div className="mt-5 flex flex-wrap gap-2 border-t pt-4"><Button size="sm" variant="outline" asChild><Link to="/bots/$botId" params={{ botId: bot.id }}>Detail</Link></Button><Button size="sm" variant="outline" asChild><Link to="/bots/$botId/profit" params={{ botId: bot.id }}><CircleDollarSign className="h-3.5 w-3.5" />Grid profit</Link></Button>
+      {bot.state === "APPROVED" && bot.runtimeState === "IDLE" && <Button size="sm" disabled={working} onClick={() => command("RUNNING")}>Start Testnet</Button>}
+      {(bot.runtimeState === "RUNNING" || bot.runtimeState === "PAUSED") && <Button size="sm" variant="destructive" disabled={working} onClick={() => command("STOPPED")}><StopCircle className="h-3.5 w-3.5" />Stop</Button>}
+    </div>
+  </article>;
+}
+
+function BotsCockpit() {
+  const initial = Route.useLoaderData();
+  const [bots, setBots] = useState(initial.bots);
   const [q, setQ] = useState("");
-  const filtered = useMemo(
+  const [working, setWorking] = useState<string | null>(null);
+  const visible = useMemo(
     () =>
-      bots.filter((b) =>
-        `${b.name} ${b.strategy} ${b.venue}`.toLowerCase().includes(q.toLowerCase()),
+      bots.filter((bot) =>
+        `${bot.name} ${bot.pair} ${bot.environment}`.toLowerCase().includes(q.toLowerCase()),
       ),
     [bots, q],
   );
-
-  const toggle = (id: string) => {
-    setBots((rows) =>
-      rows.map((bot) =>
-        bot.id === id ? { ...bot, state: bot.state === "Running" ? "Paused" : "Running" } : bot,
-      ),
-    );
-    toast.success("Paper bot state updated (local demo)");
-  };
-
-  const stopAll = () => {
-    setBots((rows) => rows.map((bot) => ({ ...bot, state: "Stopped" })));
-    toast.warning("All paper bots stopped. No external orders were sent.");
+  const allocated = bots.reduce((sum, bot) => sum + numberConfig(bot.configuration.investment), 0);
+  const command = async (botId: string, nextState: Exclude<RuntimeState, "IDLE">) => {
+    setWorking(botId);
+    try {
+      const current = bots.find((bot) => bot.id === botId);
+      if (!current) throw new Error("Bot not found");
+      const updated =
+        current.environment === "BINANCE_TESTNET" && nextState === "RUNNING"
+          ? (await startBinanceTestnetGridBot({ data: { botId, actorId: "local-operator@aegis" } })).bot
+          : current.environment === "BINANCE_TESTNET" && nextState === "STOPPED"
+            ? await stopBinanceTestnetGridBot({ data: { botId, actorId: "local-operator@aegis" } })
+            : await transitionGridBotRuntime({ data: { botId, nextState, actorId: "local-operator@aegis" } });
+      setBots((items) => items.map((bot) => (bot.id === botId ? updated : bot)));
+      toast.success(`${botId} → ${nextState}; durable audit event appended.`);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Runtime command failed closed");
+    } finally {
+      setWorking(null);
+    }
   };
 
   return (
     <AppShell>
       <PageHeader
-        kicker="P1 · Paper execution cockpit"
-        title="Bots & Orders"
-        subtitle="Monitor paper bots, simulated order lifecycle and control posture without live execution capability."
+        kicker="DURABLE GOVERNANCE · BINANCE SPOT TESTNET"
+        title="Spot Grid Bot Cockpit"
+        subtitle="D1-backed bot fleet, approval state and audited runtime controls."
         actions={
-          <>
-            <Button variant="destructive" size="sm" onClick={stopAll}>
-              <ShieldX className="h-3.5 w-3.5" /> Stop all paper bots
-            </Button>
-            <Button size="sm" onClick={() => toast.success("Paper bot draft created (demo)")}>
-              <Bot className="h-3.5 w-3.5" /> New paper bot
-            </Button>
-          </>
+          <Button asChild>
+            <Link to="/bots/new">
+              <Plus className="h-4 w-4" />
+              Create Grid Bot
+            </Link>
+          </Button>
         }
       />
       <div className="space-y-6 p-6">
         <SafetyBanner
-          title="Live order gateway is hard-disabled"
-          text="Controls below only mutate this local demo state. No API route, signer or live order transport is connected."
+          title="Testnet execution is isolated from real funds"
+          text="Approved BINANCE_TESTNET bots place and cancel LIMIT orders only at testnet.binance.vision. Demo and Paper remain local projections; Mainnet is unavailable."
         />
+        {!initial.storageAvailable && (
+          <Panel title="Storage unavailable">
+            <p className="text-sm text-destructive">
+              {initial.error}. Fleet mutations are blocked.
+            </p>
+          </Panel>
+        )}
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+          <MetricCard demo={false} label="Durable bots" value={bots.length} />
           <MetricCard
-            label="Paper bots"
-            value={String(bots.length)}
-            sub={`${bots.filter((b) => b.state === "Running").length} running`}
+            demo={false}
+            label="Running"
+            value={bots.filter((bot) => bot.runtimeState === "RUNNING").length}
           />
+          <MetricCard demo={false} label="Allocated" value={fmtMoney(allocated)} />
           <MetricCard
-            label="Paper P&L (D)"
-            value={fmtMoney(
-              bots.reduce((sum, b) => sum + b.pnl, 0),
-              "USD",
-              0,
-            )}
-            tone="positive"
-          />
-          <MetricCard label="Open simulated orders" value="3" sub="Across 2 venues" />
-          <MetricCard
-            label="Live execution"
-            value="Disabled"
-            tone="warning"
-            sub="No order transport"
+            demo={false}
+            label="Audit chain"
+            value={initial.auditValid ? "Verified" : "Blocked"}
+            tone={initial.auditValid ? "positive" : "negative"}
           />
         </div>
-
-        <Tabs defaultValue="bots" className="space-y-4">
-          <TabsList>
-            <TabsTrigger value="bots">Bot fleet</TabsTrigger>
-            <TabsTrigger value="orders">Order blotter</TabsTrigger>
-            <TabsTrigger value="controls">Execution controls</TabsTrigger>
-          </TabsList>
-          <TabsContent value="bots">
-            <Panel
-              title="Bot fleet"
-              subtitle="Local paper and observer processes"
-              actions={
-                <div className="relative">
-                  <Search className="absolute left-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
-                  <Input
-                    value={q}
-                    onChange={(e) => setQ(e.target.value)}
-                    className="h-8 w-60 pl-7 text-xs"
-                    placeholder="Filter bots…"
-                  />
-                </div>
-              }
-            >
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm tabular">
-                  <thead className="text-[11px] uppercase tracking-wider text-muted-foreground">
-                    <tr className="border-b border-border/60">
-                      <th className="py-2 pr-4 text-left font-medium">Bot</th>
-                      <th className="py-2 pr-4 text-left font-medium">Strategy</th>
-                      <th className="py-2 pr-4 text-left font-medium">Venue</th>
-                      <th className="py-2 pr-4 text-left font-medium">Mode</th>
-                      <th className="py-2 pr-4 text-left font-medium">State</th>
-                      <th className="py-2 pr-4 text-right font-medium">Paper P&L</th>
-                      <th className="py-2 text-right font-medium">Action</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filtered.map((bot) => (
-                      <tr key={bot.id} className="border-b border-border/40">
-                        <td className="py-3 pr-4">
-                          <div className="font-medium">{bot.name}</div>
-                          <div className="font-mono text-[10px] text-muted-foreground">
-                            {bot.id} · {bot.last}
-                          </div>
-                        </td>
-                        <td className="py-3 pr-4 text-xs">{bot.strategy}</td>
-                        <td className="py-3 pr-4 text-xs text-muted-foreground">{bot.venue}</td>
-                        <td className="py-3 pr-4">
-                          <Badge variant="outline">{bot.mode}</Badge>
-                        </td>
-                        <td className="py-3 pr-4">
-                          <span
-                            className={
-                              bot.state === "Running"
-                                ? "text-positive"
-                                : bot.state === "Paused"
-                                  ? "text-warning"
-                                  : "text-muted-foreground"
-                            }
-                          >
-                            {bot.state}
-                          </span>
-                        </td>
-                        <td
-                          className={`py-3 pr-4 text-right font-mono ${bot.pnl > 0 ? "text-positive" : ""}`}
-                        >
-                          {bot.capital ? fmtMoney(bot.pnl) : "—"}
-                        </td>
-                        <td className="py-3 text-right">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            disabled={bot.state === "Stopped"}
-                            onClick={() => toggle(bot.id)}
-                          >
-                            {bot.state === "Running" ? (
-                              <CirclePause className="h-3.5 w-3.5" />
-                            ) : (
-                              <CirclePlay className="h-3.5 w-3.5" />
-                            )}
-                            {bot.state === "Running" ? "Pause" : "Resume"}
-                          </Button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </Panel>
-          </TabsContent>
-          <TabsContent value="orders">
-            <Panel title="Simulated order blotter" subtitle="Paper lifecycle only · newest first">
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm tabular">
-                  <thead className="text-[11px] uppercase tracking-wider text-muted-foreground">
-                    <tr className="border-b border-border/60">
-                      <th className="py-2 pr-4 text-left">Order</th>
-                      <th className="py-2 pr-4 text-left">Time</th>
-                      <th className="py-2 pr-4 text-left">Bot</th>
-                      <th className="py-2 pr-4 text-left">Symbol</th>
-                      <th className="py-2 pr-4 text-left">Side</th>
-                      <th className="py-2 pr-4 text-right">Qty</th>
-                      <th className="py-2 pr-4 text-right">Limit</th>
-                      <th className="py-2 text-left">Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {orders.map((order) => (
-                      <tr key={order.id} className="border-b border-border/40">
-                        <td className="py-3 pr-4 font-mono text-xs">{order.id}</td>
-                        <td className="py-3 pr-4 text-muted-foreground">{order.time}</td>
-                        <td className="py-3 pr-4">{order.bot}</td>
-                        <td className="py-3 pr-4 font-mono text-xs">{order.symbol}</td>
-                        <td
-                          className={`py-3 pr-4 font-medium ${order.side === "BUY" ? "text-positive" : "text-warning"}`}
-                        >
-                          {order.side}
-                        </td>
-                        <td className="py-3 pr-4 text-right">{order.qty}</td>
-                        <td className="py-3 pr-4 text-right">{order.price}</td>
-                        <td className="py-3">
-                          <Badge variant="outline">{order.status}</Badge>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </Panel>
-          </TabsContent>
-          <TabsContent value="controls">
-            <div className="grid gap-4 lg:grid-cols-2">
-              <Panel title="Environment controls" subtitle="Fail-closed execution posture">
-                <ul className="space-y-2 text-sm">
-                  {[
-                    ["Live order transport", "Disabled"],
-                    ["API key scope", "Read-only / testnet"],
-                    ["Withdrawal scope", "Never allowed"],
-                    ["Pre-trade risk checks", "Required"],
-                    ["Four-eyes activation", "Required"],
-                  ].map(([name, value]) => (
-                    <li
-                      key={name}
-                      className="flex items-center justify-between rounded-md border border-border/60 p-2.5"
-                    >
-                      <span>{name}</span>
-                      <span className="text-xs text-muted-foreground">{value}</span>
-                    </li>
-                  ))}
-                </ul>
-              </Panel>
-              <Panel title="Activation gate">
-                <div className="space-y-3 text-sm text-muted-foreground">
-                  <p>
-                    A bot can be drafted only from a paper-eligible deterministic strategy. Any
-                    state change is written to the demo audit log.
-                  </p>
-                  <Button disabled className="w-full">
-                    <LockKeyhole className="h-3.5 w-3.5" /> Live activation unavailable
-                  </Button>
-                </div>
-              </Panel>
+        <Panel
+          title="Bot Fleet"
+          subtitle="Only durable D1 records are shown; fixture bots have been removed."
+          actions={
+            <Input
+              value={q}
+              onChange={(event) => setQ(event.target.value)}
+              placeholder="Filter bot, pair, environment"
+              className="h-8 w-64"
+            />
+          }
+        >
+          {visible.length === 0 ? (
+            <div className="py-12 text-center text-sm text-muted-foreground">
+              No durable grid bots found. Create a draft to begin.
             </div>
-          </TabsContent>
-        </Tabs>
+          ) : (
+            <>
+              <div className="grid gap-4 xl:grid-cols-2">
+                {visible.map((bot) => (
+                  <BotCard
+                    key={bot.id}
+                    bot={bot}
+                    profit={initial.profitByBot[bot.id]}
+                    working={working === bot.id}
+                    command={(nextState) => command(bot.id, nextState)}
+                  />
+                ))}
+              </div>
+              <div className="hidden overflow-x-auto">
+              <table className="w-full min-w-[1050px] text-sm">
+                <thead>
+                  <tr className="text-left text-xs uppercase text-muted-foreground">
+                    {[
+                      "Bot",
+                      "Pair",
+                      "Environment",
+                      "Approval",
+                      "Runtime",
+                      "Range",
+                      "Investment",
+                      "Grid profit",
+                      "Version",
+                      "Updated",
+                      "Actions",
+                    ].map((heading) => (
+                      <th className="p-2" key={heading}>
+                        {heading}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {visible.map((bot) => (
+                    <tr className="border-t border-border/50" key={bot.id}>
+                      <td className="p-2">
+                        <Link
+                          to="/bots/$botId"
+                          params={{ botId: bot.id }}
+                          className="font-medium hover:text-primary"
+                        >
+                          {bot.name}
+                        </Link>
+                        <div className="font-mono text-[10px] text-muted-foreground">{bot.id}</div>
+                      </td>
+                      <td className="p-2 font-mono">{bot.pair}</td>
+                      <td className="p-2">
+                        <EnvironmentBadge value={bot.environment} />
+                      </td>
+                      <td className="p-2">
+                        <Badge variant="outline">{bot.state.replaceAll("_", " ")}</Badge>
+                      </td>
+                      <td className="p-2">
+                        <BotStateBadge value={bot.runtimeState} />
+                      </td>
+                      <td className="p-2">
+                        {String(bot.configuration.lower ?? "—")} –{" "}
+                        {String(bot.configuration.upper ?? "—")}
+                      </td>
+                      <td className="p-2">
+                        {fmtMoney(numberConfig(bot.configuration.investment))}
+                      </td>
+                      <td className="p-2">
+                        {(initial.profitByBot[bot.id]?.orderCount ?? 0) > 0 ? (
+                          <>
+                            <div className="font-mono text-positive">
+                              ~${Number(initial.profitByBot[bot.id].estimatedCycleProfit).toFixed(2)}
+                            </div>
+                            <div className="text-[10px] text-muted-foreground">estimate · awaiting fills</div>
+                          </>
+                        ) : (
+                          <span className="text-muted-foreground">—</span>
+                        )}
+                      </td>
+                      <td className="p-2">v{bot.version}</td>
+                      <td className="p-2 text-xs">{new Date(bot.updatedAt).toLocaleString()}</td>
+                      <td className="p-2">
+                        <div className="flex gap-1">
+                          <Button size="sm" variant="outline" asChild>
+                            <Link to="/bots/$botId" params={{ botId: bot.id }}>
+                              View
+                            </Link>
+                          </Button>
+                          <Button size="sm" variant="outline" asChild>
+                            <Link to="/bots/$botId/profit" params={{ botId: bot.id }}>
+                              Grid profit
+                            </Link>
+                          </Button>
+                          {bot.state === "APPROVED" && bot.runtimeState === "IDLE" && (
+                            <Button
+                              size="sm"
+                              disabled={working === bot.id}
+                              onClick={() => command(bot.id, "RUNNING")}
+                            >
+                              {bot.environment === "BINANCE_TESTNET" ? "Start Testnet" : "Start"}
+                            </Button>
+                          )}
+                          {bot.runtimeState === "RUNNING" && bot.environment !== "BINANCE_TESTNET" && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              disabled={working === bot.id}
+                              onClick={() => command(bot.id, "PAUSED")}
+                            >
+                              Pause
+                            </Button>
+                          )}
+                          {bot.runtimeState === "PAUSED" && bot.environment !== "BINANCE_TESTNET" && (
+                            <Button
+                              size="sm"
+                              disabled={working === bot.id}
+                              onClick={() => command(bot.id, "RUNNING")}
+                            >
+                              Resume
+                            </Button>
+                          )}
+                          {(bot.runtimeState === "RUNNING" || bot.runtimeState === "PAUSED") && (
+                            <Button
+                              size="sm"
+                              variant="destructive"
+                              disabled={working === bot.id}
+                              onClick={() => command(bot.id, "STOPPED")}
+                            >
+                              Stop
+                            </Button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              </div>
+            </>
+          )}
+        </Panel>
       </div>
     </AppShell>
   );

@@ -15,6 +15,46 @@
 
 ## Verified since previous handoff
 
+- Grid Bot Phase 1 UI/domain upgrade completed locally (2026-07-16): exact
+  Decimal.js arithmetic/geometric previews, environment-separated cockpit,
+  five-step `/bots/new`, bot detail, active-order and event routes are in place.
+  Demo/Paper/Testnet remain explicit; Testnet is read-only and no order endpoint
+  exists. Focused frontend tests pass 18/18, TypeScript, targeted lint, production
+  build and `gate/verify.ps1` pass. Desktop/mobile route screenshots are stored
+  under the thread visualization workspace. Durable execution and module-backed
+  governance remain Phase 2–5.
+- Cloudflare Access application `aegis-fund-os` was deleted at the user's
+  explicit request (2026-07-16), removing the login screen from
+  `aegis-fund-os.bankshadow30.workers.dev`. An unauthenticated browser check now
+  reaches `Overview · Aegis Fund OS` directly. The production Worker is public
+  until an Access application or equivalent edge control is restored.
+- Removed mock bot operations from `/bots` (2026-07-16): seeded fleet, P&L,
+  simulated blotter, fake bot counts, and Demo tags are gone. The page now uses
+  only the verified Binance Spot Testnet feed, account balances, symbol filters,
+  user-entered grid configuration, and a local Open/Stop Testnet paper-signal
+  lifecycle. Browser activation check passed without any exchange order call;
+  frontend tests 14/14, TypeScript, production build, and gate are green.
+- Added Binance-inspired bot discovery UI from the supplied reference image
+  (2026-07-16): All/Spot/Futures tabs plus selectable Spot Grid and Rebalancing
+  cards. Spot Grid remains the configured workflow; Rebalancing is explicitly
+  not implemented and Futures fails closed. Browser checks, frontend tests
+  14/14, TypeScript, production build, and `gate/verify.ps1` pass.
+- Expanded the Binance Spot Testnet grid setup to Binance-style parameters
+  (2026-07-16): price range, total grids, arithmetic/geometric spacing,
+  investment, fee-aware profit/grid, trigger, TP/SL, Trailing Up, sell-on-stop,
+  and auto-fill are available as local paper preview. Validation fails closed
+  against market range, tick/step/min-notional, TP/SL ordering, and round-trip
+  fees. Browser arithmetic/geometric checks pass; frontend tests 14/14,
+  TypeScript, production build, and `gate/verify.ps1` are green. Order transport
+  remains absent.
+- Added configurable Binance Spot Testnet grid setup preview (2026-07-16):
+  the Bots page accepts paper capital, levels per side, and spacing, reads live
+  BTCUSDT bid/ask, balances, tick size, step size, and minimum notional from
+  Testnet, then produces quantized local simulated levels. Browser verification
+  passed with 24,000 USDT, 4 levels per side, and 1% spacing. No exchange order
+  transport or order IDs exist. Frontend tests 12/12, TypeScript, production
+  build, and `gate/verify.ps1` all pass.
+
 - Derivatives fund-ops slice verified (2026-07-15): USDⓈ-M read-only sync maps
   funding, collateral transfers, fills, balances and remote positions; ledger
   reconciliation is idempotent and marks mismatches provisional.
@@ -84,9 +124,12 @@
 
 ## Open failures
 
-- Dual under real costs still loses to cash on robust mean (E22–E25). E23 remains best.
-  Next candidates (not yet run): funding/relative only as declared A/B; or accept cash
-  as Line-B default and pivot effort to fund-ops ledger.
+- ~~Dual under real costs still loses to cash~~ **RESOLVED by decision D1
+  (2026-07-17)**: cash accepted as Line-B default; dual tuning closed. The
+  "funding/relative only" candidate was rejected without a run because both
+  signals already failed standalone (E17, E18) and no new mechanism was
+  proposed. Reopening requires a mechanism-level hypothesis per
+  `docs/VALIDATION_LOG.md` § D1. Effort pivots to fund-ops ledger.
 - Fund ops: Spot fee conversion + TRANSFER sync done (2026-07-15). Still missing
   futures/Spot income → `EventType.FUNDING`; multi-currency capital FX policy.
 
@@ -156,6 +199,163 @@
   confirming DNS/network access from the actual host.
 
 ## Last session
+
+- Rewrote `/audit` to use the real governance hash chain (2026-07-17). It
+  previously rendered the `AUDIT_EVENTS` fixture (22 fabricated rows) yet
+  displayed a hard-coded "Chain integrity: verified" badge and a fake
+  "Integrity: Verified" metric — the one page whose job is to prove audit
+  integrity was the only bot surface still asserting a fake verification, with
+  no demo label. It now loads `getGridBotGovernance()`, shows real events
+  (newest first) with actor, eventType, botId and real short eventHash; the
+  integrity badge/metric reflect the actual `verifyGovernanceChains()` result
+  (verified / FAILED / storage-unavailable), and the detail sheet shows the
+  real `payload` JSON plus previousHash→eventHash linkage instead of a
+  fabricated before/after diff. Removed the now-unused `AUDIT_EVENTS` fixture
+  and its two constants from `demo-data.ts`. Verified on local `wrangler dev`
+  against seeded D1: 5 events / 2 bot chains, real payload
+  `{from:DRAFT,to:PENDING_APPROVAL}`, and the approval event's previousHash
+  matches the bot.created event's hash (genuine linkage). Also fixed a latent
+  pre-existing type bug this surfaced: `bots.tsx` loader catch-branch typed
+  `profitByBot` as `{}`, blocking indexing — now `Record<string,
+  {orderCount,estimatedCycleProfit}>`. TypeScript clean, frontend tests 27/27,
+  production build and `gate/verify.ps1` (SHIP) pass. NOTE: production is now
+  back behind Cloudflare Access (all routes redirect to Email-OTP login) — the
+  earlier-session public-access finding (#5) appears resolved by whoever
+  restored the Access application; could not re-test production pages directly.
+
+- Full record of this session's work (analysis, orphaned-fill fix, N+1 fix,
+  Decision D1, production e2e + route un-nesting fix, minor UX fixes, deploy
+  status) is documented in `docs/WORKLOG_2026-07-17.md`.
+
+- Closed both minor e2e findings (2026-07-17): (1) Save Draft on `/bots/new`
+  now shows an explicit toast ("Please acknowledge the risk disclosure before
+  saving or submitting.") instead of silently returning when the risk
+  acknowledgement is unchecked — Submit/Start were already disabled without
+  ack, only Save Draft was reachable silently; verified locally that the toast
+  fires and no mutation request leaves the page. (2) Bot detail, Active
+  Orders and Bot Audit Events routes now set route-specific titles via
+  `head` meta ("Bot Detail / Active Orders / Bot Audit Events · Aegis Fund
+  OS"), verified in the local `wrangler dev` tab titles. TypeScript, frontend
+  tests 26/26, production build and `gate/verify.ps1` (SHIP) all pass. The
+  route un-nesting fix plus these two changes are ready to deploy together;
+  production still serves the old bundle until `main` is pushed.
+
+- Production e2e of `/bots` (2026-07-17) found and fixed a routing defect:
+  `/bots/$botId/orders` and `/bots/$botId/events` rendered the parent bot
+  detail instead of their own pages because they were nested child routes and
+  the parent has no `<Outlet />`. Fixed by un-nesting the route files to
+  `bots_.$botId_.orders.tsx` / `bots_.$botId_.events.tsx` (URLs unchanged) and
+  regenerating the route tree; verified on local `wrangler dev` with local D1
+  that Active Orders and Bot Audit Events pages now render. **Production still
+  serves the broken routes until the fix is deployed.** Everything else passed:
+  `/bots` D1 fleet (2 bots) with verified audit chain, bot detail, `/bots/new`
+  SSR with live Testnet feed, five-step wizard, and the fail-closed mutation
+  guard — Save Draft returned "Verified Cloudflare Access identity is
+  required; mutation blocked" and the fleet was unchanged. Minor findings, not
+  fixed: Save Draft is a silent no-op when the risk-acknowledgement checkbox
+  is unchecked, and detail/orders/events routes lack route-specific titles.
+  Frontend tests 26/26, TypeScript, production build and `gate/verify.ps1`
+  (SHIP) pass after the fix. Added `fund-command-center` (vite dev) and
+  `fund-command-center-worker` (wrangler dev) entries to `.claude/launch.json`.
+
+- Decision D1 recorded (2026-07-17): cash is now the official Line-B default.
+  Every declared candidate is run-and-failed (E21 promotion, E22 diagnosis
+  `negative_edge_trading`, E23 tune, E24 short_cfg, E25 conservative) and the
+  remaining STATE candidate "funding/relative only" reuses signals that failed
+  standalone (E17/E18), so it was rejected without spending compute. No gate
+  criterion was changed; cash was already the gate's fail-closed selection
+  since E21 — D1 makes it official and stops further dual tuning. Line A
+  (research/education Dual 75/25 + percentile) is unchanged. Full decision
+  record with reopening conditions lives in `docs/VALIDATION_LOG.md` § D1;
+  `docs/HANDOFF_CURSOR.md` §3/§4 updated so future sessions do not resume
+  dual tuning. Research effort now pivots to fund-ops ledger per HANDOFF §4.
+  `gate/verify.ps1` re-verified SHIP after the documentation changes.
+
+- Fixed orphaned-fill rollback gap in the Binance Testnet execution slice
+  (2026-07-17). Previously both `placeTestnetGrid` and
+  `startBinanceTestnetGridBot` cancelled already-accepted orders with
+  `Promise.allSettled` and rethrew the original error, silently swallowing any
+  cancel that failed because the GTC LIMIT order had already filled — leaving a
+  real Testnet position with no D1 ledger record. Both paths now inspect each
+  cancel outcome and throw a new `OrphanedTestnetOrdersError` carrying the
+  un-cancellable orders (clientOrderIds) so the operator must reconcile instead
+  of assuming a clean rollback. Added a focused test for the filled-order
+  rollback case; frontend tests 26/26, TypeScript, and `gate/verify.ps1` (SHIP)
+  all pass.
+
+- Removed the per-order `/api/v3/time` fetch (N+1) from the Testnet execution
+  slice (2026-07-17). `placeTestnetGrid` now syncs the exchange clock once via a
+  `timeOffset` helper and derives each signed request's timestamp from
+  `Date.now() + offset`, threading the shared offset into `buildExecutableGrid`
+  and every order `signedRequest`. A 40-order grid drops from ~80 round-trips to
+  one time sync, cutting latency and rate-limit exposure; `signedRequest` keeps
+  a self-syncing fallback for standalone cancels. Test asserts exactly one
+  `/api/v3/time` call per grid placement. Frontend tests 26/26, TypeScript, and
+  `gate/verify.ps1` (SHIP) pass. Follow-ups from the system analysis still open:
+  production mutations fail closed after Access removal, and the core strategy
+  still losing to cash (E22–E25).
+
+- Cloudflare Access application was removed by the user (2026-07-17) after
+  explicit confirmation to make production public while keeping mutations
+  blocked. External verification of `/bots/new` now returns HTTP 200 directly
+  with no Access redirect. Because production mutation handlers still require
+  verified `cf-access-*` identity headers, create/approve/start/stop operations
+  fail closed until Access or an equivalent authenticated identity layer is
+  restored.
+- Public-mode production E2E verified (2026-07-17): `/bots/new` loaded without
+  an Access redirect, fetched real Binance Spot Testnet BTCUSDT context
+  (connected, 1 BTC and 10,000 USDT), completed all five setup steps for a
+  20-level BINANCE_TESTNET preview, and rejected Save Draft with the explicit
+  message `Verified Cloudflare Access identity is required; mutation blocked`.
+  Therefore no create/approval/start request reached D1 or Binance. Wrangler D1
+  readback was attempted twice after the browser check but the remote query API
+  timed out; the browser mutation result is authoritative for the tested
+  fail-closed boundary.
+
+- Deployed the governed Binance Spot Testnet execution slice (2026-07-17),
+  Worker version `32175568-e2f6-463e-80de-c14b57919f67`. Migration 0003 adds
+  durable execution/order ledgers. Only approved, IDLE, BTCUSDT
+  `BINANCE_TESTNET` bots may place GTC LIMIT orders at the hard-coded
+  `https://testnet.binance.vision` endpoint. The adapter validates exchange
+  filters and BTC/USDT balances, caps a start at 40 orders, uses deterministic
+  client IDs, blocks duplicate starts, rolls back accepted orders after a
+  partial placement failure, and cancels tracked open orders on Stop. Mainnet,
+  transfer and withdrawal paths are absent. Orders page now shows only
+  exchange-acknowledged D1 records. Frontend tests pass 25/25 (including three
+  execution/rollback/mainnet-lock tests), TypeScript/build pass and the full
+  gate reports SHIP. Production order placement has not yet been triggered:
+  the only remote bot is PAPER/PENDING_APPROVAL and four-eyes governance needs
+  a second Cloudflare Access identity before a new BINANCE_TESTNET bot can be
+  approved and started.
+
+- Fixed the production `/bots/new` SSR failure (2026-07-17): the read-only
+  Binance grid-feed server function no longer requires an `Origin` header for
+  production GET/HEAD requests generated by SSR, while non-HTTPS,
+  cross-origin, and origin-less mutation requests remain blocked. Frontend
+  tests pass 22/22, TypeScript and production build pass, and
+  `gate/verify.ps1` reports SHIP. Deployed Bankshadow30 Worker version
+  `bd9e5d53-59b5-4069-b81a-851ea5894f77`; final browser verification still
+  requires an authenticated Cloudflare Access session.
+
+- Connected BTC Dual Grid to Binance Spot Testnet as a read-only paper feed
+  (2026-07-16): Bots route now loads real BTCUSDT best bid/ask plus signed BTC
+  and USDT free balances, then deterministically generates three simulated
+  levels per side at 0.5% spacing with 12,000 USDT paper capital. Feed output
+  explicitly advertises `readOnly: true` and `canPlaceOrder: false`; no Binance
+  order endpoint or exchange order ID exists. Local UI verified connected at
+  bid 64,179.13 / ask 64,179.14 with 1 BTC and 10,000 USDT Testnet balances.
+  Frontend tests (11/11), TypeScript, production build and full gate pass.
+
+- Binance Spot Testnet authentication restored (2026-07-16): after replacing
+  the rejected credential pair with a newly generated Spot Testnet HMAC key,
+  a direct signed read-only `GET /api/v3/account` returned HTTP 200 with SPOT
+  permissions. Public time, server-synchronized timestamp and HMAC signing all
+  verify. The remote account reports trade capability, but Aegis still exposes
+  no order, transfer or withdrawal call path. Integrations now runs this
+  read-only probe in the route loader so refresh/navigation preserves real
+  health instead of resetting to `Not tested`; Local UI verifies `Healthy`,
+  SPOT, 446 non-zero assets and 258ms probe latency. Frontend tests (9/9),
+  TypeScript and production build pass.
 
 - Added verified Loop snapshot CLI (2026-07-16):
   `python -m dynamic_grid.loop_cli` accepts only explicit memory, drift queue,
@@ -264,3 +464,83 @@
 - Implemented fund-ops post-MVP #1 partial: `ApprovedMarksFeeConverter` + Spot
   deposit/withdraw → TRANSFER; wired CLI `--mark`; tests green.
 - Next fund-ops: income/funding API → `FUNDING` events.
+- Completed Aegis Spot Grid Bot Phase 1 acceptance (2026-07-16): added the
+  cockpit, five-step Demo/Paper/Testnet wizard, exact-decimal arithmetic and
+  geometric previews, bot/order/event detail routes, status controls and
+  Binance Testnet read-only market context. Browser acceptance covered desktop
+  and 390px mobile layouts plus invalid-range fail-closed behavior; a defect
+  that allowed Continue when Lower exceeded Upper was fixed with a hard block.
+  Frontend tests pass 18/18, TypeScript and scoped lint pass, production build
+  passes, and `gate/verify.ps1` reports SHIP. No live-order capability was
+  added; Testnet remains read-only and submit/start actions remain controlled
+  Phase-1 local workflow actions pending durable Maker-Checker storage.
+
+- Completed Aegis Spot Grid Bot Phase 2 local acceptance (2026-07-16): added
+  Cloudflare D1 migrations and a fail-closed repository for idempotent drafts,
+  Maker-to-Checker submission, terminal approve/reject decisions and immutable
+  per-bot SHA-256 audit chains. The five-step wizard now writes drafts and
+  approval requests through server functions; `/approvals` reads the durable
+  queue and enforces maker != checker. Local Cloudflare browser acceptance
+  created a PAPER bot, submitted it, approved it as an independent checker and
+  verified final state APPROVED/version 3 with three linked audit events. No
+  exchange-order endpoint was added; Binance Testnet remains read-only. Remote
+  deployment still requires creation of the real D1 database and replacement
+  of the placeholder database ID in Wrangler configuration.
+
+- Closed the Phase 2 production D1 blocker (2026-07-16): created APAC D1
+  `aegis-fund-os-governance` (`db4592b5-2c67-4964-b7a7-c71c1caccf77`),
+  replaced the Wrangler placeholder, applied migration 0001 remotely and
+  deployed Worker version `1c55142d-e59e-47d7-8239-fca3ca853b1d`. Production
+  smoke at `https://aegis-fund-os.btc-desk-premium.workers.dev/approvals`
+  returns 200, reports a verified audit chain and does not report unavailable
+  storage. The previously shared `bankshadow30.workers.dev` URL is a stale
+  deployment under a different workers.dev subdomain and was not modified by
+  the currently authenticated Cloudflare account.
+
+- Replaced Grid Bot fixture surfaces with durable D1 projections (2026-07-16):
+  `/bots`, bot detail and bot events now read governance records and immutable
+  events; fake orders, cycles, PnL and ROI were removed and replaced with an
+  explicit unavailable-until-adapter state. Migration 0002 separates approval
+  state from `IDLE/RUNNING/PAUSED/STOPPED` runtime state. Start/Pause/Resume/
+  Stop are optimistic, durable and hash-audited but never transmit exchange
+  orders. Local browser acceptance proved create -> approve -> start -> pause,
+  persistence after reload, version 3 -> 5 and a verified chain. Production
+  migration and Worker version `1813005a-3777-422b-a6fd-9c56012b6c88` are
+  deployed; `/bots` returns 200 with the D1 fleet and no fixture bot. Production
+  mutations now require Cloudflare Access email plus JWT headers and otherwise
+  fail closed; localhost alone permits the explicit local test identity.
+
+- Migrated the active deployment back to the intended Bankshadow30 Cloudflare
+  account (2026-07-16): Wrangler now authenticates as
+  `bankshadow30@gmail.com` (account `004d508d5ed65f935b3634b5b5d6dc47`).
+  Created APAC D1 `aegis-fund-os-governance`
+  (`74c0d2d0-315a-4cbc-8ee1-0d1fc26db951`), applied migrations 0001/0002 and
+  deployed Worker version `8cad45b0-3746-4b02-9d27-9462b9c11f34` to the
+  canonical `aegis-fund-os.bankshadow30.workers.dev` hostname. Existing Binance
+  Testnet API key/secret bindings remain present. Production `/bots` and
+  `/approvals` return 200 against the new D1. Cloudflare Access application
+  `Aegis Fund OS` is active with a six-hour session and exact-email Allow
+  policy `Allow Bankshadow30 Email OTP` for `bankshadow30@gmail.com`; all
+  unmatched users are denied by default. An unauthenticated production request
+  and a fresh browser tab both redirect to the `broad-brook-0f63.cloudflareaccess.com`
+  login and expose Email One-time PIN while the application remains hidden.
+
+- Recreated Cloudflare Access after the temporary public E2E window
+  (2026-07-17): application `Aegis Fund OS` now protects
+  `aegis-fund-os.bankshadow30.workers.dev` in Bankshadow30 account
+  `004d508d5ed65f935b3634b5b5d6dc47`. Policy
+  `Allow Aegis Maker and Checker` allows only `bankshadow30@gmail.com` and
+  `bankshadow31@gmail.com`, uses a 24-hour application session, accepts the
+  account's available identity providers (including Email OTP), and denies all
+  unmatched identities by default. External unauthenticated `/bots` check
+  returns HTTP 302 to `broad-brook-0f63.cloudflareaccess.com`, confirming the
+  Worker is no longer publicly reachable.
+
+- Deployed the complete current Grid Bot/Testnet execution workspace
+  (2026-07-17) after `gate/verify.ps1` exited 0, all 26 web tests passed and
+  the production build completed. Remote D1 reported no pending migrations.
+  Cloudflare Worker version `df79a275-766e-4af4-a3ce-e8c0fffb3901` is serving
+  `aegis-fund-os.bankshadow30.workers.dev`, authored by
+  `bankshadow30@gmail.com`. Post-deploy unauthenticated `/bots` smoke returned
+  HTTP 302 to the `broad-brook-0f63.cloudflareaccess.com` login, confirming
+  Access remained enforced after deployment.

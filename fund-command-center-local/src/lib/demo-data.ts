@@ -532,36 +532,3 @@ export const REPORTS_DATA = [
     checksum: "77aa…dd21",
   },
 ];
-
-const AUDIT_EVENT_START_MS = Date.UTC(2025, 10, 15, 17, 45, 4);
-const AUDIT_EVENT_INTERVAL_MS = 53 * 60 * 1000;
-
-export const AUDIT_EVENTS = Array.from({ length: 22 }).map((_, i) => ({
-  id: `AUD-${String(50021 - i).padStart(6, "0")}`,
-  // The fixture is append-only: newest event first, then a steady historic sequence.
-  ts: new Date(AUDIT_EVENT_START_MS - i * AUDIT_EVENT_INTERVAL_MS)
-    .toISOString()
-    .slice(0, 19)
-    .replace("T", " "),
-  actor: ["PM (Somchai)", "COO (Anong)", "Risk (Preecha)", "Ops (Niran)", "Auditor (Read-only)"][
-    i % 5
-  ],
-  action: [
-    "nav.lock.attempt",
-    "recon.approve",
-    "order.paper.submit",
-    "limit.update",
-    "report.generate",
-    "account.sync",
-  ][i % 6],
-  entity: [
-    "NAV-2025-11-14",
-    "BRK-2202",
-    "PO-88201",
-    "LIM-CONC",
-    "RPT-EXP-1114",
-    "ACC-IBKR-DU-9821",
-  ][i % 6],
-  ip: "10.42." + (10 + (i % 40)) + "." + ((i * 7) % 255),
-  hash: `${(0x9f2a + i).toString(16)}…${(0xc14e - i).toString(16)}`,
-}));

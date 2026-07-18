@@ -6,6 +6,20 @@
       "runtimeExecutable": "python",
       "runtimeArgs": ["-m", "http.server", "8931"],
       "port": 8931
+    },
+    {
+      "name": "fund-command-center",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["vite", "dev"],
+      "cwd": "fund-command-center-local",
+      "autoPort": true
+    },
+    {
+      "name": "fund-command-center-worker",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["wrangler", "dev", "--port", "8787"],
+      "cwd": "fund-command-center-local",
+      "port": 8787
     }
   ]
 }

@@ -24,6 +24,11 @@ import { Route as ApprovalsRouteImport } from './routes/approvals'
 import { Route as AccountsRouteImport } from './routes/accounts'
 import { Route as AccessRouteImport } from './routes/access'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as BotsNewRouteImport } from './routes/bots_.new'
+import { Route as BotsBotIdRouteImport } from './routes/bots_.$botId'
+import { Route as BotsBotIdProfitRouteImport } from './routes/bots_.$botId_.profit'
+import { Route as BotsBotIdOrdersRouteImport } from './routes/bots_.$botId_.orders'
+import { Route as BotsBotIdEventsRouteImport } from './routes/bots_.$botId_.events'
 
 const StrategiesRoute = StrategiesRouteImport.update({
   id: '/strategies',
@@ -100,6 +105,31 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BotsNewRoute = BotsNewRouteImport.update({
+  id: '/bots_/new',
+  path: '/bots/new',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BotsBotIdRoute = BotsBotIdRouteImport.update({
+  id: '/bots_/$botId',
+  path: '/bots/$botId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BotsBotIdProfitRoute = BotsBotIdProfitRouteImport.update({
+  id: '/bots_/$botId_/profit',
+  path: '/bots/$botId/profit',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BotsBotIdOrdersRoute = BotsBotIdOrdersRouteImport.update({
+  id: '/bots_/$botId_/orders',
+  path: '/bots/$botId/orders',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BotsBotIdEventsRoute = BotsBotIdEventsRouteImport.update({
+  id: '/bots_/$botId_/events',
+  path: '/bots/$botId/events',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -117,6 +147,11 @@ export interface FileRoutesByFullPath {
   '/settings': typeof SettingsRoute
   '/signals': typeof SignalsRoute
   '/strategies': typeof StrategiesRoute
+  '/bots/$botId': typeof BotsBotIdRoute
+  '/bots/new': typeof BotsNewRoute
+  '/bots/$botId/events': typeof BotsBotIdEventsRoute
+  '/bots/$botId/orders': typeof BotsBotIdOrdersRoute
+  '/bots/$botId/profit': typeof BotsBotIdProfitRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -134,6 +169,11 @@ export interface FileRoutesByTo {
   '/settings': typeof SettingsRoute
   '/signals': typeof SignalsRoute
   '/strategies': typeof StrategiesRoute
+  '/bots/$botId': typeof BotsBotIdRoute
+  '/bots/new': typeof BotsNewRoute
+  '/bots/$botId/events': typeof BotsBotIdEventsRoute
+  '/bots/$botId/orders': typeof BotsBotIdOrdersRoute
+  '/bots/$botId/profit': typeof BotsBotIdProfitRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -152,6 +192,11 @@ export interface FileRoutesById {
   '/settings': typeof SettingsRoute
   '/signals': typeof SignalsRoute
   '/strategies': typeof StrategiesRoute
+  '/bots_/$botId': typeof BotsBotIdRoute
+  '/bots_/new': typeof BotsNewRoute
+  '/bots_/$botId_/events': typeof BotsBotIdEventsRoute
+  '/bots_/$botId_/orders': typeof BotsBotIdOrdersRoute
+  '/bots_/$botId_/profit': typeof BotsBotIdProfitRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -171,6 +216,11 @@ export interface FileRouteTypes {
     | '/settings'
     | '/signals'
     | '/strategies'
+    | '/bots/$botId'
+    | '/bots/new'
+    | '/bots/$botId/events'
+    | '/bots/$botId/orders'
+    | '/bots/$botId/profit'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -188,6 +238,11 @@ export interface FileRouteTypes {
     | '/settings'
     | '/signals'
     | '/strategies'
+    | '/bots/$botId'
+    | '/bots/new'
+    | '/bots/$botId/events'
+    | '/bots/$botId/orders'
+    | '/bots/$botId/profit'
   id:
     | '__root__'
     | '/'
@@ -205,6 +260,11 @@ export interface FileRouteTypes {
     | '/settings'
     | '/signals'
     | '/strategies'
+    | '/bots_/$botId'
+    | '/bots_/new'
+    | '/bots_/$botId_/events'
+    | '/bots_/$botId_/orders'
+    | '/bots_/$botId_/profit'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -223,6 +283,11 @@ export interface RootRouteChildren {
   SettingsRoute: typeof SettingsRoute
   SignalsRoute: typeof SignalsRoute
   StrategiesRoute: typeof StrategiesRoute
+  BotsBotIdRoute: typeof BotsBotIdRoute
+  BotsNewRoute: typeof BotsNewRoute
+  BotsBotIdEventsRoute: typeof BotsBotIdEventsRoute
+  BotsBotIdOrdersRoute: typeof BotsBotIdOrdersRoute
+  BotsBotIdProfitRoute: typeof BotsBotIdProfitRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -332,6 +397,41 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/bots_/new': {
+      id: '/bots_/new'
+      path: '/bots/new'
+      fullPath: '/bots/new'
+      preLoaderRoute: typeof BotsNewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/bots_/$botId': {
+      id: '/bots_/$botId'
+      path: '/bots/$botId'
+      fullPath: '/bots/$botId'
+      preLoaderRoute: typeof BotsBotIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/bots_/$botId_/profit': {
+      id: '/bots_/$botId_/profit'
+      path: '/bots/$botId/profit'
+      fullPath: '/bots/$botId/profit'
+      preLoaderRoute: typeof BotsBotIdProfitRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/bots_/$botId_/orders': {
+      id: '/bots_/$botId_/orders'
+      path: '/bots/$botId/orders'
+      fullPath: '/bots/$botId/orders'
+      preLoaderRoute: typeof BotsBotIdOrdersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/bots_/$botId_/events': {
+      id: '/bots_/$botId_/events'
+      path: '/bots/$botId/events'
+      fullPath: '/bots/$botId/events'
+      preLoaderRoute: typeof BotsBotIdEventsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -351,6 +451,11 @@ const rootRouteChildren: RootRouteChildren = {
   SettingsRoute: SettingsRoute,
   SignalsRoute: SignalsRoute,
   StrategiesRoute: StrategiesRoute,
+  BotsBotIdRoute: BotsBotIdRoute,
+  BotsNewRoute: BotsNewRoute,
+  BotsBotIdEventsRoute: BotsBotIdEventsRoute,
+  BotsBotIdOrdersRoute: BotsBotIdOrdersRoute,
+  BotsBotIdProfitRoute: BotsBotIdProfitRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

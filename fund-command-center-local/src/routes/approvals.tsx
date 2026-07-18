@@ -1,253 +1,145 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { AppShell, PageHeader, Panel } from "@/components/app-shell";
-import { MetricCard, fmtMoney } from "@/components/metric-card";
 import { SafetyBanner } from "@/components/safety-banner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Check, CheckCheck, Clock3, ShieldCheck, UserRoundCheck, X } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { decideGridBotApproval, getGridBotGovernance } from "@/lib/grid-bot-governance.functions";
+import { Check, ShieldCheck, X } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/approvals")({
   head: () => ({ meta: [{ title: "Approvals · Aegis Fund OS" }] }),
+  loader: async () => {
+    try {
+      return { ...(await getGridBotGovernance()), storageAvailable: true as const, error: "" };
+    } catch (error) {
+      return {
+        bots: [],
+        events: [],
+        auditValid: false,
+        storageAvailable: false as const,
+        error: error instanceof Error ? error.message : "Governance storage unavailable",
+      };
+    }
+  },
   component: ApprovalsPage,
 });
 
-type Approval = {
-  id: string;
-  type: string;
-  subject: string;
-  maker: string;
-  created: string;
-  materiality: string;
-  status: "Pending" | "Approved" | "Rejected";
-  impact: string;
-  self: boolean;
-};
-
-const initialApprovals: Approval[] = [
-  {
-    id: "APR-1902",
-    type: "NAV close",
-    subject: "Lock provisional NAV · 2025-11-14",
-    maker: "N. Suriya",
-    created: "2h ago",
-    materiality: "High",
-    status: "Pending",
-    impact: "$12.48m NAV becomes official",
-    self: false,
-  },
-  {
-    id: "APR-1901",
-    type: "Reconciliation",
-    subject: "Resolve break REC-0114-03",
-    maker: "P. Chai",
-    created: "5h ago",
-    materiality: "Medium",
-    status: "Pending",
-    impact: "$18,420 cash variance explained",
-    self: false,
-  },
-  {
-    id: "APR-1900",
-    type: "Adapter change",
-    subject: "Rotate Coinbase sandbox key",
-    maker: "Anong K.",
-    created: "1d ago",
-    materiality: "Low",
-    status: "Pending",
-    impact: "Read-only connector credential",
-    self: true,
-  },
-  {
-    id: "APR-1899",
-    type: "Paper bot",
-    subject: "Pause BTC Dual Grid",
-    maker: "Risk Officer",
-    created: "1d ago",
-    materiality: "Medium",
-    status: "Approved",
-    impact: "Paper process only",
-    self: false,
-  },
-];
-
-const approvalPolicies = [
-  {
-    title: "Separation of duties",
-    text: "Maker and checker must be different identities.",
-    icon: UserRoundCheck,
-  },
-  {
-    title: "Materiality routing",
-    text: "High-impact changes require COO plus Risk.",
-    icon: ShieldCheck,
-  },
-  {
-    title: "Evidence retention",
-    text: "Decision, reason and before/after state are audit-linked.",
-    icon: CheckCheck,
-  },
-];
-
 function ApprovalsPage() {
-  const [approvals, setApprovals] = useState(initialApprovals);
-  const pending = useMemo(() => approvals.filter((a) => a.status === "Pending"), [approvals]);
+  const initial = Route.useLoaderData();
+  const [bots, setBots] = useState(initial.bots);
+  const [checkerId, setCheckerId] = useState("local-checker@aegis");
+  const [reason, setReason] = useState("Independent risk review completed");
+  const [working, setWorking] = useState<string | null>(null);
+  const pending = bots.filter((bot) => bot.state === "PENDING_APPROVAL");
 
-  const decide = (id: string, status: "Approved" | "Rejected") => {
-    setApprovals((items) => items.map((a) => (a.id === id ? { ...a, status } : a)));
-    toast.success(
-      `${id} ${status.toLowerCase()} in local demo. Downstream execution remains disabled.`,
-    );
+  const decide = async (botId: string, decision: "APPROVED" | "REJECTED") => {
+    setWorking(botId);
+    try {
+      const updated = await decideGridBotApproval({ data: { botId, checkerId, decision, reason } });
+      setBots((items) => items.map((bot) => (bot.id === botId ? updated : bot)));
+      toast.success(`${botId} ${decision.toLowerCase()}; audit event appended.`);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Decision failed closed");
+    } finally {
+      setWorking(null);
+    }
   };
 
   return (
     <AppShell>
       <PageHeader
-        kicker="P3 · Four-Eyes governance"
-        title="Approvals"
-        subtitle="Maker-checker queue for material operational changes, with self-approval prevention and evidence capture."
-        actions={
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => toast("Approval policy exported (demo)")}
-          >
-            <CheckCheck className="h-3.5 w-3.5" /> Export policy
-          </Button>
-        }
+        kicker="Durable Four-Eyes governance"
+        title="Grid bot approvals"
+        subtitle="Cloudflare D1 system of record with immutable, hash-linked decisions."
       />
       <div className="space-y-6 p-6">
         <SafetyBanner
-          title="Approval is not execution"
-          text="Decisions update this local governance queue only. They cannot transmit live orders, funds or withdrawals."
+          title="Approval unlocks Testnet start, not Mainnet"
+          text="Approval sends nothing by itself. A separate Start Testnet action may transmit LIMIT orders only to the fixed Binance Spot Testnet endpoint."
         />
-        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-          <MetricCard
-            label="Pending"
-            value={String(pending.length)}
-            tone="warning"
-            sub="1 high materiality"
-          />
-          <MetricCard label="Within SLA" value="2 / 3" />
-          <MetricCard label="Self-approval blocks" value="1" tone="positive" />
-          <MetricCard label="Material value" value={fmtMoney(12_498_420, "USD", 0)} />
+        {!initial.storageAvailable && (
+          <Panel title="Storage unavailable">
+            <p className="text-sm text-destructive">{initial.error}. All mutations are blocked.</p>
+          </Panel>
+        )}
+        <div className="grid gap-3 md:grid-cols-3">
+          <Panel title="Pending">
+            <div className="text-3xl font-semibold">{pending.length}</div>
+          </Panel>
+          <Panel title="Audit chain">
+            <Badge
+              variant="outline"
+              className={
+                initial.auditValid
+                  ? "border-positive/35 text-positive"
+                  : "border-destructive/35 text-destructive"
+              }
+            >
+              {initial.auditValid ? "Verified" : "Blocked / unavailable"}
+            </Badge>
+          </Panel>
+          <Panel title="Durable events">
+            <div className="text-3xl font-semibold">{initial.events.length}</div>
+          </Panel>
         </div>
-        <Tabs defaultValue="queue" className="space-y-4">
-          <TabsList>
-            <TabsTrigger value="queue">Decision queue</TabsTrigger>
-            <TabsTrigger value="history">Decision history</TabsTrigger>
-            <TabsTrigger value="policy">Control policy</TabsTrigger>
-          </TabsList>
-          <TabsContent value="queue">
-            <div className="space-y-3">
-              {pending.map((approval) => (
-                <article
-                  key={approval.id}
-                  className="rounded-md border border-border/70 bg-card/40 p-4"
-                >
-                  <div className="flex flex-wrap items-start gap-3">
-                    <div className="grid h-9 w-9 shrink-0 place-items-center rounded-md bg-warning/10 text-warning">
-                      <Clock3 className="h-4 w-4" />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <h3 className="font-medium">{approval.subject}</h3>
-                        <Badge variant="outline">{approval.materiality}</Badge>
-                        {approval.self && (
-                          <Badge
-                            variant="outline"
-                            className="border-destructive/35 text-destructive"
-                          >
-                            Self-approval blocked
-                          </Badge>
-                        )}
-                      </div>
-                      <div className="mt-1 text-xs text-muted-foreground">
-                        {approval.id} · {approval.type} · Maker: {approval.maker} ·{" "}
-                        {approval.created}
-                      </div>
-                      <div className="mt-2 text-sm">Impact: {approval.impact}</div>
-                    </div>
-                    <div className="flex gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => decide(approval.id, "Rejected")}
-                      >
-                        <X className="h-3.5 w-3.5" /> Reject
-                      </Button>
-                      <Button
-                        size="sm"
-                        disabled={approval.self}
-                        onClick={() => decide(approval.id, "Approved")}
-                      >
-                        <Check className="h-3.5 w-3.5" /> Approve
-                      </Button>
-                    </div>
-                  </div>
-                </article>
-              ))}
-            </div>
-          </TabsContent>
-          <TabsContent value="history">
-            <Panel title="Recent decisions">
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead className="text-[11px] uppercase tracking-wider text-muted-foreground">
-                    <tr className="border-b border-border/60">
-                      <th className="py-2 pr-4 text-left">ID</th>
-                      <th className="py-2 pr-4 text-left">Subject</th>
-                      <th className="py-2 pr-4 text-left">Maker</th>
-                      <th className="py-2 text-left">Decision</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {approvals
-                      .filter((a) => a.status !== "Pending")
-                      .map((a) => (
-                        <tr key={a.id} className="border-b border-border/40">
-                          <td className="py-3 pr-4 font-mono text-xs">{a.id}</td>
-                          <td className="py-3 pr-4">{a.subject}</td>
-                          <td className="py-3 pr-4">{a.maker}</td>
-                          <td className="py-3">
-                            <Badge
-                              variant="outline"
-                              className={
-                                a.status === "Approved"
-                                  ? "border-positive/35 text-positive"
-                                  : "border-destructive/35 text-destructive"
-                              }
-                            >
-                              {a.status}
-                            </Badge>
-                          </td>
-                        </tr>
-                      ))}
-                  </tbody>
-                </table>
-              </div>
+        <Panel
+          title="Independent checker"
+          subtitle="Maker identity is recorded on the draft; the same identity cannot decide."
+        >
+          <div className="grid gap-3 md:grid-cols-2">
+            <Input
+              aria-label="Checker identity"
+              value={checkerId}
+              onChange={(e) => setCheckerId(e.target.value)}
+            />
+            <Input
+              aria-label="Decision reason"
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+            />
+          </div>
+        </Panel>
+        <div className="space-y-3">
+          {pending.length === 0 && (
+            <Panel title="Decision queue">
+              <p className="text-sm text-muted-foreground">No grid bot is awaiting approval.</p>
             </Panel>
-          </TabsContent>
-          <TabsContent value="policy">
-            <div className="grid gap-4 lg:grid-cols-3">
-              {approvalPolicies.map((policy) => (
-                <Panel key={policy.title}>
-                  <div className="flex gap-3">
-                    <policy.icon className="h-5 w-5 shrink-0 text-primary" />
-                    <div>
-                      <div className="font-medium">{policy.title}</div>
-                      <div className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                        {policy.text}
-                      </div>
-                    </div>
-                  </div>
-                </Panel>
-              ))}
-            </div>
-          </TabsContent>
-        </Tabs>
+          )}
+          {pending.map((bot) => (
+            <article key={bot.id} className="rounded-md border border-border/70 bg-card/40 p-4">
+              <div className="flex flex-wrap items-center gap-3">
+                <ShieldCheck className="h-5 w-5 text-warning" />
+                <div className="min-w-0 flex-1">
+                  <h3 className="font-medium">{bot.name}</h3>
+                  <p className="text-xs text-muted-foreground">
+                    {bot.id} · {bot.environment} · {bot.pair} · Maker: {bot.makerId} · v
+                    {bot.version}
+                  </p>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={working === bot.id || !initial.storageAvailable}
+                  onClick={() => decide(bot.id, "REJECTED")}
+                >
+                  <X className="h-3.5 w-3.5" /> Reject
+                </Button>
+                <Button
+                  size="sm"
+                  disabled={
+                    working === bot.id || !initial.storageAvailable || checkerId === bot.makerId
+                  }
+                  onClick={() => decide(bot.id, "APPROVED")}
+                >
+                  <Check className="h-3.5 w-3.5" /> Approve
+                </Button>
+              </div>
+            </article>
+          ))}
+        </div>
       </div>
     </AppShell>
   );

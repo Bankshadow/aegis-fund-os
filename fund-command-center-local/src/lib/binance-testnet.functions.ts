@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { getRequest } from "@tanstack/react-start/server";
 
-import { probeBinanceSpotTestnet } from "./binance-testnet.server";
+import { getBinancePaperGridFeed, probeBinanceSpotTestnet } from "./binance-testnet.server";
 
 const LOOPBACK_HOSTS = new Set(["127.0.0.1", "localhost", "::1"]);
 
@@ -15,7 +15,8 @@ function assertTrustedSameOriginRequest() {
   }
 
   const origin = request.headers.get("origin");
-  if (!origin && !isLoopback) {
+  const isReadOnlyRequest = request.method === "GET" || request.method === "HEAD";
+  if (!origin && !isLoopback && !isReadOnlyRequest) {
     throw new Error("Binance Testnet integration requires a same-origin browser request.");
   }
   if (origin && new URL(origin).origin !== requestUrl.origin) {
@@ -26,4 +27,9 @@ function assertTrustedSameOriginRequest() {
 export const testBinanceTestnetConnection = createServerFn({ method: "POST" }).handler(async () => {
   assertTrustedSameOriginRequest();
   return probeBinanceSpotTestnet();
+});
+
+export const readBinancePaperGridFeed = createServerFn({ method: "GET" }).handler(async () => {
+  assertTrustedSameOriginRequest();
+  return getBinancePaperGridFeed();
 });
