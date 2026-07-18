@@ -25,8 +25,11 @@ const thb = (value: string | number) =>
   new Intl.NumberFormat("th-TH", { style: "currency", currency: "THB" }).format(Number(value));
 const time = () =>
   new Intl.DateTimeFormat("en-GB", {
-    dateStyle: "medium",
-    timeStyle: "short",
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
     timeZone: "Asia/Bangkok",
     timeZoneName: "short",
   }).format(new Date());
