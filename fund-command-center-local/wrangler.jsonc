@@ -16,6 +16,12 @@
   ],
   "compatibility_date": "2026-07-15",
   "compatibility_flags": ["nodejs_compat"],
+  "vars": {
+    // Public research build: governed mutations run under a client-claimed test
+    // actor. Execution stays locked to Binance Spot Testnet — no real funds.
+    // Remove this (or set to any other value) to restore Access-required mode.
+    "AEGIS_PUBLIC_TEST_MODE": "true"
+  },
   // To serve REAL fund-ops data on Portfolio/Reconciliation, create the R2
   // bucket and uncomment this binding, then upload the Python-generated snapshot
   // to key "operations_snapshot.json". Left commented so deploys don't fail while
