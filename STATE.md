@@ -205,6 +205,25 @@
 
 ## Last session
 
+- Enabled public test mode on production and ran the first live E2E (2026-07-19).
+  Set `AEGIS_PUBLIC_TEST_MODE=true` as a wrangler `vars` entry (commit `6e48be1`,
+  deploy run 29690065666 success); production `/bots` now shows the PUBLIC TEST
+  MODE banner. Drove the 5-step wizard on production to create + one-click-start a
+  small BTCUSDT testnet grid (`E2E Public Test BTC Grid`, BOT-360baa9c, range
+  63000–65000, 6 grids, 600 USDT). **Result: the software path is proven** — the
+  create + auto-approve mutations succeeded on public prod with no login (public
+  test mode works), the execution slice attempted real order placement, and on
+  the exchange error it rolled back cleanly to APPROVED/IDLE with zero orphaned
+  orders. **Blocker (operator action, not code):** placement returns
+  `Binance Testnet -2015: Invalid API-key, IP, or permissions` — the Worker's
+  `BINANCE_TESTNET_API_KEY/_SECRET` are invalid/expired/IP-restricted (testnet
+  keys expire; same -2015 seen historically). To get real fills + realized P/L:
+  regenerate a Spot Testnet key (USER_DATA + trade), update GitHub secrets
+  `BINANCE_TESTNET_API_KEY/_SECRET`, redeploy to sync Worker secrets, then Start.
+  **R2 also blocked at the account level:** `wrangler r2 bucket create` returned
+  `code 10042 — Please enable R2 through the Cloudflare Dashboard`; the reader +
+  commented binding are ready, but R2 must be enabled on the account first.
+
 - Deployed the full session batch to production (2026-07-19): commit `09bd422`
   (fund-ops NAV close, grid realized P/L, public test mode, external cron
   endpoint, R2 snapshot reader, events payload page, TOCTOU guard; 27 files) was
