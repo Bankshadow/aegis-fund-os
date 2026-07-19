@@ -205,6 +205,21 @@
 
 ## Last session
 
+- Deployed the full session batch to production (2026-07-19): commit `09bd422`
+  (fund-ops NAV close, grid realized P/L, public test mode, external cron
+  endpoint, R2 snapshot reader, events payload page, TOCTOU guard; 27 files) was
+  pushed to `main` — GitHub Actions run 29678029532 succeeded. A follow-up fix
+  `76bbc08` corrected `grid-cron.yml` (the secrets context is not allowed in
+  step-level `if:`; the invalid file caused instant startup-failure runs — now
+  gated on job-level env like deploy-cloudflare.yml); its deploy run 29678054997
+  also succeeded. Post-deploy production checks: `POST /api/cron/grid-sync` →
+  200 `{enabled:false}` no-op (previously 404 — endpoint live, fail-closed),
+  `GET /bots` → 200 with no PUBLIC TEST MODE badge (flag unset, default
+  Access-required behavior correct). Remaining activation levers are all
+  operator-set: `AEGIS_PUBLIC_TEST_MODE=true` (public testnet mutations),
+  `GRID_CRON_ENABLED` + `GRID_CRON_SECRET` + repo secrets (auto loop), R2 bucket
+  + binding + snapshot upload (real fund-ops dashboards).
+
 - Added the R2 operations-snapshot reader so fund-ops dashboards can show real
   data (2026-07-19). `getOperationsSnapshot` now resolves sources in priority
   order: R2 object (binding `OPERATIONS_BUCKET`, key
