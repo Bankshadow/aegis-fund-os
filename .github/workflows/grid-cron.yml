@@ -30,18 +30,20 @@ jobs:
   reconcile:
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    # The secrets context is not allowed in `if:` — mirror deploy-cloudflare.yml
+    # and gate on job-level env instead.
+    env:
+      GRID_CRON_URL: ${{ secrets.GRID_CRON_URL }}
+      GRID_CRON_SECRET: ${{ secrets.GRID_CRON_SECRET }}
+      CF_ACCESS_CLIENT_ID: ${{ secrets.CF_ACCESS_CLIENT_ID }}
+      CF_ACCESS_CLIENT_SECRET: ${{ secrets.CF_ACCESS_CLIENT_SECRET }}
     steps:
       - name: Skip when the cron URL is not configured
-        if: ${{ secrets.GRID_CRON_URL == '' }}
+        if: ${{ env.GRID_CRON_URL == '' }}
         run: echo "::warning::grid-cron skipped until GRID_CRON_URL and related secrets are configured."
 
       - name: Trigger grid reconciliation
-        if: ${{ secrets.GRID_CRON_URL != '' }}
-        env:
-          GRID_CRON_URL: ${{ secrets.GRID_CRON_URL }}
-          GRID_CRON_SECRET: ${{ secrets.GRID_CRON_SECRET }}
-          CF_ACCESS_CLIENT_ID: ${{ secrets.CF_ACCESS_CLIENT_ID }}
-          CF_ACCESS_CLIENT_SECRET: ${{ secrets.CF_ACCESS_CLIENT_SECRET }}
+        if: ${{ env.GRID_CRON_URL != '' }}
         run: |
           echo "Calling grid reconcile endpoint…"
           http_code=$(curl -sS -o response.json -w "%{http_code}" -X POST "$GRID_CRON_URL" \
