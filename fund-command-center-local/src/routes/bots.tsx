@@ -12,6 +12,7 @@ import {
   getGridBotGovernance,
   startBinanceTestnetGridBot,
   stopBinanceTestnetGridBot,
+  syncAllRunningTestnetGrids,
   transitionGridBotRuntime,
 } from "@/lib/grid-bot-governance.functions";
 import type { RuntimeState } from "@/lib/grid-bot-governance";
@@ -30,6 +31,7 @@ export const Route = createFileRoute("/bots")({
         events: [],
         profitByBot: {} as Record<string, { orderCount: number; estimatedCycleProfit: string }>,
         auditValid: false,
+        publicTestMode: false,
         storageAvailable: false as const,
         error: error instanceof Error ? error.message : "Governance storage unavailable",
       };
@@ -97,6 +99,25 @@ function BotsCockpit() {
   const [bots, setBots] = useState(initial.bots);
   const [q, setQ] = useState("");
   const [working, setWorking] = useState<string | null>(null);
+  const [syncingAll, setSyncingAll] = useState(false);
+  const hasRunningTestnet = bots.some(
+    (bot) => bot.environment === "BINANCE_TESTNET" && bot.runtimeState === "RUNNING",
+  );
+  // Human-triggered batch reconcile — the same driver a scheduled cron would run.
+  const syncAll = async () => {
+    setSyncingAll(true);
+    try {
+      const { results } = await syncAllRunningTestnetGrids({ data: { actorId: "local-operator@aegis" } });
+      const placed = results.reduce((sum, r) => sum + ("summary" in r ? r.summary.placed : 0), 0);
+      const filled = results.reduce((sum, r) => sum + ("summary" in r ? r.summary.filled : 0), 0);
+      const errors = results.filter((r) => "error" in r).length;
+      toast.success(`Synced ${results.length} running bot(s): ${filled} filled, ${placed} replenished${errors ? `, ${errors} failed` : ""}.`);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Batch reconcile failed closed");
+    } finally {
+      setSyncingAll(false);
+    }
+  };
   const visible = useMemo(
     () =>
       bots.filter((bot) =>
@@ -128,16 +149,27 @@ function BotsCockpit() {
   return (
     <AppShell>
       <PageHeader
-        kicker="DURABLE GOVERNANCE · BINANCE SPOT TESTNET"
+        kicker={initial.publicTestMode ? "PUBLIC TEST MODE · MUTATIONS OPEN · TESTNET ONLY" : "DURABLE GOVERNANCE · BINANCE SPOT TESTNET"}
         title="Spot Grid Bot Cockpit"
-        subtitle="D1-backed bot fleet, approval state and audited runtime controls."
+        subtitle={
+          initial.publicTestMode
+            ? "Public research build — no login; anyone can create/start/reconcile testnet bots. No real funds."
+            : "D1-backed bot fleet, approval state and audited runtime controls."
+        }
         actions={
-          <Button asChild>
-            <Link to="/bots/new">
-              <Plus className="h-4 w-4" />
-              Create Grid Bot
-            </Link>
-          </Button>
+          <div className="flex gap-2">
+            {hasRunningTestnet && (
+              <Button variant="outline" disabled={syncingAll} onClick={syncAll}>
+                {syncingAll ? "Syncing..." : "Sync all running"}
+              </Button>
+            )}
+            <Button asChild>
+              <Link to="/bots/new">
+                <Plus className="h-4 w-4" />
+                Create Grid Bot
+              </Link>
+            </Button>
+          </div>
         }
       />
       <div className="space-y-6 p-6">

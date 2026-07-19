@@ -1,0 +1,59 @@
+name: Grid runtime cron
+
+# External scheduler for the grid runtime loop. The in-Worker Nitro cron hook is
+# not registrable in this abstracted build, so a scheduled workflow drives the
+# reconcile loop over HTTP instead. It is fail-closed twice over: the endpoint
+# returns a 200 no-op unless GRID_CRON_ENABLED="true" on the Worker, and it
+# requires the shared X-Grid-Cron-Secret in addition to the Cloudflare Access
+# service token that gates the route at the edge.
+#
+# Required repository secrets:
+#   GRID_CRON_URL            e.g. https://aegis-fund-os.bankshadow30.workers.dev/api/cron/grid-sync
+#   GRID_CRON_SECRET         must equal the Worker secret of the same name
+#   CF_ACCESS_CLIENT_ID      Cloudflare Access service-token client id
+#   CF_ACCESS_CLIENT_SECRET  Cloudflare Access service-token client secret
+# The Access application must include a policy allowing this service token.
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: grid-runtime-cron
+  cancel-in-progress: false
+
+jobs:
+  reconcile:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Skip when the cron URL is not configured
+        if: ${{ secrets.GRID_CRON_URL == '' }}
+        run: echo "::warning::grid-cron skipped until GRID_CRON_URL and related secrets are configured."
+
+      - name: Trigger grid reconciliation
+        if: ${{ secrets.GRID_CRON_URL != '' }}
+        env:
+          GRID_CRON_URL: ${{ secrets.GRID_CRON_URL }}
+          GRID_CRON_SECRET: ${{ secrets.GRID_CRON_SECRET }}
+          CF_ACCESS_CLIENT_ID: ${{ secrets.CF_ACCESS_CLIENT_ID }}
+          CF_ACCESS_CLIENT_SECRET: ${{ secrets.CF_ACCESS_CLIENT_SECRET }}
+        run: |
+          echo "Calling grid reconcile endpoint…"
+          http_code=$(curl -sS -o response.json -w "%{http_code}" -X POST "$GRID_CRON_URL" \
+            -H "CF-Access-Client-Id: $CF_ACCESS_CLIENT_ID" \
+            -H "CF-Access-Client-Secret: $CF_ACCESS_CLIENT_SECRET" \
+            -H "X-Grid-Cron-Secret: $GRID_CRON_SECRET" \
+            -H "content-type: application/json" \
+            --data '{}')
+          echo "HTTP $http_code"
+          cat response.json || true
+          echo ""
+          if [ "$http_code" -ge 400 ]; then
+            echo "::error::grid reconcile endpoint returned $http_code"
+            exit 1
+          fi

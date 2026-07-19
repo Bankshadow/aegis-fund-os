@@ -19,8 +19,14 @@ class FundV2Store:
             """); conn.commit()
         finally: conn.close()
     def record_close(self, portfolio_id, report_date, nav, net_pnl, status):
+        # Idempotent: re-running a daily close updates NAV/status unless the close
+        # is already locked, which is preserved so a signed NAV cannot be rewritten.
         conn=self._connect()
-        try: conn.execute("INSERT INTO portfolio_closes(portfolio_id,report_date,nav,net_pnl,status) VALUES(?,?,?,?,?)",(portfolio_id,report_date,nav,net_pnl,status)); conn.commit()
+        try:
+            conn.execute(
+                "INSERT INTO portfolio_closes(portfolio_id,report_date,nav,net_pnl,status) VALUES(?,?,?,?,?) "
+                "ON CONFLICT(portfolio_id,report_date) DO UPDATE SET nav=excluded.nav,net_pnl=excluded.net_pnl,status=excluded.status WHERE locked=0",
+                (portfolio_id,report_date,nav,net_pnl,status)); conn.commit()
         finally: conn.close()
     def add_exception(self, portfolio_id, report_date, asset, reason, owner):
         conn=self._connect()

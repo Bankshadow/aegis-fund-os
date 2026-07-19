@@ -11,27 +11,47 @@ import {
 } from "./binance-testnet-execution";
 import { projectGridCycleProfit, projectedGridProfitTotal } from "./grid-profit";
 import { getBinanceTestnetGridStatus } from "./binance-testnet.server";
-import { planGridReconciliation } from "./grid-runtime";
+import {
+  reconcileAllRunningTestnetGrids,
+  reconcileOneTestnetGrid,
+  type ReconcileDeps,
+} from "./grid-reconcile";
+import { resolveActorIdentity } from "./actor-identity";
 
 type CloudflareRequest = Request & {
-  runtime?: { cloudflare?: { env?: { GOVERNANCE_DB?: D1DatabaseLike } } };
+  runtime?: {
+    cloudflare?: { env?: { GOVERNANCE_DB?: D1DatabaseLike; AEGIS_PUBLIC_TEST_MODE?: string } };
+  };
 };
 
+const runtimeEnv = (request: Request) => (request as CloudflareRequest).runtime?.cloudflare?.env;
+
 const repository = () => {
-  const db = (getRequest() as CloudflareRequest).runtime?.cloudflare?.env?.GOVERNANCE_DB;
+  const db = runtimeEnv(getRequest())?.GOVERNANCE_DB;
   if (!db) throw new Error("Governance storage is unavailable; mutation blocked");
   return new GridBotRepository(db);
 };
 
+const publicTestMode = (request: Request) => {
+  const fromBinding = runtimeEnv(request)?.AEGIS_PUBLIC_TEST_MODE;
+  // The Cloudflare preset mirrors bindings/secrets onto globalThis.__env__ on
+  // every invocation; this is where wrangler's .dev.vars land in dev.
+  const fromGlobal = (globalThis as { __env__?: Record<string, string | undefined> }).__env__
+    ?.AEGIS_PUBLIC_TEST_MODE;
+  const fromProcess = (globalThis as { process?: { env?: Record<string, string | undefined> } }).process?.env
+    ?.AEGIS_PUBLIC_TEST_MODE;
+  return (fromBinding ?? fromGlobal ?? fromProcess)?.trim() === "true";
+};
+
 const actorIdentity = (localClaim?: string) => {
   const request = getRequest();
-  const accessEmail = request.headers.get("cf-access-authenticated-user-email")?.trim();
-  const accessJwt = request.headers.get("cf-access-jwt-assertion")?.trim();
-  if (accessEmail && accessJwt) return accessEmail.toLowerCase();
-  const host = new URL(request.url).hostname;
-  if ((host === "127.0.0.1" || host === "localhost") && localClaim?.trim())
-    return localClaim.trim().toLowerCase();
-  throw new Error("Verified Cloudflare Access identity is required; mutation blocked");
+  return resolveActorIdentity({
+    accessEmail: request.headers.get("cf-access-authenticated-user-email"),
+    accessJwt: request.headers.get("cf-access-jwt-assertion"),
+    hostname: new URL(request.url).hostname,
+    localClaim,
+    publicTestMode: publicTestMode(request),
+  });
 };
 
 const createSchema = z.object({
@@ -105,7 +125,13 @@ export const getGridBotGovernance = createServerFn({ method: "GET" }).handler(as
       return [bot.id, { orderCount: projections.length, estimatedCycleProfit: projectedGridProfitTotal(projections) }];
     }),
   );
-  return { bots, events, profitByBot, auditValid: await verifyGovernanceChains(events) };
+  return {
+    bots,
+    events,
+    profitByBot,
+    auditValid: await verifyGovernanceChains(events),
+    publicTestMode: publicTestMode(getRequest()),
+  };
 });
 
 export const getGridBotOrders = createServerFn({ method: "GET" })
@@ -189,74 +215,51 @@ export const startBinanceTestnetGridBot = createServerFn({ method: "POST" })
  * that fails leaves its source fill un-terminal so the next poll retries it,
  * and the error is surfaced only after the ledger is made consistent.
  */
+const testnetReconcileDeps: ReconcileDeps = {
+  getStatus: getBinanceTestnetGridStatus,
+  placeOrder: placeSingleTestnetOrder,
+};
+
 export const syncBinanceTestnetGridBot = createServerFn({ method: "POST" })
   .validator(z.object({ botId: z.string().min(1), actorId: z.string().trim().min(1).optional() }))
   .handler(async ({ data }) => {
     const repo = repository();
     const actorId = actorIdentity(data.actorId);
     const bot = await repo.getBot(data.botId);
-    if (!bot || bot.environment !== "BINANCE_TESTNET" || bot.pair !== "BTCUSDT")
-      throw new Error("Binance Spot Testnet bot not found");
-    if (bot.runtimeState !== "RUNNING") throw new Error("Only a RUNNING bot can reconcile grid fills");
-
-    const [orders, remote] = await Promise.all([
-      repo.listOrders(bot.id),
-      getBinanceTestnetGridStatus("BTCUSDT"),
-    ]);
-    const plan = await planGridReconciliation(
-      bot.id,
-      orders,
-      remote.openOrders.map((order) => ({ clientOrderId: order.clientOrderId, status: order.status })),
-      remote.trades.map((trade) => ({ exchangeOrderId: String(trade.orderId) })),
-    );
-
-    const targetedSources = new Set(plan.replenishments.map((item) => item.sourceClientOrderId));
-    const placedSources = new Set<string>();
-    const placements: Array<{
-      clientOrderId: string; exchangeOrderId: string; side: "BUY" | "SELL";
-      price: string; quantity: string; gridIndex: number; status: string;
-    }> = [];
-    let placementError: unknown = null;
-    for (const replenishment of plan.replenishments) {
-      try {
-        const placed = await placeSingleTestnetOrder(bot.pair, replenishment);
-        placements.push({
-          clientOrderId: replenishment.clientOrderId,
-          exchangeOrderId: String(placed.orderId),
-          side: replenishment.side,
-          price: replenishment.price,
-          quantity: replenishment.quantity,
-          gridIndex: replenishment.gridIndex,
-          status: placed.status,
-        });
-        placedSources.add(replenishment.sourceClientOrderId);
-      } catch (error) {
-        placementError = error;
-        break;
-      }
-    }
-    // Commit a fill only if it needs no replenishment (grid boundary) or its
-    // replenishment was actually placed; otherwise leave it for the next poll.
-    const filled = plan.filled.filter(
-      (fill) => !targetedSources.has(fill.clientOrderId) || placedSources.has(fill.clientOrderId),
-    );
-    const result = await repo.recordGridSync(bot.id, actorId, {
-      statusUpdates: plan.statusUpdates,
-      filled,
-      reconciliationRequired: plan.reconciliationRequired,
-      placements,
-    });
-    if (placementError) throw placementError;
-    return {
-      ...result,
-      summary: {
-        filled: filled.length,
-        placed: placements.length,
-        statusUpdated: plan.statusUpdates.length,
-        reconciliationRequired: plan.reconciliationRequired.length,
-      },
-    };
+    if (!bot) throw new Error("Binance Spot Testnet bot not found");
+    return reconcileOneTestnetGrid(repo, bot, actorId, testnetReconcileDeps);
   });
+
+/**
+ * Reconcile every RUNNING Binance Spot Testnet bot in one call. This is the
+ * human-triggered "sync all" and the same code the cron driver runs. Fail-closed
+ * on identity; one bot failing is isolated and reported, never aborting others.
+ */
+export const syncAllRunningTestnetGrids = createServerFn({ method: "POST" })
+  .validator(z.object({ actorId: z.string().trim().min(1).optional() }))
+  .handler(async ({ data }) => {
+    const repo = repository();
+    const actorId = actorIdentity(data.actorId);
+    return { results: await reconcileAllRunningTestnetGrids(repo, actorId, testnetReconcileDeps) };
+  });
+
+/**
+ * Scheduled (cron) driver. Fail-closed behind `GRID_CRON_ENABLED`: the wrangler
+ * cron trigger fires unconditionally, but this returns a no-op unless the
+ * operator has explicitly enabled the automatic loop, so deploying the trigger
+ * never turns on autonomous trading by itself. Runs under a distinct system
+ * actor so its audit events can never be mistaken for a human operator's.
+ */
+export async function runScheduledGridReconciliation(env: {
+  GOVERNANCE_DB?: D1DatabaseLike;
+  GRID_CRON_ENABLED?: string;
+}): Promise<{ enabled: boolean; results: Awaited<ReturnType<typeof reconcileAllRunningTestnetGrids>> }> {
+  if (env.GRID_CRON_ENABLED?.trim() !== "true") return { enabled: false, results: [] };
+  if (!env.GOVERNANCE_DB) throw new Error("Governance storage is unavailable; scheduled reconcile blocked");
+  const repo = new GridBotRepository(env.GOVERNANCE_DB);
+  const results = await reconcileAllRunningTestnetGrids(repo, "system:grid-cron", testnetReconcileDeps);
+  return { enabled: true, results };
+}
 
 export const stopBinanceTestnetGridBot = createServerFn({ method: "POST" })
   .validator(z.object({ botId: z.string().min(1), actorId: z.string().trim().min(1).optional() }))

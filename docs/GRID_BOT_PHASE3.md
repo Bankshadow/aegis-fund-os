@@ -66,9 +66,65 @@ the grid cycling:
   batch composition, no-change no-op, non-RUNNING guard, no-active-execution
   fail-closed).
 
+## Realized-cycle P/L (2026-07-19)
+
+`src/lib/grid-realized.ts::computeRealizedCycles` books realized profit only from
+*completed* round trips: it pairs `FILLED` buys with `FILLED` sells one grid line
+apart (arithmetic `buy + step`; geometric `buy × ratio`), FIFO, each sell used
+once. A single filled leg is reported as open, never as profit. Fees use the same
+0.10%/side estimate as the projection. Surfaced on the Grid Profit page as a
+"Realized P/L (completed cycles)" tile plus a per-cycle table. Tests:
+`test/grid-realized.test.mjs` (round trip, single open leg, NEW excluded,
+non-adjacent no-pair, multiple cycles, geometric).
+
+## Batch driver + scheduler (2026-07-19)
+
+`src/lib/grid-reconcile.ts` holds the transport/identity-independent core:
+`reconcileOneTestnetGrid` (one bot) and `reconcileAllRunningTestnetGrids` (every
+RUNNING BTCUSDT testnet bot; one bot failing is isolated, never aborts the
+batch). Exchange access and actor identity are injected, so both the server
+functions and any scheduler share one tested path. Exposed as:
+
+- `syncBinanceTestnetGridBot` — one bot, human-triggered ("Reconcile fills").
+- `syncAllRunningTestnetGrids` — all running bots, human-triggered ("Sync all
+  running" on the cockpit).
+- `runScheduledGridReconciliation(env)` — fail-closed behind `GRID_CRON_ENABLED`
+  (returns a no-op unless the operator sets it to `"true"`), runs under system
+  actor `system:grid-cron`. Ready for a scheduler to call.
+
+Tests: `test/grid-reconcile.test.mjs` (replenishment placed + recorded,
+non-RUNNING refused, only-running-testnet filter, failure isolation).
+
+### Automatic scheduler: external cron (2026-07-19)
+
+Nitro's Cloudflare preset dispatches cron to the `cloudflare:scheduled` **hook**
+(a Nitro plugin). This build's Nitro is abstracted by
+`@lovable.dev/vite-tanstack-config`, whose `nitro` passthrough exposes only
+`preset`/`output`/`cloudflare` — not `plugins`/`scanDirs` — and neither
+`plugins/` nor `server/plugins/` is scanned (verified empirically). So instead of
+an in-Worker cron, the loop is driven by an **external scheduler over HTTP**:
+
+- **Endpoint** `POST /api/cron/grid-sync` — intercepted in `src/server.ts` before
+  the app router (a path we fully control), reading Cloudflare bindings from
+  `globalThis.__env__`. Handler `src/lib/grid-cron-endpoint.ts` is fail-closed
+  twice: a 200 no-op unless `GRID_CRON_ENABLED === "true"`, and a constant-time
+  `X-Grid-Cron-Secret` check against the `GRID_CRON_SECRET` Worker secret (an
+  app-layer factor on top of the edge Cloudflare Access service token). Runs
+  `reconcileAllRunningTestnetGrids` under `system:grid-cron`. Verified live on
+  `wrangler dev`: POST → `{enabled:false}` no-op, GET → 405, `/bots` unaffected.
+- **Workflow** `.github/workflows/grid-cron.yml` — `*/15 * * * *` schedule (plus
+  manual dispatch) that curls the endpoint with the Access service-token headers
+  and the shared secret; skips cleanly until its secrets are configured.
+
+**Operator setup to activate:** (1) set Worker secrets `GRID_CRON_ENABLED=true`
+and `GRID_CRON_SECRET=<random>`; (2) create a Cloudflare Access service token and
+add a policy allowing it on the app; (3) set repo secrets `GRID_CRON_URL`,
+`GRID_CRON_SECRET` (same value), `CF_ACCESS_CLIENT_ID`, `CF_ACCESS_CLIENT_SECRET`.
+Until (1) is done the endpoint is a safe no-op. `runScheduledGridReconciliation`
+(fail-closed) remains available for the in-Worker hook path if the build is ever
+de-abstracted.
+
 ## Not in Phase 3
 
-- Automatic scheduling (cron / Durable Object).
-- Realized-cycle P/L accounting (still projection-only via `grid-profit.ts`).
 - Full fill→replenish end-to-end verification, which needs a live testnet bot
   with real fills behind a second Cloudflare Access identity.

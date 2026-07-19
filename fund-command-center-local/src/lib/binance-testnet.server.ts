@@ -1,6 +1,6 @@
 import "@tanstack/react-start/server-only";
 
-import { hmacSha256Hex } from "./binance-signing";
+import { hmacSha256Hex } from "./binance-signing.ts";
 
 const BINANCE_SPOT_TESTNET_URL = "https://testnet.binance.vision";
 const REQUEST_TIMEOUT_MS = 8_000;

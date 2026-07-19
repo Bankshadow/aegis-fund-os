@@ -16,6 +16,13 @@
   ],
   "compatibility_date": "2026-07-15",
   "compatibility_flags": ["nodejs_compat"],
+  // To serve REAL fund-ops data on Portfolio/Reconciliation, create the R2
+  // bucket and uncomment this binding, then upload the Python-generated snapshot
+  // to key "operations_snapshot.json". Left commented so deploys don't fail while
+  // the bucket doesn't exist; the reader falls back to env JSON / demo until then.
+  //   "r2_buckets": [
+  //     { "binding": "OPERATIONS_BUCKET", "bucket_name": "aegis-operations-snapshots" }
+  //   ],
   "observability": {
     "enabled": true
   }

@@ -10,7 +10,7 @@ from dynamic_grid.binance_connector import (ApprovedMarksFeeConverter,
 from dynamic_grid.binance_futures_connector import BinanceUsdmFundingReadOnlyConnector
 from dynamic_grid.fund_controls import AccessController, Operation, Role
 from dynamic_grid.fund_ops import AppendOnlyLedger, LedgerEvent, PlatformBalance
-from dynamic_grid.fund_reporting import build_daily_close, write_daily_close
+from dynamic_grid.fund_reporting import build_daily_close, compute_nav, write_daily_close
 from dynamic_grid.fund_ops import ConnectorSync, EventType
 from dynamic_grid.fund_ops_job import run_read_only_daily_close
 from fund_ops_cli import build_parser, parse_marks
@@ -426,6 +426,65 @@ class FundMvpWeeksTwoToEightTests(unittest.TestCase):
             rows = exception_store.list_exceptions("main", "2026-07-15", "open")
             self.assertEqual(len(rows), 1)
             self.assertEqual(rows[0]["owner"], "maker")
+
+    def test_daily_close_nav_values_spot_and_derivative_positions(self):
+        ledger = AppendOnlyLedger()
+        ledger.append(fill("spot-1", "buy", 1.0, 100.0))  # spot BTC/USDT: cash -100
+        ledger.append(LedgerEvent.derivative_fill(
+            event_id="d1", external_id="d1", platform="binance_usdm",
+            account_id="futures", portfolio_id="main", instrument="ETHUSDT",
+            side="buy", quantity=2.0, price=50.0, occurred_at=TIME))
+        marks = {"BTC/USDT": 120.0, "ETHUSDT": 60.0}
+        recon = reconcile_positions(ledger, [], marks, reporting_asset="USDT")
+        report = build_daily_close(ledger, marks, recon, report_date=date(2026, 7, 15))
+        # nav = cash(-100) + spot(1*120) + derivative unrealized(2*(60-50)=20) = 40
+        self.assertAlmostEqual(report.nav, 40.0)
+        self.assertTrue(report.nav_complete)
+        self.assertEqual(report.nav_missing_marks, ())
+
+    def test_nav_fails_closed_when_a_position_mark_is_missing(self):
+        ledger = AppendOnlyLedger()
+        ledger.append(LedgerEvent.derivative_fill(
+            event_id="d1", external_id="d1", platform="binance_usdm",
+            account_id="futures", portfolio_id="main", instrument="ETHUSDT",
+            side="buy", quantity=1.0, price=50.0, occurred_at=TIME))
+        snapshot = ledger.snapshot({})  # no mark for ETHUSDT
+        nav, missing = compute_nav(snapshot)
+        self.assertEqual(missing, ("ETHUSDT",))
+        # NAV is not silently valued at zero for the unmarked position.
+        self.assertEqual(nav, snapshot.reporting_cash_balance)
+
+    def test_daily_close_job_persists_close_and_missing_mark_blocks_lock(self):
+        class DerivConnector(FakeReadOnlyConnector):
+            def sync(self, cursor=None):
+                self.cursors.append(cursor)
+                deriv = LedgerEvent.derivative_fill(
+                    event_id="d1", external_id="d1", platform="test",
+                    account_id="acct-1", portfolio_id="main", instrument="ETHUSDT",
+                    side="buy", quantity=1.0, price=50.0, occurred_at=TIME)
+                return ConnectorSync("test", "acct-1", TIME, "cursor-1",
+                                     [PlatformBalance("BTC", 1.0, 1.0)], [fill(), deriv])
+
+        with tempfile.TemporaryDirectory() as directory:
+            ledger_store = SQLiteLedgerStore(Path(directory) / "ledger.sqlite")
+            exception_store = FundV2Store(Path(directory) / "fund.sqlite")
+            kwargs = dict(
+                connector=DerivConnector(), store=ledger_store, portfolio_id="main",
+                marks={"BTC/USDT": 110.0}, report_path=Path(directory) / "report.json",
+                report_date=date(2026, 7, 15), exception_store=exception_store,
+                exception_owner="maker")
+            run = run_read_only_daily_close(**kwargs)
+            run_read_only_daily_close(**kwargs)  # idempotent second close
+            # ETHUSDT has no mark → NAV incomplete → close persisted as provisional.
+            self.assertFalse(run.report.nav_complete)
+            self.assertIn("ETHUSDT", run.report.nav_missing_marks)
+            history = exception_store.close_history("main")
+            self.assertEqual(len(history), 1)  # upsert, not a duplicate row
+            self.assertEqual(history[0]["status"], "provisional")
+            self.assertAlmostEqual(history[0]["nav"], run.report.nav)
+            # A missing-mark exception blocks locking the close.
+            with self.assertRaises(ValueError):
+                exception_store.lock_close("main", "2026-07-15", "approver")
 
     def test_cli_marks_require_symbol_price_pairs(self):
         self.assertEqual(parse_marks(["BTC/USDT=65000", "ETH/USDT=3500"]),

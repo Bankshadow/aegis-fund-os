@@ -134,20 +134,38 @@ export async function buildExecutableGrid(bot: BotRecord, fetcher: Fetcher = fet
   });
   if (rows.length > MAX_GRID_ORDERS) throw new Error(`Testnet execution is capped at ${MAX_GRID_ORDERS} orders`);
   const balance = (asset: string) => new Decimal(account.balances?.find((item) => item.asset === asset)?.free ?? 0);
+  const freeUsdt = balance("USDT");
+  const freeBtc = balance("BTC");
   const buyQuote = rows.filter((row) => row.side === "BUY").reduce((sum, row) => sum.add(row.quoteValue), new Decimal(0));
   const sellBase = rows.filter((row) => row.side === "SELL").reduce((sum, row) => sum.add(row.quantity), new Decimal(0));
-  if (buyQuote.gt(balance("USDT"))) throw new Error(`Insufficient Testnet USDT: requires ${buyQuote.toFixed(2)}`);
-  if (sellBase.gt(balance("BTC"))) throw new Error(`Insufficient Testnet BTC: requires ${sellBase.toFixed()}`);
-  return rows;
+  if (buyQuote.gt(freeUsdt)) throw new Error(`Insufficient Testnet USDT: requires ${buyQuote.toFixed(2)}`);
+  if (sellBase.gt(freeBtc)) throw new Error(`Insufficient Testnet BTC: requires ${sellBase.toFixed()}`);
+  return { rows, freeUsdt: freeUsdt.toFixed(), freeBtc: freeBtc.toFixed() };
 }
 
 export async function placeTestnetGrid(bot: BotRecord, fetcher: Fetcher = fetch) {
   const { baseUrl } = credentials();
   const offset = await timeOffset(fetcher, baseUrl);
-  const rows = await buildExecutableGrid(bot, fetcher, offset);
+  const { rows, freeUsdt, freeBtc } = await buildExecutableGrid(bot, fetcher, offset);
+  // Running reservation seeded from the balance snapshot. The aggregate check
+  // already proved the whole grid fits, but debiting per order and failing
+  // closed before each send guards against a balance that no longer covers the
+  // next leg (e.g. an order in this grid already consumed it, or the snapshot
+  // over-stated free funds) rather than over-committing the account.
+  let remainingUsdt = new Decimal(freeUsdt);
+  let remainingBtc = new Decimal(freeBtc);
   const placed: TestnetOrderRecord[] = [];
   try {
     for (const row of rows) {
+      if (row.side === "BUY") {
+        const cost = new Decimal(row.quoteValue);
+        if (cost.gt(remainingUsdt)) throw new Error(`Insufficient Testnet USDT for grid ${row.grid}: needs ${cost.toFixed(2)}, ${remainingUsdt.toFixed(2)} left`);
+        remainingUsdt = remainingUsdt.sub(cost);
+      } else {
+        const cost = new Decimal(row.quantity);
+        if (cost.gt(remainingBtc)) throw new Error(`Insufficient Testnet BTC for grid ${row.grid}: needs ${cost.toFixed()}, ${remainingBtc.toFixed()} left`);
+        remainingBtc = remainingBtc.sub(cost);
+      }
       const digest = await hmacSha256Hex(bot.id, `${bot.version}:${row.grid}:${row.side}:${row.price}:${row.quantity}`);
       const clientOrderId = `aegis-${digest.slice(0, 24)}`;
       const result = await signedRequest<{ orderId: number; clientOrderId: string; status: string }>(fetcher, "POST", "/api/v3/order", {

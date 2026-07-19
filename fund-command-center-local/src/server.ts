@@ -46,6 +46,23 @@ function isH3SwallowedErrorBody(body: string): boolean {
 
 export default {
   async fetch(request: Request, env: unknown, ctx: unknown) {
+    // External grid-runtime scheduler entrypoint, intercepted before the app
+    // router. Env bindings (D1, cron secrets) are exposed by the Cloudflare
+    // preset on globalThis.__env__; the handler is fail-closed on both the
+    // enabled flag and the shared secret.
+    if (new URL(request.url).pathname === "/api/cron/grid-sync") {
+      try {
+        const { handleGridCronRequest } = await import("./lib/grid-cron-endpoint");
+        const runtimeEnv = (env as object | undefined) ?? (globalThis as { __env__?: unknown }).__env__;
+        return await handleGridCronRequest(request, runtimeEnv as Parameters<typeof handleGridCronRequest>[1]);
+      } catch (error) {
+        console.error("grid-cron endpoint failed:", error);
+        return new Response(JSON.stringify({ error: "grid cron failed" }), {
+          status: 500,
+          headers: { "content-type": "application/json" },
+        });
+      }
+    }
     try {
       const handler = await getServerEntry();
       const response = await handler.fetch(request, env, ctx);

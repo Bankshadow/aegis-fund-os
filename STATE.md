@@ -205,6 +205,117 @@
 
 ## Last session
 
+- Added the R2 operations-snapshot reader so fund-ops dashboards can show real
+  data (2026-07-19). `getOperationsSnapshot` now resolves sources in priority
+  order: R2 object (binding `OPERATIONS_BUCKET`, key
+  `AEGIS_OPERATIONS_SNAPSHOT_KEY` or `operations_snapshot.json`) →
+  `AEGIS_OPERATIONS_SNAPSHOT_JSON` → filesystem path → demo fallback. Extracted a
+  pure, testable `src/lib/operations-snapshot.ts` (`parseOperationsSnapshot`,
+  `loadOperationsSnapshot`, `UNCONFIGURED_SNAPSHOT`) that accepts only a
+  `persisted_snapshot` `ready/provisional` record and fails closed on
+  demo/invalid input; the server fn stays thin and re-exports the type so routes
+  are unchanged. Commented `r2_buckets` binding in `wrangler.jsonc` (left off so
+  deploys don't fail until the bucket exists). +7 tests → 79/79; TypeScript,
+  build, gate SHIP. Live check: `/portfolio` renders demo fallback with no source
+  configured; a configured-but-invalid snapshot correctly fails closed (proves
+  the env→reader→parse→route chain is wired). R2 uses the same runtime-binding
+  mechanism as the working D1 binding, and stores the JSON as an object so it
+  avoids the escaping/size limits of inline env JSON. Activation steps (create
+  bucket, uncomment binding, upload the Python-generated snapshot) are in
+  `docs/MVP_FUND_OPS_PLAN.md`. Not committed/pushed.
+
+- Added public-test-mode so the login-less public deployment can run real
+  testnet bots and measure results (2026-07-19; user chose "both" + env-flag).
+  New pure `src/lib/actor-identity.ts::resolveActorIdentity` centralizes the
+  fail-closed identity matrix: verified Access email+JWT wins; else a localhost
+  claim; else — only when `AEGIS_PUBLIC_TEST_MODE === "true"` — a client claim
+  (spoofable; acceptable because execution is testnet-locked, no real funds) or
+  the fixed `public-test-operator`; otherwise blocked. `actorIdentity` now calls
+  it, reading the flag from runtime binding → `globalThis.__env__` → process.env
+  (the `.dev.vars`/secret lands on `__env__`). This unblocks create / one-click
+  testnet start / reconcile / stop on public prod when the flag is set; default
+  OFF keeps Access-required. `getGridBotGovernance` returns `publicTestMode` and
+  the cockpit shows a "PUBLIC TEST MODE · MUTATIONS OPEN · TESTNET ONLY" banner
+  when active. +8 identity tests → 72/72; TypeScript, build, gate SHIP.
+  Browser-verified on wrangler dev with `.dev.vars` flag: badge renders and the
+  flag is read from `__env__` (default off → "DURABLE GOVERNANCE"). Four-eyes
+  approve still needs two distinct claims (works in test mode) or real Access.
+  **Activation:** set Worker var `AEGIS_PUBLIC_TEST_MODE=true`.
+  **Data-connection status (user goal "see real data / measure"):** the grid
+  domain (bots, orders, events, audit, Grid Profit incl. realized P/L) is
+  already REAL from D1 + Binance Testnet — it just needs a bot actually running
+  (now possible). The fund-ops accounting dashboards (Portfolio/NAV/
+  Reconciliation/Strategy Lab) still show demo fallback until a real operations
+  snapshot is delivered to the Worker (`AEGIS_OPERATIONS_SNAPSHOT_JSON`, or the
+  future R2 reader) from the Python daily-close pipeline — that pipeline against
+  a live testnet account is the remaining follow-up for "real fund-ops data".
+
+- Added the external-cron automatic scheduler (2026-07-19). Since the abstracted
+  Nitro build can't register a `cloudflare:scheduled` hook, the grid loop is
+  driven over HTTP: new `POST /api/cron/grid-sync` intercepted in `src/server.ts`
+  (before the app router, reading bindings from `globalThis.__env__`), handled by
+  `src/lib/grid-cron-endpoint.ts` — fail-closed twice (200 no-op unless
+  `GRID_CRON_ENABLED="true"`; constant-time `X-Grid-Cron-Secret` vs
+  `GRID_CRON_SECRET` Worker secret, layered under the edge Access service token),
+  running `reconcileAllRunningTestnetGrids` as `system:grid-cron`. New workflow
+  `.github/workflows/grid-cron.yml` (*/15, + manual) curls it with Access
+  service-token headers, skipping until its secrets exist. Fixed one extensionless
+  import (`binance-testnet.server.ts` → `./binance-signing.ts`) so the chain loads
+  under node --test. +5 endpoint tests → 64/64; TypeScript, build, gate SHIP.
+  Verified live on wrangler dev: POST → `{enabled:false}` no-op, GET → 405,
+  `/bots` → 200 (interception + env plumbing work, normal routes unaffected).
+  Activation steps (Worker secrets + Access service token + repo secrets) are in
+  `docs/GRID_BOT_PHASE3.md`. Not committed/pushed.
+
+- Closed the two 🟢 code follow-ups from HANDOFF §0 (2026-07-19). **(A) Bot
+  Audit Events page** (`bots_.$botId_.events.tsx`) previously showed only
+  eventType/actor/time and discarded `event.payload`. Rewrote it to add a short
+  eventHash column and clickable rows opening a detail Sheet with the real
+  payload JSON and previousHash→eventHash linkage (same pattern as `/audit`),
+  plus the chain-verified banner. Browser-verified on local wrangler: the
+  `testnet.orders_placed` event shows payload `{executionId, orderCount:20,
+  environment:BINANCE_TESTNET}` and genuine previous→this hash linkage. **(B)
+  TOCTOU per-order balance guard** in the Testnet execution slice: the aggregate
+  USDT/BTC check in `buildExecutableGrid` is kept, but `buildExecutableGrid` now
+  also returns the snapshot free balances and `placeTestnetGrid` debits a running
+  reservation per order, failing closed before sending each leg if the remaining
+  snapshot balance no longer covers it (no extra account/time fetch, so the N+1
+  fix stays). Frontend 59/59, TypeScript, build and `gate/verify.ps1` (SHIP)
+  pass. NOTE: `src/routes/aot-paper-grid.tsx` + its test are the user's parallel
+  WIP (untracked), not part of this work. Not committed/pushed.
+
+- Fund-ops NAV + persisted close, grid realized-cycle P/L, and scheduler-ready
+  batch driver (2026-07-19). **(1) Fund-ops:** `compute_nav` values spot
+  (qty×mark) + derivative mark-to-market into the daily-close, fail-closed on any
+  open position lacking a mark (`nav_missing_marks`, never valued at 0 silently);
+  the daily-close job now persists the close via `FundV2Store.record_close`
+  (idempotent upsert preserving locked closes) and records missing-mark
+  exceptions that block `lock_close`. Exception review/approval persistence
+  already existed (idempotent add, four-eyes resolve, lock-blocking).
+  `DailyCloseReport` gained `nav/nav_complete/nav_missing_marks` (defaulted at the
+  end for backward-compatible reconstruction in `fund_v2_cli`). +3 Python tests;
+  fund discovery 38/38, gate SHIP. **(2) Grid realized-cycle P/L:**
+  `grid-realized.ts::computeRealizedCycles` pairs FILLED buy→sell round trips one
+  grid line apart (arithmetic/geometric), open legs never counted as profit;
+  surfaced on the Grid Profit page. **(3) Scheduler:** extracted transport/
+  identity-independent `grid-reconcile.ts` (`reconcileOneTestnetGrid`,
+  `reconcileAllRunningTestnetGrids`); refactored `syncBinanceTestnetGridBot` onto
+  it; added `syncAllRunningTestnetGrids` server fn + "Sync all running" cockpit
+  button, and `runScheduledGridReconciliation` (fail-closed behind
+  `GRID_CRON_ENABLED`, system actor `system:grid-cron`). **No in-Worker cron
+  trigger shipped:** Nitro dispatches cron to the `cloudflare:scheduled` hook via
+  a plugin, but this abstracted lovable/vite-tanstack Nitro build scans no
+  `plugins/`/`server/plugins/` dir and its `nitro` passthrough doesn't expose
+  plugin registration (verified empirically) — a wrangler cron without the hook
+  would no-op, so it was deliberately omitted. Enablement path documented in
+  `docs/GRID_BOT_PHASE3.md` (de-abstract Nitro plugin, or external scheduler +
+  Access service token). +10 frontend tests (6 realized, 4 reconcile) → 49/49;
+  TypeScript, build, gate SHIP. Browser-verified: "Sync all running" and the
+  realized-P/L tile render and wire (local wrangler reached testnet, "1 fill
+  observed"). **(4) Research:** Line-B D1 closure re-affirmed — no mechanism-level
+  hypothesis proposed, so dual tuning NOT reopened (would violate D1/CLAUDE.md);
+  VALIDATION_LOG §D1 + eval gate doctrine intact. Not committed/pushed yet.
+
 - Built the grid-bot runtime loop — fill tracking + replenishment (2026-07-19,
   Task 4). New pure planner `src/lib/grid-runtime.ts::planGridReconciliation`
   reconciles the durable order ledger against the exchange's open orders and

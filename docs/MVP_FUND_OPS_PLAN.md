@@ -41,11 +41,28 @@
    Spot distribution income และ multi-currency capital FX policy
 2. ~~ขยาย ledger เป็น derivatives, FX และ multi-currency พร้อม valuation policy~~
    **เสร็จ:** derivatives fills/positions, `ApprovedFxValuation` สำหรับ balances,
-   และ capital FX สำหรับ transfer/income. **ยังค้าง:** persisted derivatives
-   position valuation แบบ end-to-end เข้า daily-close
-3. เพิ่ม reconciliation ของ cash/fills และ exception review/approval persistence
+   capital FX สำหรับ transfer/income, และ (2026-07-19) **NAV valuation เข้า
+   daily-close** — `compute_nav` คิดค่า spot (qty×mark) + derivative
+   mark-to-market (unrealized), fail-closed เมื่อ position ที่เปิดอยู่ไม่มี mark
+   (ไม่ตีเป็น 0 เงียบๆ); daily-close job persist close ผ่าน
+   `FundV2Store.record_close` (idempotent upsert, รักษา locked) และ missing-mark
+   ถูกบันทึกเป็น exception ที่บล็อกการ lock
+3. ~~เพิ่ม reconciliation ของ cash/fills และ exception review/approval persistence~~
+   **เสร็จ:** exception idempotent + four-eyes resolve + lock-blocking ใน
+   `FundV2Store`; daily-close job persist ทั้ง exceptions และ close record
 4. เพิ่ม NAV, TWR/MWR, benchmark, strategy attribution และ reporting-period lock
-5. ต่อ dashboard เข้ากับ service ภายในที่อ่านจาก SQLite เท่านั้น ไม่เรียก platform ใน browser
+5. ~~ต่อ dashboard เข้ากับ service ภายในที่อ่านจาก SQLite เท่านั้น~~
+   **เสร็จบางส่วน (2026-07-19):** `getOperationsSnapshot` อ่าน snapshot ตามลำดับ
+   R2 object (binding `OPERATIONS_BUCKET`, key `operations_snapshot.json`) →
+   `AEGIS_OPERATIONS_SNAPSHOT_JSON` → path → demo fallback; รับเฉพาะ
+   `persisted_snapshot` ที่ `ready/provisional` เท่านั้น มิฉะนั้น fail closed
+   (`src/lib/operations-snapshot.ts`, 7 tests). Portfolio/Reconciliation แสดง
+   real data เมื่อ snapshot ถูก feed. **การเปิดใช้ R2 (ข้อมูลจริง):**
+   (1) `wrangler r2 bucket create aegis-operations-snapshots`, (2) uncomment
+   `r2_buckets` ใน `wrangler.jsonc`, (3) generate snapshot ด้วย
+   `python operations_snapshot_cli.py ...` แล้ว
+   `wrangler r2 object put aegis-operations-snapshots/operations_snapshot.json --file=...`
+   R2 เป็น binding (เหมือน D1) จึงเลี่ยงข้อจำกัด escaping/ขนาดของ inline env JSON
 
 ## Definition of Done สำหรับ MVP
 

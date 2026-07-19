@@ -43,13 +43,23 @@ def run_read_only_daily_close(*, connector: ReadOnlyPlatformConnector,
         ledger, sync.balances, marks,
         reporting_asset=getattr(connector, "reporting_asset", None),
         derivative_positions=sync.positions)
-    if exception_store is not None and reconciliation.exceptions:
-        close_date = (report_date or date.today()).isoformat()
-        for item in reconciliation.exceptions:
-            exception_store.add_exception(
-                portfolio_id, close_date, item.asset, item.reason, exception_owner)
     report = build_daily_close(ledger, marks, reconciliation, report_date,
                                data_as_of=sync.synced_at, platform=sync.platform,
                                account_id=sync.account_id, balances=tuple(sync.balances))
     write_daily_close(report, report_path)
+    if exception_store is not None:
+        close_date = (report_date or date.today()).isoformat()
+        for item in reconciliation.exceptions:
+            exception_store.add_exception(
+                portfolio_id, close_date, item.asset, item.reason, exception_owner)
+        # A position with no approved mark leaves NAV incomplete; record it as an
+        # exception so the close is provisional and cannot be locked until a mark
+        # is supplied. This is what carries derivative valuation into the close.
+        for instrument in report.nav_missing_marks:
+            exception_store.add_exception(
+                portfolio_id, close_date, instrument,
+                "missing approved mark for NAV valuation", exception_owner)
+        close_status = "clean" if (report.status == "clean" and report.nav_complete) else "provisional"
+        exception_store.record_close(
+            portfolio_id, close_date, report.nav, report.net_pnl, close_status)
     return DailyCloseRun(inserted, reconciliation, report)
