@@ -84,6 +84,47 @@ test("recordGridSync persists a fill, a placement, a version bump and one audit 
   assert.equal(sqls.filter((s) => s.includes("INSERT INTO grid_bot_audit")).length, 1);
 });
 
+test("fill detail is captured in a separate batch from the atomic core", async () => {
+  const db = new FakeD1({ bot: botRow(), execution: { id: "EXE-1" } });
+  const repo = new GridBotRepository(db);
+  await repo.recordGridSync("BOT-1", "checker@x", {
+    statusUpdates: [],
+    filled: [{ clientOrderId: "b-high", filledQuantity: "0.01", avgFillPrice: "94.5", commission: "0.3", commissionAsset: "USDT" }],
+    reconciliationRequired: [],
+    placements: [],
+  });
+  assert.equal(db.batches.length, 2); // core batch + fill-detail batch
+  const core = db.batches[0].map((s) => s._sql).join(" ");
+  assert.ok(core.includes("SET status='FILLED'"));
+  assert.ok(!core.includes("avg_fill_price")); // core must not depend on migration 0005
+  assert.ok(db.batches[1].map((s) => s._sql).join(" ").includes("avg_fill_price"));
+});
+
+test("reconciliation still succeeds when the database lacks the 0005 fill columns", async () => {
+  const db = new FakeD1({ bot: botRow(), execution: { id: "EXE-1" } });
+  // Simulate a database that has not taken migration 0005: any statement naming
+  // the new columns is rejected.
+  const realBatch = db.batch.bind(db);
+  db.batch = async (statements) => {
+    if (statements.some((s) => s._sql.includes("avg_fill_price")))
+      throw new Error("no such column: avg_fill_price");
+    return realBatch(statements);
+  };
+  const result = await repoResult(db);
+  assert.equal(result.changed, true); // the fill is still recorded; enrichment is skipped
+  assert.equal(db.batches.length, 1); // only the core batch committed
+});
+
+async function repoResult(db) {
+  const repo = new GridBotRepository(db);
+  return repo.recordGridSync("BOT-1", "checker@x", {
+    statusUpdates: [],
+    filled: [{ clientOrderId: "b-high", avgFillPrice: "94.5", commission: "0.3", commissionAsset: "USDT" }],
+    reconciliationRequired: [],
+    placements: [],
+  });
+}
+
 test("recordGridSync writes nothing when the poll found no change", async () => {
   const db = new FakeD1({ bot: botRow(), execution: { id: "EXE-1" } });
   const repo = new GridBotRepository(db);

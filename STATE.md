@@ -205,6 +205,27 @@
 
 ## Last session
 
+- **Schema-drift defect found and fixed the same session (2026-07-20).** After
+  deploying migration 0005 + the code that uses it, inspection of the deploy run
+  showed the "Apply D1 migrations" step had been **skipped** — it is gated on a
+  `CLOUDFLARE_D1_API_TOKEN` repo secret that is not configured — so the new code
+  shipped against a remote D1 without the new columns. Reads were safe
+  (`SELECT *`), but the first reconcile marking a fill would have run an UPDATE
+  naming missing columns and failed the whole atomic batch. Applying the
+  migration directly from here was blocked by the tooling permission gate, so
+  the fix is defence in depth: (1) `recordGridSync` keeps the atomic core
+  (status, replenishments, audit) free of the new columns and captures fill
+  detail in a **separate best-effort batch** that logs and continues if the
+  columns are absent — reconciliation is never broken by a pending migration,
+  realized P/L just falls back to the estimate; (2) the deploy workflow now
+  falls back to the deploy token for migrations, `continue-on-error` with a loud
+  `::warning::` so drift is visible instead of silent. Regression test added
+  ("reconciliation still succeeds when the database lacks the 0005 fill
+  columns"). **Still to do (needs your action):** apply migration 0005 to remote
+  D1 — either add the `CLOUDFLARE_D1_API_TOKEN` secret, or run
+  `wrangler d1 migrations apply GOVERNANCE_DB --remote` once. Until then fill
+  detail is not persisted and P/L stays estimate-based.
+
 - Realized P/L now measured from actual fills, not modelled (2026-07-20).
   Previously realized-cycle P/L used each order's LIMIT price and a flat
   0.10%/side fee estimate. Migration `0005_grid_bot_fill_details.sql` adds

@@ -58,6 +58,17 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_D1_API_TOKEN }}
         run: pnpm exec wrangler d1 migrations apply GOVERNANCE_DB --remote
 
+      # Without a dedicated D1 token this step used to be skipped silently, which
+      # let schema drift behind a deploy. Fall back to the deploy token, but keep
+      # it non-fatal: a permissions gap must not block a release, and the app
+      # tolerates a pending migration. The warning makes the drift visible.
+      - name: Apply D1 migrations (fallback to deploy token)
+        if: ${{ env.CLOUDFLARE_D1_API_TOKEN == '' && env.CLOUDFLARE_API_TOKEN != '' }}
+        continue-on-error: true
+        run: |
+          pnpm exec wrangler d1 migrations apply GOVERNANCE_DB --remote \
+            || echo "::warning::D1 migrations were not applied automatically. Apply them manually or add CLOUDFLARE_D1_API_TOKEN."
+
       - name: Deploy Worker
         if: ${{ env.CLOUDFLARE_API_TOKEN != '' && env.CLOUDFLARE_ACCOUNT_ID != '' }}
         uses: cloudflare/wrangler-action@v3

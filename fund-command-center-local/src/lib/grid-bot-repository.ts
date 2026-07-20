@@ -297,26 +297,10 @@ export class GridBotRepository {
       occurredAt: now,
     });
     const statements: D1Statement[] = [
-      // Record what the exchange actually filled alongside the terminal status,
-      // so realized P/L is computed from real prices and fees. COALESCE keeps any
-      // previously captured detail if a later sync reports nothing.
       ...sync.filled.map((order) =>
         this.db
-          .prepare(
-            "UPDATE grid_bot_orders SET status='FILLED',updated_at=?," +
-              "filled_quantity=COALESCE(?,filled_quantity),avg_fill_price=COALESCE(?,avg_fill_price)," +
-              "commission=COALESCE(?,commission),commission_asset=COALESCE(?,commission_asset) " +
-              "WHERE bot_id=? AND client_order_id=?",
-          )
-          .bind(
-            now,
-            order.filledQuantity ?? null,
-            order.avgFillPrice ?? null,
-            order.commission ?? null,
-            order.commissionAsset ?? null,
-            botId,
-            order.clientOrderId,
-          ),
+          .prepare("UPDATE grid_bot_orders SET status='FILLED',updated_at=? WHERE bot_id=? AND client_order_id=?")
+          .bind(now, botId, order.clientOrderId),
       ),
       ...sync.reconciliationRequired.map((order) =>
         this.db
@@ -355,11 +339,61 @@ export class GridBotRepository {
       this.auditInsert(event, nextVersion),
     ];
     await this.db.batch(statements);
+    await this.recordFillDetails(botId, now, sync.filled);
     return {
       bot: { ...current, version: nextVersion, updatedAt: now },
       orders: await this.listOrders(botId),
       changed: true,
     };
+  }
+
+  /**
+   * Enrich filled orders with what the exchange actually executed. Deliberately
+   * outside the atomic batch and best-effort: this detail improves realized-P/L
+   * accuracy but is not required for correctness, so a database that has not yet
+   * taken migration 0005 must not break reconciliation — the ledger still records
+   * the fill, and realized P/L simply falls back to the estimate. COALESCE keeps
+   * previously captured detail when a later sync reports nothing.
+   */
+  private async recordFillDetails(
+    botId: string,
+    now: string,
+    filled: Array<{
+      clientOrderId: string;
+      filledQuantity?: string;
+      avgFillPrice?: string;
+      commission?: string;
+      commissionAsset?: string;
+    }>,
+  ) {
+    const withDetail = filled.filter(
+      (order) => order.filledQuantity || order.avgFillPrice || order.commission || order.commissionAsset,
+    );
+    if (withDetail.length === 0) return;
+    try {
+      await this.db.batch(
+        withDetail.map((order) =>
+          this.db
+            .prepare(
+              "UPDATE grid_bot_orders SET updated_at=?," +
+                "filled_quantity=COALESCE(?,filled_quantity),avg_fill_price=COALESCE(?,avg_fill_price)," +
+                "commission=COALESCE(?,commission),commission_asset=COALESCE(?,commission_asset) " +
+                "WHERE bot_id=? AND client_order_id=?",
+            )
+            .bind(
+              now,
+              order.filledQuantity ?? null,
+              order.avgFillPrice ?? null,
+              order.commission ?? null,
+              order.commissionAsset ?? null,
+              botId,
+              order.clientOrderId,
+            ),
+        ),
+      );
+    } catch (error) {
+      console.warn("grid fill-detail capture skipped (is migration 0005 applied?):", error);
+    }
   }
 
   async recordTestnetStop(botId: string, actorId: string, statuses: Map<string, string>) {
