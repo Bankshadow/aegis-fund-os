@@ -56,6 +56,11 @@ export type TestnetOrderRow = {
   status: string;
   createdAt: string;
   updatedAt: string;
+  /** Actual execution detail, populated at reconciliation (migration 0005). */
+  filledQuantity?: string;
+  avgFillPrice?: string;
+  commission?: string;
+  commissionAsset?: string;
 };
 
 type TestnetOrderDbRow = {
@@ -63,6 +68,8 @@ type TestnetOrderDbRow = {
   exchange_order_id: string; client_order_id: string; grid_index: number;
   side: "BUY" | "SELL"; price: string; quantity: string; status: string;
   created_at: string; updated_at: string;
+  filled_quantity: string | null; avg_fill_price: string | null;
+  commission: string | null; commission_asset: string | null;
 };
 
 type BotRow = {
@@ -104,6 +111,17 @@ const botFromRow = (row: BotRow): BotRecord => ({
   version: row.version,
   createdAt: row.created_at,
   updatedAt: row.updated_at,
+});
+
+const orderFromRow = (row: TestnetOrderDbRow): TestnetOrderRow => ({
+  id: row.id, executionId: row.execution_id, botId: row.bot_id, symbol: row.symbol,
+  exchangeOrderId: row.exchange_order_id, clientOrderId: row.client_order_id,
+  gridIndex: row.grid_index, side: row.side, price: row.price, quantity: row.quantity,
+  status: row.status, createdAt: row.created_at, updatedAt: row.updated_at,
+  filledQuantity: row.filled_quantity ?? undefined,
+  avgFillPrice: row.avg_fill_price ?? undefined,
+  commission: row.commission ?? undefined,
+  commissionAsset: row.commission_asset ?? undefined,
 });
 
 const eventFromRow = (row: AuditRow): GovernanceEvent => ({
@@ -177,24 +195,14 @@ export class GridBotRepository {
       .prepare("SELECT * FROM grid_bot_orders WHERE bot_id = ? ORDER BY grid_index")
       .bind(botId)
       .all<TestnetOrderDbRow>();
-    return (rows.results ?? []).map((row) => ({
-      id: row.id, executionId: row.execution_id, botId: row.bot_id, symbol: row.symbol,
-      exchangeOrderId: row.exchange_order_id, clientOrderId: row.client_order_id,
-      gridIndex: row.grid_index, side: row.side, price: row.price, quantity: row.quantity,
-      status: row.status, createdAt: row.created_at, updatedAt: row.updated_at,
-    }));
+    return (rows.results ?? []).map(orderFromRow);
   }
 
   async listAllOrders(): Promise<TestnetOrderRow[]> {
     const rows = await this.db
       .prepare("SELECT * FROM grid_bot_orders ORDER BY bot_id, grid_index")
       .all<TestnetOrderDbRow>();
-    return (rows.results ?? []).map((row) => ({
-      id: row.id, executionId: row.execution_id, botId: row.bot_id, symbol: row.symbol,
-      exchangeOrderId: row.exchange_order_id, clientOrderId: row.client_order_id,
-      gridIndex: row.grid_index, side: row.side, price: row.price, quantity: row.quantity,
-      status: row.status, createdAt: row.created_at, updatedAt: row.updated_at,
-    }));
+    return (rows.results ?? []).map(orderFromRow);
   }
 
   async recordTestnetStart(
@@ -239,7 +247,13 @@ export class GridBotRepository {
     actorId: string,
     sync: {
       statusUpdates: Array<{ clientOrderId: string; status: string }>;
-      filled: Array<{ clientOrderId: string }>;
+      filled: Array<{
+        clientOrderId: string;
+        filledQuantity?: string;
+        avgFillPrice?: string;
+        commission?: string;
+        commissionAsset?: string;
+      }>;
       reconciliationRequired: Array<{ clientOrderId: string }>;
       placements: Array<{
         clientOrderId: string;
@@ -283,10 +297,26 @@ export class GridBotRepository {
       occurredAt: now,
     });
     const statements: D1Statement[] = [
+      // Record what the exchange actually filled alongside the terminal status,
+      // so realized P/L is computed from real prices and fees. COALESCE keeps any
+      // previously captured detail if a later sync reports nothing.
       ...sync.filled.map((order) =>
         this.db
-          .prepare("UPDATE grid_bot_orders SET status='FILLED',updated_at=? WHERE bot_id=? AND client_order_id=?")
-          .bind(now, botId, order.clientOrderId),
+          .prepare(
+            "UPDATE grid_bot_orders SET status='FILLED',updated_at=?," +
+              "filled_quantity=COALESCE(?,filled_quantity),avg_fill_price=COALESCE(?,avg_fill_price)," +
+              "commission=COALESCE(?,commission),commission_asset=COALESCE(?,commission_asset) " +
+              "WHERE bot_id=? AND client_order_id=?",
+          )
+          .bind(
+            now,
+            order.filledQuantity ?? null,
+            order.avgFillPrice ?? null,
+            order.commission ?? null,
+            order.commissionAsset ?? null,
+            botId,
+            order.clientOrderId,
+          ),
       ),
       ...sync.reconciliationRequired.map((order) =>
         this.db

@@ -26,7 +26,14 @@ import type { TestnetOrderRow } from "./grid-bot-repository.ts";
 const ACTIVE_STATUSES = new Set(["NEW", "PARTIALLY_FILLED"]);
 
 export type RemoteOpenOrder = { clientOrderId: string; status: string };
-export type RemoteFill = { exchangeOrderId: string };
+/** Actual execution detail for a filled order (see `grid-fills.ts`). */
+export type RemoteFill = {
+  exchangeOrderId: string;
+  filledQuantity?: string;
+  avgFillPrice?: string;
+  commission?: string;
+  commissionAsset?: string;
+};
 
 export type PlannedReplenishment = {
   clientOrderId: string;
@@ -37,9 +44,20 @@ export type PlannedReplenishment = {
   sourceClientOrderId: string;
 };
 
+export type FilledOrder = {
+  clientOrderId: string;
+  side: "BUY" | "SELL";
+  price: string;
+  /** Actual execution detail, when the exchange reported it. */
+  filledQuantity?: string;
+  avgFillPrice?: string;
+  commission?: string;
+  commissionAsset?: string;
+};
+
 export type ReconciliationPlan = {
   statusUpdates: Array<{ clientOrderId: string; status: string }>;
-  filled: Array<{ clientOrderId: string; side: "BUY" | "SELL"; price: string }>;
+  filled: FilledOrder[];
   reconciliationRequired: Array<{ clientOrderId: string }>;
   replenishments: PlannedReplenishment[];
 };
@@ -72,7 +90,7 @@ export async function planGridReconciliation(
   remoteFills: RemoteFill[],
 ): Promise<ReconciliationPlan> {
   const openStatusByClient = new Map(remoteOpenOrders.map((order) => [order.clientOrderId, order.status]));
-  const filledExchangeIds = new Set(remoteFills.map((fill) => fill.exchangeOrderId));
+  const fillByExchangeId = new Map(remoteFills.map((fill) => [fill.exchangeOrderId, fill]));
   const knownClientIds = new Set(orders.map((order) => order.clientOrderId));
   const ladder = ladderOf(orders);
 
@@ -90,11 +108,20 @@ export async function planGridReconciliation(
       if (remoteStatus !== order.status) plan.statusUpdates.push({ clientOrderId: order.clientOrderId, status: remoteStatus });
       continue;
     }
-    if (!filledExchangeIds.has(order.exchangeOrderId)) {
+    const fill = fillByExchangeId.get(order.exchangeOrderId);
+    if (!fill) {
       plan.reconciliationRequired.push({ clientOrderId: order.clientOrderId });
       continue;
     }
-    plan.filled.push({ clientOrderId: order.clientOrderId, side: order.side, price: order.price });
+    plan.filled.push({
+      clientOrderId: order.clientOrderId,
+      side: order.side,
+      price: order.price,
+      filledQuantity: fill.filledQuantity,
+      avgFillPrice: fill.avgFillPrice,
+      commission: fill.commission,
+      commissionAsset: fill.commissionAsset,
+    });
     const price = new Decimal(order.price);
     const target = order.side === "BUY" ? nextLineUp(ladder, price) : nextLineDown(ladder, price);
     if (!target) continue; // grid boundary reached; harvest ends on this side

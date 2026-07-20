@@ -205,6 +205,26 @@
 
 ## Last session
 
+- Realized P/L now measured from actual fills, not modelled (2026-07-20).
+  Previously realized-cycle P/L used each order's LIMIT price and a flat
+  0.10%/side fee estimate. Migration `0005_grid_bot_fill_details.sql` adds
+  nullable `filled_quantity/avg_fill_price/commission/commission_asset` to
+  `grid_bot_orders`; new pure `src/lib/grid-fills.ts::aggregateFillsByOrder`
+  folds `myTrades` into one execution record per order (avg price = Σ quoteQty /
+  Σ qty, summed commission, `MIXED` sentinel when one order charged fees in more
+  than one asset). The planner carries that detail on `plan.filled`,
+  `recordGridSync` persists it (COALESCE so a later empty sync cannot erase it),
+  and `computeRealizedCycles` keeps **pairing on the LIMIT price** (grid-line
+  geometry) while computing **profit from the actual fill price and real
+  commission**: quote-asset fees as-is, base-asset fees valued at that leg's own
+  fill price, and anything unvaluable (BNB/MIXED/absent) falls back to the
+  estimate. Each cycle reports `feeBasis: actual|estimated` and the summary
+  exposes `allFeesActual`; the Grid Profit page shows a Fee-basis column and
+  labels the tile "fees from real commissions" vs "partly estimated". Also DRYed
+  the duplicated order row-mapping into `orderFromRow`. +10 tests → 97/97;
+  TypeScript, build and gate SHIP. Migration verified locally (applies clean;
+  new columns queryable and null for legacy rows → fallback path intact).
+
 - Added abuse guards for the login-less public deployment (2026-07-19). Enabling
   public test mode opened create/start to the internet with **no rate limit and
   no bot cap** (only MAX_GRID_ORDERS=40 per grid), so one visitor could fill D1

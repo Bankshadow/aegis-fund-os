@@ -1,5 +1,6 @@
 import type { GridBotRepository, BotRecord } from "./grid-bot-repository.ts";
 import { planGridReconciliation } from "./grid-runtime.ts";
+import { aggregateFillsByOrder, type ExchangeTrade } from "./grid-fills.ts";
 
 /**
  * Shared grid reconciliation core, independent of transport and identity.
@@ -13,7 +14,7 @@ import { planGridReconciliation } from "./grid-runtime.ts";
 export type ReconcileDeps = {
   getStatus: (symbol: "BTCUSDT") => Promise<{
     openOrders: Array<{ clientOrderId: string; status: string }>;
-    trades: Array<{ orderId: number | string }>;
+    trades: Array<Partial<ExchangeTrade> & { orderId: number | string }>;
   }>;
   placeOrder: (
     symbol: string,
@@ -38,11 +39,22 @@ export async function reconcileOneTestnetGrid(
   if (bot.runtimeState !== "RUNNING") throw new Error("Only a RUNNING bot can reconcile grid fills");
 
   const [orders, remote] = await Promise.all([repo.listOrders(bot.id), deps.getStatus("BTCUSDT")]);
+  // Fold the raw trade list into one execution record per order so the plan (and
+  // therefore the ledger) carries real fill prices and fees, not just "it filled".
+  const fills = aggregateFillsByOrder(
+    remote.trades.map((trade) => ({
+      orderId: trade.orderId,
+      qty: trade.qty ?? "0",
+      quoteQty: trade.quoteQty ?? "0",
+      commission: trade.commission ?? "0",
+      commissionAsset: trade.commissionAsset ?? "",
+    })),
+  );
   const plan = await planGridReconciliation(
     bot.id,
     orders,
     remote.openOrders.map((order) => ({ clientOrderId: order.clientOrderId, status: order.status })),
-    remote.trades.map((trade) => ({ exchangeOrderId: String(trade.orderId) })),
+    [...fills.values()],
   );
 
   const targetedSources = new Set(plan.replenishments.map((item) => item.sourceClientOrderId));
