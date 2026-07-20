@@ -59,8 +59,13 @@
    inventory ใน strategy นั้น fail closed) และ **benchmark comparison**
    (excess return; start ≤ 0 fail closed). 12 tests ใน
    `tests/test_fund_performance.py` (อยู่ใน gate pattern `test_fund*`)
-   **ยังค้าง:** reporting-period lock ระดับเดือน/ไตรมาส (ตอนนี้ lock ได้ราย
-   report_date ผ่าน `FundV2Store.lock_close`)
+   **reporting-period lock เสร็จแล้ว (2026-07-20):** `FundV2Store.lock_period`
+   ปิดงวดรายเดือน (`YYYY-MM`) หรือรายไตรมาส (`YYYY-Qn`) ได้ ต่อเมื่อ daily close
+   ในงวดนั้น lock ครบ (maker/checker ทำที่ระดับ daily แล้ว) และไม่มี exception
+   ค้าง; ปิดซ้ำถูกปฏิเสธ **และมีเขี้ยวจริง** — `record_close`, `add_exception`
+   และ `lock_close` จะโยน `PermissionError` เมื่อวันที่นั้นอยู่ในงวดที่ปิดแล้ว
+   โดยตรวจทั้งรูปเดือนและไตรมาสของวันที่ (ปิด Q3 แล้วเขียนวันที่ในเดือน ส.ค.
+   ก็ไม่ผ่าน) 12 tests ใน `tests/test_fund_period_lock.py`
 5. ~~ต่อ dashboard เข้ากับ service ภายในที่อ่านจาก SQLite เท่านั้น~~
    **เสร็จบางส่วน (2026-07-19):** `getOperationsSnapshot` อ่าน snapshot ตามลำดับ
    R2 object (binding `OPERATIONS_BUCKET`, key `operations_snapshot.json`) →

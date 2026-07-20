@@ -205,6 +205,22 @@
 
 ## Last session
 
+- Added the reporting-period lock, completing fund-ops roadmap item 4
+  (2026-07-20). `FundV2Store.lock_period` seals a month (`YYYY-MM`) or quarter
+  (`YYYY-Qn`) only when the period actually contains closes, every daily close in
+  it is already locked (the maker/checker control lives at the daily level), and
+  no exception in it is still open; re-sealing is rejected rather than silently
+  rewriting who signed. The point of the feature is teeth, so the seal is
+  *enforced*, not merely recorded: `record_close`, `add_exception` and
+  `lock_close` raise `PermissionError` for any date inside a sealed period, and
+  the check tests **both** period identifiers a date belongs to — sealing
+  `2026-Q3` therefore also blocks an August write whose month period was never
+  sealed on its own. Pure `reporting_period`/`periods_covering` helpers fail
+  closed on a malformed date instead of mis-bucketing it (which would let a
+  back-dated write slip past). 12 tests in `tests/test_fund_period_lock.py`;
+  fund suite 50 → 62, gate SHIP. Note this makes the daily-close job correctly
+  refuse to rewrite a sealed period — the raised message names the period.
+
 - Added the performance-measurement slice, fund-ops roadmap item 4 (2026-07-20).
   New `dynamic_grid/performance.py`: **money-weighted return (XIRR)** solved by
   bisection (no derivative, cannot diverge on irregular flows) that fails closed
