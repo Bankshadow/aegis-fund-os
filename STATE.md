@@ -221,10 +221,16 @@
   falls back to the deploy token for migrations, `continue-on-error` with a loud
   `::warning::` so drift is visible instead of silent. Regression test added
   ("reconciliation still succeeds when the database lacks the 0005 fill
-  columns"). **Still to do (needs your action):** apply migration 0005 to remote
-  D1 — either add the `CLOUDFLARE_D1_API_TOKEN` secret, or run
-  `wrangler d1 migrations apply GOVERNANCE_DB --remote` once. Until then fill
-  detail is not persisted and P/L stays estimate-based.
+  columns"). The fallback then proved *why* the dedicated token exists: it ran
+  and failed with `code 7403 — the given account is not authorized to access
+  this service`, i.e. the deploy token has no D1 permission. Non-fatal as
+  designed — deploy `c9f656e` succeeded, drift is now surfaced as a workflow
+  warning, and production smoke is green (`/bots` 200 with the public-test
+  badge, bot Grid Profit 200, cron endpoint 200 no-op). **Still to do (needs
+  your action):** apply migration 0005 to remote D1 — add a
+  `CLOUDFLARE_D1_API_TOKEN` secret with D1 edit permission, or run
+  `wrangler d1 migrations apply GOVERNANCE_DB --remote` once locally. Until
+  then fill detail is not persisted and realized P/L stays estimate-based.
 
 - Realized P/L now measured from actual fills, not modelled (2026-07-20).
   Previously realized-cycle P/L used each order's LIMIT price and a flat
