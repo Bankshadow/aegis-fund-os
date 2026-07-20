@@ -50,7 +50,17 @@
 3. ~~เพิ่ม reconciliation ของ cash/fills และ exception review/approval persistence~~
    **เสร็จ:** exception idempotent + four-eyes resolve + lock-blocking ใน
    `FundV2Store`; daily-close job persist ทั้ง exceptions และ close record
-4. เพิ่ม NAV, TWR/MWR, benchmark, strategy attribution และ reporting-period lock
+4. ~~เพิ่ม NAV, TWR/MWR, benchmark, strategy attribution และ reporting-period lock~~
+   **เสร็จเกือบครบ (2026-07-20):** NAV เข้า daily-close แล้ว (ข้อ 2), TWR มีอยู่ที่
+   `fund_v2.time_weighted_return`, และ `dynamic_grid/performance.py` เพิ่ม
+   **MWR/XIRR** (bisection, fail-closed เมื่อ flow ไม่ครบ/ไม่มีสลับเครื่องหมาย),
+   **strategy attribution** (แบ่ง ledger ตาม `strategy_id` แล้ว replay ผ่าน
+   snapshot engine เดิม → attribution ไม่มีทางขัดกับตัวเลขรวม และ sell ที่ไม่มี
+   inventory ใน strategy นั้น fail closed) และ **benchmark comparison**
+   (excess return; start ≤ 0 fail closed). 12 tests ใน
+   `tests/test_fund_performance.py` (อยู่ใน gate pattern `test_fund*`)
+   **ยังค้าง:** reporting-period lock ระดับเดือน/ไตรมาส (ตอนนี้ lock ได้ราย
+   report_date ผ่าน `FundV2Store.lock_close`)
 5. ~~ต่อ dashboard เข้ากับ service ภายในที่อ่านจาก SQLite เท่านั้น~~
    **เสร็จบางส่วน (2026-07-19):** `getOperationsSnapshot` อ่าน snapshot ตามลำดับ
    R2 object (binding `OPERATIONS_BUCKET`, key `operations_snapshot.json`) →

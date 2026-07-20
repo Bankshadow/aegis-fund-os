@@ -205,6 +205,25 @@
 
 ## Last session
 
+- Added the performance-measurement slice, fund-ops roadmap item 4 (2026-07-20).
+  New `dynamic_grid/performance.py`: **money-weighted return (XIRR)** solved by
+  bisection (no derivative, cannot diverge on irregular flows) that fails closed
+  on <2 flows, single-signed flows, or an unbracketed root; **strategy
+  attribution** that partitions the ledger by `strategy_id` and replays each
+  partition through the *same* `AppendOnlyLedger.snapshot` used for the headline
+  number — so attribution can never disagree with the fund total, inventory is
+  matched within a strategy (a sell with no matching buy in that strategy fails
+  closed), and unattributed events are grouped rather than dropped; and
+  **benchmark comparison** returning excess return, failing closed on a
+  non-positive start level instead of flattering the fund with a fake 0%
+  benchmark. Existing pieces were reused rather than duplicated: NAV landed in
+  the daily close earlier, and true TWR already exists at
+  `fund_v2.time_weighted_return` (note `track_record.metrics` reports a *simple*
+  return, not TWR). 12 tests; named `tests/test_fund_performance.py` so the
+  gate's `test_fund*` discovery actually runs them — fund suite 38 → 50, gate
+  SHIP. Remaining in item 4: month/quarter reporting-period lock (today only
+  per-`report_date` lock exists via `FundV2Store.lock_close`).
+
 - **Schema-drift defect found and fixed the same session (2026-07-20).** After
   deploying migration 0005 + the code that uses it, inspection of the deploy run
   showed the "Apply D1 migrations" step had been **skipped** — it is gated on a
