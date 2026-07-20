@@ -151,6 +151,27 @@ export class GridBotRepository {
     return (rows.results ?? []).map(eventFromRow);
   }
 
+  /** Aggregate counts backing the public-deployment abuse guards. */
+  async countBots(): Promise<number> {
+    const row = await this.db.prepare("SELECT count(*) AS n FROM grid_bots").first<{ n: number }>();
+    return Number(row?.n ?? 0);
+  }
+
+  async countBotsCreatedSince(isoTimestamp: string): Promise<number> {
+    const row = await this.db
+      .prepare("SELECT count(*) AS n FROM grid_bots WHERE created_at >= ?")
+      .bind(isoTimestamp)
+      .first<{ n: number }>();
+    return Number(row?.n ?? 0);
+  }
+
+  async countOpenTestnetOrders(): Promise<number> {
+    const row = await this.db
+      .prepare("SELECT count(*) AS n FROM grid_bot_orders WHERE status IN ('NEW','PARTIALLY_FILLED')")
+      .first<{ n: number }>();
+    return Number(row?.n ?? 0);
+  }
+
   async listOrders(botId: string): Promise<TestnetOrderRow[]> {
     const rows = await this.db
       .prepare("SELECT * FROM grid_bot_orders WHERE bot_id = ? ORDER BY grid_index")

@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { getRequest } from "@tanstack/react-start/server";
 import { z } from "zod";
-import { GridBotRepository, type D1DatabaseLike } from "./grid-bot-repository";
+import { GridBotRepository, type BotRecord, type D1DatabaseLike } from "./grid-bot-repository";
 import { verifyGovernanceChains } from "./grid-bot-governance";
 import {
   cancelTestnetOrder,
@@ -17,6 +17,12 @@ import {
   type ReconcileDeps,
 } from "./grid-reconcile";
 import { resolveActorIdentity } from "./actor-identity";
+import {
+  assertBotCreationAllowed,
+  assertOrderPlacementAllowed,
+  resolveGuardLimits,
+  windowStart,
+} from "./abuse-guards";
 
 type CloudflareRequest = Request & {
   runtime?: {
@@ -41,6 +47,43 @@ const publicTestMode = (request: Request) => {
   const fromProcess = (globalThis as { process?: { env?: Record<string, string | undefined> } }).process?.env
     ?.AEGIS_PUBLIC_TEST_MODE;
   return (fromBinding ?? fromGlobal ?? fromProcess)?.trim() === "true";
+};
+
+const GUARD_ENV_KEYS = [
+  "AEGIS_MAX_BOTS",
+  "AEGIS_MAX_CREATES_PER_WINDOW",
+  "AEGIS_CREATE_WINDOW_MINUTES",
+  "AEGIS_MAX_OPEN_ORDERS",
+] as const;
+
+const guardEnv = (request: Request) => {
+  const binding = runtimeEnv(request) as Record<string, string | undefined> | undefined;
+  const global = (globalThis as { __env__?: Record<string, string | undefined> }).__env__;
+  const proc = (globalThis as { process?: { env?: Record<string, string | undefined> } }).process?.env;
+  const merged: Record<string, string | undefined> = {};
+  for (const key of GUARD_ENV_KEYS) merged[key] = binding?.[key] ?? global?.[key] ?? proc?.[key];
+  return merged;
+};
+
+/** Reject before any durable write when creation would cross a public-deployment cap. */
+const assertCreateAllowed = async (repo: GridBotRepository) => {
+  const limits = resolveGuardLimits(guardEnv(getRequest()));
+  const [totalBots, recentCreates] = await Promise.all([
+    repo.countBots(),
+    repo.countBotsCreatedSince(windowStart(limits)),
+  ]);
+  assertBotCreationAllowed({ totalBots, recentCreates }, limits);
+};
+
+/** Reject before any exchange call when a grid would cross the open-order cap. */
+const assertPlacementAllowed = async (repo: GridBotRepository, incoming: number) => {
+  const limits = resolveGuardLimits(guardEnv(getRequest()));
+  assertOrderPlacementAllowed({ openOrders: await repo.countOpenTestnetOrders(), incoming }, limits);
+};
+
+const plannedOrderCount = (configuration: BotRecord["configuration"]) => {
+  const grids = Number(configuration.grids);
+  return Number.isFinite(grids) && grids > 0 ? grids : 0;
 };
 
 const actorIdentity = (localClaim?: string) => {
@@ -71,6 +114,7 @@ export const createGovernedGridBot = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const repo = repository();
     const makerId = actorIdentity(data.makerId);
+    await assertCreateAllowed(repo);
     const bot = await repo.createDraft(
       {
         name: data.name,
@@ -91,6 +135,8 @@ export const createAndStartTestnetGridBot = createServerFn({ method: "POST" })
       throw new Error("One-click execution is restricted to Binance Spot Testnet");
     const repo = repository();
     const makerId = actorIdentity(data.makerId);
+    await assertCreateAllowed(repo);
+    await assertPlacementAllowed(repo, plannedOrderCount(data.configuration));
     const draft = await repo.createDraft(
       {
         name: data.name,
@@ -194,6 +240,7 @@ export const startBinanceTestnetGridBot = createServerFn({ method: "POST" })
     if (!bot) throw new Error("Bot not found");
     const existing = await repo.listOrders(bot.id);
     if (existing.length) throw new Error("This bot already has a Testnet execution ledger; duplicate start blocked");
+    await assertPlacementAllowed(repo, plannedOrderCount(bot.configuration));
     const placed = await placeTestnetGrid(bot);
     try {
       return await repo.recordTestnetStart(bot.id, actorId, placed);

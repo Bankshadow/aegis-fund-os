@@ -205,6 +205,21 @@
 
 ## Last session
 
+- Added abuse guards for the login-less public deployment (2026-07-19). Enabling
+  public test mode opened create/start to the internet with **no rate limit and
+  no bot cap** (only MAX_GRID_ORDERS=40 per grid), so one visitor could fill D1
+  and spray testnet orders. New pure `src/lib/abuse-guards.ts` enforces three
+  env-overridable caps — `AEGIS_MAX_BOTS` (25), `AEGIS_MAX_CREATES_PER_WINDOW`
+  (5) over `AEGIS_CREATE_WINDOW_MINUTES` (10), and `AEGIS_MAX_OPEN_ORDERS` (120)
+  — backed by plain D1 aggregates (`countBots`, `countBotsCreatedSince`,
+  `countOpenTestnetOrders`), so **no migration or new table** was needed. Wired
+  into `createGovernedGridBot`, `createAndStartTestnetGridBot` and
+  `startBinanceTestnetGridBot`; every check runs before any durable write or
+  exchange call (fail closed). +8 tests → 87/87; TypeScript, build, gate SHIP.
+  Verified both directions on local wrangler: with `AEGIS_MAX_BOTS=1` a create
+  was rejected ("Bot limit reached (1)…"), and with defaults a create succeeded
+  (PENDING_APPROVAL) — the guard blocks abuse without blocking legitimate use.
+
 - Enabled public test mode on production and ran the first live E2E (2026-07-19).
   Set `AEGIS_PUBLIC_TEST_MODE=true` as a wrangler `vars` entry (commit `6e48be1`,
   deploy run 29690065666 success); production `/bots` now shows the PUBLIC TEST
