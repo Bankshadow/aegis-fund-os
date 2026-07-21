@@ -3,19 +3,15 @@ import { getRequest } from "@tanstack/react-start/server";
 import { z } from "zod";
 import { GridBotRepository, type BotRecord, type D1DatabaseLike } from "./grid-bot-repository";
 import { verifyGovernanceChains } from "./grid-bot-governance";
+import { projectGridCycleProfit, projectedGridProfitTotal } from "./grid-profit";
 import {
   cancelTestnetOrder,
   OrphanedTestnetOrdersError,
   placeSingleTestnetOrder,
   placeTestnetGrid,
 } from "./binance-testnet-execution";
-import { projectGridCycleProfit, projectedGridProfitTotal } from "./grid-profit";
 import { getBinanceTestnetGridStatus } from "./binance-testnet.server";
-import {
-  reconcileAllRunningTestnetGrids,
-  reconcileOneTestnetGrid,
-  type ReconcileDeps,
-} from "./grid-reconcile";
+import { reconcileAllRunningTestnetGrids, reconcileOneTestnetGrid } from "./grid-reconcile";
 import { resolveActorIdentity } from "./actor-identity";
 import {
   assertBotCreationAllowed,
@@ -44,8 +40,8 @@ const publicTestMode = (request: Request) => {
   // every invocation; this is where wrangler's .dev.vars land in dev.
   const fromGlobal = (globalThis as { __env__?: Record<string, string | undefined> }).__env__
     ?.AEGIS_PUBLIC_TEST_MODE;
-  const fromProcess = (globalThis as { process?: { env?: Record<string, string | undefined> } }).process?.env
-    ?.AEGIS_PUBLIC_TEST_MODE;
+  const fromProcess = (globalThis as { process?: { env?: Record<string, string | undefined> } })
+    .process?.env?.AEGIS_PUBLIC_TEST_MODE;
   return (fromBinding ?? fromGlobal ?? fromProcess)?.trim() === "true";
 };
 
@@ -59,7 +55,8 @@ const GUARD_ENV_KEYS = [
 const guardEnv = (request: Request) => {
   const binding = runtimeEnv(request) as Record<string, string | undefined> | undefined;
   const global = (globalThis as { __env__?: Record<string, string | undefined> }).__env__;
-  const proc = (globalThis as { process?: { env?: Record<string, string | undefined> } }).process?.env;
+  const proc = (globalThis as { process?: { env?: Record<string, string | undefined> } }).process
+    ?.env;
   const merged: Record<string, string | undefined> = {};
   for (const key of GUARD_ENV_KEYS) merged[key] = binding?.[key] ?? global?.[key] ?? proc?.[key];
   return merged;
@@ -78,7 +75,10 @@ const assertCreateAllowed = async (repo: GridBotRepository) => {
 /** Reject before any exchange call when a grid would cross the open-order cap. */
 const assertPlacementAllowed = async (repo: GridBotRepository, incoming: number) => {
   const limits = resolveGuardLimits(guardEnv(getRequest()));
-  assertOrderPlacementAllowed({ openOrders: await repo.countOpenTestnetOrders(), incoming }, limits);
+  assertOrderPlacementAllowed(
+    { openOrders: await repo.countOpenTestnetOrders(), incoming },
+    limits,
+  );
 };
 
 const plannedOrderCount = (configuration: BotRecord["configuration"]) => {
@@ -157,18 +157,32 @@ export const createAndStartTestnetGridBot = createServerFn({ method: "POST" })
         placed.map((order) => cancelTestnetOrder(approved.pair, order.clientOrderId)),
       );
       const orphaned = placed.filter((_, index) => outcomes[index].status === "rejected");
-      if (orphaned.length > 0) throw new OrphanedTestnetOrdersError(error, orphaned);
+      if (orphaned.length > 0) {
+        throw new OrphanedTestnetOrdersError(error, orphaned);
+      }
       throw error;
     }
   });
 
 export const getGridBotGovernance = createServerFn({ method: "GET" }).handler(async () => {
   const repo = repository();
-  const [bots, events, orders] = await Promise.all([repo.listBots(), repo.listEvents(), repo.listAllOrders()]);
+  const [bots, events, orders] = await Promise.all([
+    repo.listBots(),
+    repo.listEvents(),
+    repo.listAllOrders(),
+  ]);
   const profitByBot = Object.fromEntries(
     bots.map((bot) => {
-      const projections = orders.filter((order) => order.botId === bot.id).map((order) => projectGridCycleProfit(bot, order));
-      return [bot.id, { orderCount: projections.length, estimatedCycleProfit: projectedGridProfitTotal(projections) }];
+      const projections = orders
+        .filter((order) => order.botId === bot.id)
+        .map((order) => projectGridCycleProfit(bot, order));
+      return [
+        bot.id,
+        {
+          orderCount: projections.length,
+          estimatedCycleProfit: projectedGridProfitTotal(projections),
+        },
+      ];
     }),
   );
   return {
@@ -191,11 +205,18 @@ export const getGridBotTestnetStatus = createServerFn({ method: "GET" })
     const bot = await repo.getBot(data.botId);
     if (!bot || bot.environment !== "BINANCE_TESTNET" || bot.pair !== "BTCUSDT")
       throw new Error("Binance Spot Testnet bot not found");
-    const [ledgerOrders, remote] = await Promise.all([repo.listOrders(bot.id), getBinanceTestnetGridStatus("BTCUSDT")]);
+    const [ledgerOrders, remote] = await Promise.all([
+      repo.listOrders(bot.id),
+      getBinanceTestnetGridStatus("BTCUSDT"),
+    ]);
     const ledgerClientIds = new Set(ledgerOrders.map((order) => order.clientOrderId));
     const ledgerExchangeIds = new Set(ledgerOrders.map((order) => order.exchangeOrderId));
-    const matchingOpenOrders = remote.openOrders.filter((order) => ledgerClientIds.has(order.clientOrderId));
-    const matchingTrades = remote.trades.filter((trade) => ledgerExchangeIds.has(String(trade.orderId)));
+    const matchingOpenOrders = remote.openOrders.filter((order) =>
+      ledgerClientIds.has(order.clientOrderId),
+    );
+    const matchingTrades = remote.trades.filter((trade) =>
+      ledgerExchangeIds.has(String(trade.orderId)),
+    );
     return {
       checkedAt: remote.checkedAt,
       ledgerOrderCount: ledgerOrders.length,
@@ -239,7 +260,8 @@ export const startBinanceTestnetGridBot = createServerFn({ method: "POST" })
     const bot = await repo.getBot(data.botId);
     if (!bot) throw new Error("Bot not found");
     const existing = await repo.listOrders(bot.id);
-    if (existing.length) throw new Error("This bot already has a Testnet execution ledger; duplicate start blocked");
+    if (existing.length)
+      throw new Error("This bot already has a Testnet execution ledger; duplicate start blocked");
     await assertPlacementAllowed(repo, plannedOrderCount(bot.configuration));
     const placed = await placeTestnetGrid(bot);
     try {
@@ -249,7 +271,9 @@ export const startBinanceTestnetGridBot = createServerFn({ method: "POST" })
         placed.map((order) => cancelTestnetOrder(bot.pair, order.clientOrderId)),
       );
       const orphaned = placed.filter((_, index) => outcomes[index].status === "rejected");
-      if (orphaned.length > 0) throw new OrphanedTestnetOrdersError(error, orphaned);
+      if (orphaned.length > 0) {
+        throw new OrphanedTestnetOrdersError(error, orphaned);
+      }
       throw error;
     }
   });
@@ -262,11 +286,6 @@ export const startBinanceTestnetGridBot = createServerFn({ method: "POST" })
  * that fails leaves its source fill un-terminal so the next poll retries it,
  * and the error is surfaced only after the ledger is made consistent.
  */
-const testnetReconcileDeps: ReconcileDeps = {
-  getStatus: getBinanceTestnetGridStatus,
-  placeOrder: placeSingleTestnetOrder,
-};
-
 export const syncBinanceTestnetGridBot = createServerFn({ method: "POST" })
   .validator(z.object({ botId: z.string().min(1), actorId: z.string().trim().min(1).optional() }))
   .handler(async ({ data }) => {
@@ -274,7 +293,10 @@ export const syncBinanceTestnetGridBot = createServerFn({ method: "POST" })
     const actorId = actorIdentity(data.actorId);
     const bot = await repo.getBot(data.botId);
     if (!bot) throw new Error("Binance Spot Testnet bot not found");
-    return reconcileOneTestnetGrid(repo, bot, actorId, testnetReconcileDeps);
+    return reconcileOneTestnetGrid(repo, bot, actorId, {
+      getStatus: getBinanceTestnetGridStatus,
+      placeOrder: placeSingleTestnetOrder,
+    });
   });
 
 /**
@@ -287,26 +309,13 @@ export const syncAllRunningTestnetGrids = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const repo = repository();
     const actorId = actorIdentity(data.actorId);
-    return { results: await reconcileAllRunningTestnetGrids(repo, actorId, testnetReconcileDeps) };
+    return {
+      results: await reconcileAllRunningTestnetGrids(repo, actorId, {
+        getStatus: getBinanceTestnetGridStatus,
+        placeOrder: placeSingleTestnetOrder,
+      }),
+    };
   });
-
-/**
- * Scheduled (cron) driver. Fail-closed behind `GRID_CRON_ENABLED`: the wrangler
- * cron trigger fires unconditionally, but this returns a no-op unless the
- * operator has explicitly enabled the automatic loop, so deploying the trigger
- * never turns on autonomous trading by itself. Runs under a distinct system
- * actor so its audit events can never be mistaken for a human operator's.
- */
-export async function runScheduledGridReconciliation(env: {
-  GOVERNANCE_DB?: D1DatabaseLike;
-  GRID_CRON_ENABLED?: string;
-}): Promise<{ enabled: boolean; results: Awaited<ReturnType<typeof reconcileAllRunningTestnetGrids>> }> {
-  if (env.GRID_CRON_ENABLED?.trim() !== "true") return { enabled: false, results: [] };
-  if (!env.GOVERNANCE_DB) throw new Error("Governance storage is unavailable; scheduled reconcile blocked");
-  const repo = new GridBotRepository(env.GOVERNANCE_DB);
-  const results = await reconcileAllRunningTestnetGrids(repo, "system:grid-cron", testnetReconcileDeps);
-  return { enabled: true, results };
-}
 
 export const stopBinanceTestnetGridBot = createServerFn({ method: "POST" })
   .validator(z.object({ botId: z.string().min(1), actorId: z.string().trim().min(1).optional() }))
@@ -314,10 +323,13 @@ export const stopBinanceTestnetGridBot = createServerFn({ method: "POST" })
     const repo = repository();
     const actorId = actorIdentity(data.actorId);
     const bot = await repo.getBot(data.botId);
-    if (!bot || bot.environment !== "BINANCE_TESTNET") throw new Error("Binance Testnet bot not found");
+    if (!bot || bot.environment !== "BINANCE_TESTNET")
+      throw new Error("Binance Testnet bot not found");
     const orders = await repo.listOrders(bot.id);
     const statuses = new Map<string, string>();
-    for (const order of orders.filter((item) => item.status === "NEW" || item.status === "PARTIALLY_FILLED")) {
+    for (const order of orders.filter(
+      (item) => item.status === "NEW" || item.status === "PARTIALLY_FILLED",
+    )) {
       const cancelled = await cancelTestnetOrder(bot.pair, order.clientOrderId);
       statuses.set(order.clientOrderId, cancelled.status ?? "CANCELED");
     }

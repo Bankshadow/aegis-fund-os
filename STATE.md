@@ -5,6 +5,15 @@
 
 ## Verified facts
 
+- Webull OpenAPI feasibility research completed (2026-07-20): Webull Thailand
+  advertises OpenAPI for eligible customers trading US stocks and ETFs; the
+  official API documentation scopes the Trading API to the US market.  Grid is
+  not a native order type: it must be an external, event-driven limit-order
+  controller using account/position reads, preview/place/replace/cancel and
+  gRPC order-status events.  Official sandbox/test accounts exist, so any
+  future adapter must begin read-only plus sandbox/paper validation; no live
+  Webull order transport is authorized under the project constitution.
+
 - Recommended research config: Dual 75/25 rule-based + percentile-rank regime (see HANDOFF).
 - E20 RL walk-forward failed (3/6 = 50%) — RL not production-ready on BTC/4h.
 - E23 dual tune: best Line-B attempt so far (mean robust −0.0078, delta +0.0301) — still not > 0 / not promoted.
@@ -14,6 +23,26 @@
 - Agent stack gate green (`gate/verify.ps1` SHIP); `run_demo.py --fast` OK (2026-07-15).
 
 ## Verified since previous handoff
+
+- Added a Webull sandbox read-only adapter (2026-07-20). It is hard-pinned to
+  `https://api.sandbox.webull.com` and makes only a signed `GET
+  /openapi/account/list` call when server-only sandbox credentials are
+  configured. The HMAC-SHA1 implementation matches Webull's published vector;
+  the Integrations UI exposes a probe and sanitized account count/types. There
+  is deliberately no Webull POST/order/cancel/transfer/withdrawal code path;
+  paper-grid execution remains local. Frontend tests (100), TypeScript,
+  production build, and `gate/verify.ps1` pass.
+
+- Extended Webull Sandbox with an explicitly gated test-order path (2026-07-20).
+  `POST /openapi/trade/order/place` is signed with the exact compact JSON body,
+  but only when `WEBULL_SANDBOX_ORDER_TEST_ENABLED=true`; production hosts are
+  rejected, orders are forced to US/EQUITY/NORMAL/LIMIT/DAY/CORE/QTY, symbols
+  are allow-listed, and quantity/notional are capped at 1 share/USD25. The UI
+  exposes a small Sandbox LIMIT test form and returns the sanitized result.
+  Four Webull signing/order unit tests, full frontend tests (104), TypeScript,
+  production build and `gate/verify.ps1` pass. Browser E2E against localhost
+  was blocked by the in-app browser network boundary; no live or sandbox order
+  was sent during verification.
 
 - Grid Bot Phase 1 UI/domain upgrade completed locally (2026-07-16): exact
   Decimal.js arithmetic/geometric previews, environment-separated cockpit,
@@ -870,3 +899,47 @@
   (2026-07-19). An unauthenticated browser check reaches `/bots` directly;
   the production Worker is public until an Access application or equivalent
   edge control is restored.
+
+- Added deterministic AOT historical simulation/backtest (2026-07-21) in
+  `fund-command-center-local/src/lib/aot-backtest.ts` and wired it into the
+  `/aot-paper-grid` Simulation tab. The engine validates OHLC CSV input,
+  builds arithmetic/geometric grids, applies conservative no-lookahead fills,
+  board lots, cash/inventory constraints, fees, VAT and slippage, tracks
+  equity/drawdown/P&L/cycles and monthly returns, and records ambiguous-bar
+  warnings. This remains paper/read-only; it cannot submit live orders.
+  Added four focused backtest tests; frontend suite now passes 107 tests,
+  TypeScript check and production build pass, and `gate/verify.ps1` exits 0.
+
+- Fixed local AOT route import-protection failure (2026-07-21): moved scheduled
+  reconciliation into the server-only `grid-bot-governance.cron.server.ts`
+  boundary and kept the client-visible governance module limited to
+  `createServerFn` RPC handlers. Production build, TypeScript, focused runtime
+  tests, and `gate/verify.ps1` pass; local `/aot-paper-grid` reload verified
+  without the import overlay.
+
+- Added synthetic OHLCV backtest mode (2026-07-21): the AOT Simulation tab can
+  generate deterministic 120-bar paths for seeds 101/202/303 and run the same
+  conservative backtest engine, with a seed comparison table and an explicit
+  warning that synthetic output is regression evidence only, never market
+  evidence. TypeScript, production build, and focused AOT tests pass.
+
+- Added a public AOT historical fixture (2026-07-21) at
+  `fund-command-center-local/data/historical/AOT.BK_daily_2025-2026.csv` with
+  377 daily bars from the Yahoo Finance public chart endpoint, plus source and
+  usage caveats in the adjacent README. CSV parser validation reports zero
+  warnings; this remains a paper-research fixture, not an execution feed.
+
+- Added backtest charting and data-density filtering (2026-07-21): the AOT
+  Simulation tab now renders Equity, Cash and Drawdown lines with a selectable
+  30/90/180/all-bar window; the table uses the same filtered slice. TypeScript
+  and production build pass.
+
+- Deployed the chart/filter update (2026-07-21): Cloudflare Worker
+  `aegis-fund-os`, version `e5c606fb-7982-41c7-b591-012b60ff02e8`. Live smoke
+  request to `/aot-paper-grid` returned HTTP 200 and the AOT page title.
+
+- Professionalized the backtest report (2026-07-21): added report identity and
+  date range, strategy/config assumptions, execution-quality metrics, open-risk
+  indicators, ambiguous-bar warning, and annual performance review alongside
+  the existing chart, filtered equity table and monthly view. TypeScript and
+  production build pass; not deployed yet.

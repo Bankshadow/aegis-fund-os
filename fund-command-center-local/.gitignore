@@ -31,3 +31,6 @@ dist-ssr
 *.sln
 *.sw?
 
+
+# Local historical data / working documents (not source)
+data/
