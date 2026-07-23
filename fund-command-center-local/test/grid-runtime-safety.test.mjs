@@ -118,6 +118,24 @@ test("invalid environment values resolve to conservative numeric defaults", () =
   assert.equal(Number.isNaN(policy.maxPlacementsPerRun), true);
 });
 
+// `checkedAt` now carries the exchange's own clock, so normal evidence arrives
+// already aged by one round trip plus clock skew (~0.5s measured against Binance
+// Testnet). That must stay comfortably inside the budget, or the guard would start
+// rejecting healthy runs — the failure mode opposite to the one it defends against.
+test("evidence aged by a round trip and clock skew still passes the freshness budget", async () => {
+  const repo = new SafetyRepo();
+  const result = await reconcileTestnetGridSafely(repo, bot, "operator", {
+    ...filledDeps,
+    getStatus: async () => ({
+      checkedAt: new Date(Date.now() - 1_500).toISOString(),
+      openOrders: [{ clientOrderId: "sell", status: "NEW" }],
+      trades: [{ orderId: "1" }],
+    }),
+  }, { maxPlacementsPerRun: 2 });
+  assert.equal(result.summary.placed, 1);
+  assert.equal(repo.runs.at(-1).status, "SUCCEEDED");
+});
+
 test("stale exchange evidence fails closed before a placement", async () => {
   const repo = new SafetyRepo();
   let placed = 0;
