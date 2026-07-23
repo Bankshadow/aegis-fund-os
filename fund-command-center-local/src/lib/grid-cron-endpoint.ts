@@ -1,7 +1,9 @@
 import "@tanstack/react-start/server-only";
 
 import { GridBotRepository, type D1DatabaseLike } from "./grid-bot-repository.ts";
-import { reconcileAllRunningTestnetGrids } from "./grid-reconcile.ts";
+import { runtimeSafetyPolicyFromEnv } from "./grid-runtime-safety.ts";
+import { dryLoopPolicyFromEnv, reconcileFleetWithOptionalDryLoop, summarizeDryLoopTelemetry } from "./grid-runtime-fleet.ts";
+import { summarizeFleetRoutes } from "./grid-runtime-graph.ts";
 import { getBinanceTestnetGridStatus } from "./binance-testnet.server.ts";
 import { placeSingleTestnetOrder } from "./binance-testnet-execution.ts";
 
@@ -17,12 +19,22 @@ import { placeSingleTestnetOrder } from "./binance-testnet-execution.ts";
  *     Cloudflare Access service token that already gates the route at the edge.
  *
  * Runs under system actor `system:grid-cron`; it never uses a human identity.
+ * Dry-loop is opt-in via `GRID_RECONCILE_DRY_LOOP=true` (default: one pass).
  */
 
 export type GridCronEnv = {
   GOVERNANCE_DB?: D1DatabaseLike;
   GRID_CRON_ENABLED?: string;
   GRID_CRON_SECRET?: string;
+  GRID_TESTNET_KILL_SWITCH?: string;
+  GRID_SYNC_LEASE_SECONDS?: string;
+  GRID_MAX_REPLENISHMENTS_PER_RUN?: string;
+  GRID_MAX_CONSECUTIVE_FAILURES?: string;
+  GRID_MAX_STATUS_AGE_SECONDS?: string;
+  AEGIS_MAX_OPEN_ORDERS?: string;
+  GRID_RECONCILE_DRY_LOOP?: string;
+  GRID_RECONCILE_DRY_ROUNDS?: string;
+  GRID_RECONCILE_MAX_ROUNDS?: string;
 };
 
 const timingSafeEqual = (a: string, b: string) => {
@@ -38,7 +50,14 @@ const jsonResponse = (status: number, body: unknown) =>
 export async function handleGridCronRequest(request: Request, env: GridCronEnv | undefined): Promise<Response> {
   if (request.method !== "POST") return jsonResponse(405, { error: "POST required" });
   if (env?.GRID_CRON_ENABLED?.trim() !== "true")
-    return jsonResponse(200, { enabled: false, ranAt: new Date().toISOString(), results: [] });
+    return jsonResponse(200, {
+      enabled: false,
+      ranAt: new Date().toISOString(),
+      results: [],
+      fleet: summarizeFleetRoutes([]),
+      dryLoop: { enabled: false, outcomes: [] },
+      telemetry: summarizeDryLoopTelemetry(false, []),
+    });
 
   const secret = env?.GRID_CRON_SECRET?.trim();
   const provided = request.headers.get("x-grid-cron-secret")?.trim() ?? "";
@@ -47,9 +66,16 @@ export async function handleGridCronRequest(request: Request, env: GridCronEnv |
   if (!env?.GOVERNANCE_DB) return jsonResponse(503, { error: "governance storage unavailable" });
 
   const repo = new GridBotRepository(env.GOVERNANCE_DB);
-  const results = await reconcileAllRunningTestnetGrids(repo, "system:grid-cron", {
-    getStatus: getBinanceTestnetGridStatus,
-    placeOrder: placeSingleTestnetOrder,
+  const fleet = await reconcileFleetWithOptionalDryLoop(
+    repo,
+    "system:grid-cron",
+    { getStatus: getBinanceTestnetGridStatus, placeOrder: placeSingleTestnetOrder },
+    runtimeSafetyPolicyFromEnv(env),
+    dryLoopPolicyFromEnv(env),
+  );
+  return jsonResponse(200, {
+    enabled: true,
+    ranAt: new Date().toISOString(),
+    ...fleet,
   });
-  return jsonResponse(200, { enabled: true, ranAt: new Date().toISOString(), results });
 }

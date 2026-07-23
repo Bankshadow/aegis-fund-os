@@ -24,6 +24,36 @@
 
 ## Verified since previous handoff
 
+- Handoff written for next session (2026-07-23): `docs/HANDOFF_CURSOR.md` §0
+  summarizes Graph L2/L3 work, remote D1 0004–0007 applied, dry-loop measurement
+  next steps, and commit/deploy note (code still uncommitted until user asks).
+
+- Ops item 1+2 executed (2026-07-23): applied remote D1 migrations **0004–0007**
+  on `GOVERNANCE_DB` (previously pending 0004–0006 as well as 0007); local also
+  has 0007. Added dry-loop `telemetry` rollup on fleet/cron responses and
+  `docs/DRY_LOOP_MEASUREMENT.md` for an opt-in measurement window. Dry-loop
+  remains default **off** until telemetry shows deferred drain without
+  `backlogStillDeferred`.
+
+- Sequenced L2/L3 follow-ups (2026-07-23): (1) migration `0007_grid_runtime_route.sql`
+  persists `route_severity` / `route_action` / `work_remaining` / `deferred` on
+  `grid_runtime_runs`; cockpit shows recent routes. (2) Opt-in dry-loop via
+  `GRID_RECONCILE_DRY_LOOP=true` with round caps (default off, hard max 5) in
+  `grid-runtime-fleet.ts` — each pass still uses `reconcileTestnetGridSafely`.
+  (3) First L2 diamond `agent/diamonds/runtime_safety_review.py` fans out three
+  static lenses and reduces with code; `tests.test_agent_graph` asserts a clean
+  report on current sources. Placement authority unchanged.
+
+- Added L2/L3 graph scaffolds without crossing the execution firewall
+  (2026-07-23): `agent/graph_contracts.py` + `agent/graph_ops.py` provide
+  review-finding contracts, code-only reduce, severity routing, and
+  loop-until-dry discovery for the harness; they import no Fund OS / exchange
+  modules. L3 `grid-runtime-graph.ts` classifies reconcile severity and plans
+  dry loops in code only; `route` / `fleet` fields are additive on reconcile
+  results while placement still goes solely through `grid-runtime-safety.ts`.
+  Cron remains one pass per bot (dry-loop not auto-armed). Tests:
+  `tests.test_agent_graph`, `test/grid-runtime-graph.test.mjs`.
+
 - Added a Webull sandbox read-only adapter (2026-07-20). It is hard-pinned to
   `https://api.sandbox.webull.com` and makes only a signed `GET
   /openapi/account/list` call when server-only sandbox credentials are
@@ -233,6 +263,127 @@
   confirming DNS/network access from the actual host.
 
 ## Last session
+
+- **Execution Safety Control Plane verified end-to-end against Binance Spot
+  Testnet, and two blocking defects found and fixed (2026-07-24).** The prior two
+  entries described this slice as unit-tested and pending a migration; both claims
+  needed correcting.
+
+  **Migration status was wrong.** `wrangler d1 migrations list GOVERNANCE_DB
+  --remote` reports "No migrations to apply" — all seven files including 0006 and
+  0007 are already applied remotely. The entries below saying migration 0006 is a
+  deployment prerequisite are stale. Note this machine's `wrangler` is logged in as
+  the account owner **with `d1 (write)`**, so future migrations do not need the
+  missing `CLOUDFLARE_D1_API_TOKEN` secret. (`d1 execute --remote` hangs here
+  waiting on an interactive confirm, so the tracking table is the evidence, not a
+  direct `sqlite_master` query.)
+
+  **Defect 1 — the placement budget deadlocked a healthy bot.**
+  `reconcileOneTestnetGrid` threw when the plan exceeded `maxPlacementsPerRun`
+  instead of placing what the budget allowed. The backlog therefore never drained,
+  every later run failed identically, and after 3 runs the circuit breaker halted a
+  bot that never malfunctioned. Found live on BOT-cafaa7ec: 15 replenishments
+  against a cap of 8, halted after three clicks with `runtime.safety_halted`
+  {failures:3, threshold:3}. Now the run places the first `maxPlacements` and
+  reports the rest as `summary.deferred`. The subtlety that keeps this correct:
+  `targetedSources` is still built from **all** planned replenishments, so a
+  deferred fill stays un-terminal and is re-planned next run — committing it would
+  strand the grid permanently. Verified live: run 1 placed 8 / deferred 7, run 2
+  placed the remaining 7, breaker stayed at 0, 15 real Testnet orders appeared
+  (`aegis-r-` prefix), ledger 20 → 35.
+
+  **Defect 2 — a halted Testnet bot was unrecoverable from the cockpit.** The
+  Resume button was gated on `environment !== "BINANCE_TESTNET"` and
+  `clearGridBotSafetyHalt` had no caller. Worse, `command(..., "RUNNING")` routes
+  Testnet through `startBinanceTestnetGridBot`, which refuses outright once an
+  execution ledger exists ("duplicate start blocked"), so there was no path back to
+  RUNNING at all. Added a Clear-safety-halt control (reason required, ≥3 chars,
+  appends `runtime.safety_resumed`) and a Resume that uses
+  `transitionGridBotRuntime` — a pure state transition, no exchange call, since the
+  ladder is already placed.
+
+  **Defect 3 — schema-drift diagnosis and a leaked lease.** Mirroring the 0005
+  incident, code can ship against a database without the 0006/0007 tables; the raw
+  `D1_ERROR: no such table` named nothing actionable. Added
+  `withStorageDiagnosis`: still **fail-closed** (degrading would place orders
+  without a lease, which is the one thing the lease prevents), but with an
+  actionable message, raised **before** the durable run so a pending migration
+  never burns the failure budget and halts a fleet. Found while fixing it that
+  `startRuntimeRun` sat outside the try/finally — if it threw, the already-acquired
+  lease leaked for its full 120s TTL and blocked that bot. It now releases before
+  rethrowing.
+
+  **Live verification of all four safety mechanisms** (local wrangler, real
+  Testnet): replenishment budget drains in batches; circuit breaker halts at 3 and
+  writes a hash-chain event whose `previousHash` matches the prior event;
+  `GRID_TESTNET_KILL_SWITCH=true` blocks before lease/run/exchange, places nothing,
+  writes no run row and does **not** count a failure (operator decision, not a
+  malfunction); 4 concurrent cron POSTs → exactly 1 acquired the lease (459ms) and
+  3 were rejected in ~80ms with no run row and no failure count — important because
+  a 15-minute cron overlapping itself would otherwise halt the fleet in 3 rounds.
+  Stale-evidence rejection remains unit-tested only. Frontend 153/153, TypeScript,
+  build, `gate/verify.ps1` SHIP.
+
+  **Still operator-only:** production Worker still holds the old Binance Testnet
+  credentials (`-2015`). The new key is proven working locally. Update the GitHub
+  secrets `BINANCE_TESTNET_API_KEY`/`_SECRET` and re-run the deploy workflow — no
+  push needed. Watch that `deploy-cloudflare.yml` **skips the secret-sync step
+  silently** when those secrets are empty, so a green run does not by itself prove
+  the Worker was updated.
+
+  **Testnet housekeeping:** five leftover SELL orders from the 2026-07-17 grid
+  (67,179.80 → 69,715.00) were cancelled at the user's explicit request before
+  testing, freeing 0.04381 BTC. They were not in the D1 ledger under those client
+  order ids, so the first reconcile correctly flagged 5 rows
+  `RECONCILIATION_REQUIRED` rather than inventing fills.
+
+- **n8n workflow automation adaptation added locally (2026-07-24; not
+  deployed):** analyzed the supplied n8n course roadmap/cheatsheet and applied
+  Schedule Trigger + authenticated HTTP/Webhook + If quality-gate patterns as
+  a read-only Aegis runtime watchdog. Added
+  `automations/n8n/aegis-runtime-watchdog.json`, disabled by default, and a
+  token-gated `GET /api/automation/runtime-status` endpoint with no execution
+  capability. Documentation is in `docs/N8N_AUTOMATION.md`. The workflow must
+  receive only the status token, never exchange credentials; it must not call
+  `/api/cron/grid-sync`. Endpoint tests, TypeScript and `gate/verify.ps1`
+  passed.
+
+- **Production deployment completed (2026-07-23):** deployed Worker
+  `aegis-fund-os` successfully to
+  `https://aegis-fund-os.bankshadow30.workers.dev`, version
+  `86ad8e8b-eca1-45e7-bbaf-cb25f5ba8910`. Before deploy, uploaded the Worker
+  secret `GRID_TESTNET_KILL_SWITCH=true`; remote D1 migration check reported
+  no pending migrations. Cron was not enabled and no Binance/Testnet order was
+  submitted. Direct PowerShell HTTPS smoke POST could not complete because its
+  TLS connection was closed locally; deployment itself returned success.
+
+- **Production safety redeploy completed (2026-07-23):** corrected the global
+  Testnet kill-switch coverage so it now blocks both initial grid placement
+  paths and runtime reconciliation. Deployed version
+  `f4db846b-8a2a-4723-8151-26ab7e89f0cc` after TypeScript and production build
+  passed. `GRID_TESTNET_KILL_SWITCH=true` remains set; cron remains disabled.
+
+- **Execution Safety Control Plane started (2026-07-23, local; migration not
+  yet applied/deployed):** all production Testnet reconciliation entrypoints
+  (one-bot, batch, external cron and scheduled driver) now use a D1-backed
+  safety wrapper. It takes an atomic per-bot lease before any exchange
+  placement, creates a durable run ledger, caps replenishments per run, honors
+  `GRID_TESTNET_KILL_SWITCH=true`, and counts consecutive failures per bot.
+  At the configured threshold (default 3), it pauses the bot and appends a
+  `runtime.safety_halted` hash-chain event. Added migration
+  `fund-command-center-local/migrations/0006_grid_runtime_safety.sql` and
+  focused safety tests. This remains **Binance Spot Testnet only**; no mainnet
+  or third-party capital path was added. ~~Before enabling cron, apply migration
+  0006 to D1~~ — **superseded 2026-07-24: 0006/0007 are applied on remote D1.**
+
+- **Five-pass safety hardening completed locally (2026-07-23):** reconciliation
+  leases renew before every placement (120s default), stale/future exchange
+  status evidence is rejected, the open-order cap is rechecked immediately
+  before each placement, and automatic circuit-breaker recovery requires a
+  reason plus a `runtime.safety_resumed` audit event. Runtime safety state and
+  recent durable run records are exposed to the Bot Cockpit. Still Testnet
+  only; ~~migration 0006 remains a deployment prerequisite~~ — **superseded
+  2026-07-24: applied on remote D1; see the top of this section.**
 
 - **E28: trailing re-anchor grid — first mechanism that actually works, but it
   still does not clear the gate (2026-07-23).** Criteria declared in

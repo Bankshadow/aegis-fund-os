@@ -1,6 +1,7 @@
 import type { GridBotRepository, BotRecord } from "./grid-bot-repository.ts";
 import { planGridReconciliation } from "./grid-runtime.ts";
 import { aggregateFillsByOrder, type ExchangeTrade } from "./grid-fills.ts";
+import { classifyReconcileRoute, type ReconcileRoute } from "./grid-runtime-graph.ts";
 
 /**
  * Shared grid reconciliation core, independent of transport and identity.
@@ -13,6 +14,7 @@ import { aggregateFillsByOrder, type ExchangeTrade } from "./grid-fills.ts";
 
 export type ReconcileDeps = {
   getStatus: (symbol: "BTCUSDT") => Promise<{
+    checkedAt?: string;
     openOrders: Array<{ clientOrderId: string; status: string }>;
     trades: Array<Partial<ExchangeTrade> & { orderId: number | string }>;
   }>;
@@ -20,19 +22,33 @@ export type ReconcileDeps = {
     symbol: string,
     order: { side: "BUY" | "SELL"; price: string; quantity: string; clientOrderId: string },
   ) => Promise<{ orderId: number | string; status: string }>;
+  /** Invoked immediately before every placement; safety wrappers use this to renew a lease and re-check caps. */
+  beforePlace?: (alreadyPlaced: number) => Promise<void>;
 };
 
 export type ReconcileResult = {
   botId: string;
   changed: boolean;
-  summary: { filled: number; placed: number; statusUpdated: number; reconciliationRequired: number };
+  summary: {
+    filled: number;
+    placed: number;
+    statusUpdated: number;
+    reconciliationRequired: number;
+    /** Replenishments left for a later run because this run's placement budget was exhausted. */
+    deferred: number;
+  };
+  /** Additive L3 graph route — classification only; does not change placement. */
+  route: ReconcileRoute;
 };
+
+export type ReconcileLimits = { maxPlacements?: number };
 
 export async function reconcileOneTestnetGrid(
   repo: GridBotRepository,
   bot: BotRecord,
   actorId: string,
   deps: ReconcileDeps,
+  limits: ReconcileLimits = {},
 ): Promise<ReconcileResult> {
   if (bot.environment !== "BINANCE_TESTNET" || bot.pair !== "BTCUSDT")
     throw new Error("Only a BTCUSDT Binance Spot Testnet bot can reconcile grid fills");
@@ -56,7 +72,20 @@ export async function reconcileOneTestnetGrid(
     remote.openOrders.map((order) => ({ clientOrderId: order.clientOrderId, status: order.status })),
     [...fills.values()],
   );
+  // The placement budget throttles how many orders one run may send; it is not an
+  // error condition. Placing the first `maxPlacements` and leaving the rest for the
+  // next run lets a backlog drain, whereas rejecting the whole run would deadlock:
+  // the backlog never shrinks, every later run fails identically, and the circuit
+  // breaker halts a bot that never actually malfunctioned.
+  const scheduled =
+    limits.maxPlacements !== undefined && plan.replenishments.length > limits.maxPlacements
+      ? plan.replenishments.slice(0, limits.maxPlacements)
+      : plan.replenishments;
+  const deferred = plan.replenishments.length - scheduled.length;
 
+  // Every planned replenishment is a targeted source, including the deferred ones:
+  // a fill whose replenishment was not placed must stay un-terminal so the next run
+  // re-plans it. Only `placedSources` releases a fill for commit.
   const targetedSources = new Set(plan.replenishments.map((item) => item.sourceClientOrderId));
   const placedSources = new Set<string>();
   const placements: Array<{
@@ -64,8 +93,9 @@ export async function reconcileOneTestnetGrid(
     price: string; quantity: string; gridIndex: number; status: string;
   }> = [];
   let placementError: unknown = null;
-  for (const replenishment of plan.replenishments) {
+  for (const replenishment of scheduled) {
     try {
+      await deps.beforePlace?.(placements.length);
       const placed = await deps.placeOrder(bot.pair, replenishment);
       placements.push({
         clientOrderId: replenishment.clientOrderId,
@@ -94,15 +124,18 @@ export async function reconcileOneTestnetGrid(
     placements,
   });
   if (placementError) throw placementError;
+  const summary = {
+    filled: filled.length,
+    placed: placements.length,
+    statusUpdated: plan.statusUpdates.length,
+    reconciliationRequired: plan.reconciliationRequired.length,
+    deferred,
+  };
   return {
     botId: bot.id,
     changed: result.changed,
-    summary: {
-      filled: filled.length,
-      placed: placements.length,
-      statusUpdated: plan.statusUpdates.length,
-      reconciliationRequired: plan.reconciliationRequired.length,
-    },
+    summary,
+    route: classifyReconcileRoute(summary),
   };
 }
 

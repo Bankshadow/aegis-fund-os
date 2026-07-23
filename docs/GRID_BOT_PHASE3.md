@@ -128,3 +128,81 @@ de-abstracted.
 
 - Full fill→replenish end-to-end verification, which needs a live testnet bot
   with real fills behind a second Cloudflare Access identity.
+## Execution Safety Control Plane (2026-07-23)
+
+Every production reconciliation entrypoint now routes through
+`grid-runtime-safety.ts`; the pure planner remains transport-independent for
+unit tests. This is **Binance Spot Testnet only** and does not widen the
+project's execution authority.
+
+- A D1 compare-and-set lease per bot prevents a manual sync, external cron, or
+  retry from placing concurrently. The holder is released in `finally`; an
+  abandoned holder expires after 60 seconds by default.
+- Each attempt writes a durable `grid_runtime_runs` row (`STARTED`, then
+  `SUCCEEDED`/`FAILED`) with actor, holder, reason and placement count.
+- `GRID_MAX_REPLENISHMENTS_PER_RUN` caps newly placed orders before the first
+  placement. `0` is a valid emergency setting that permits read/reconciliation
+  but no replenishment.
+- `GRID_TESTNET_KILL_SWITCH=true` blocks all reconciliation placement before a
+  lease or exchange call. Per-bot controls count failures; at
+  `GRID_MAX_CONSECUTIVE_FAILURES` (default 3), the bot is paused and gets a
+  hash-chained `runtime.safety_halted` audit event.
+- Migration `0006_grid_runtime_safety.sql` is required before activating the
+  updated runtime. Apply it to the same D1 database as migrations 0001-0005;
+  keep `GRID_CRON_ENABLED` unset until it is applied and the new tests/build
+  have passed.
+
+Relevant tests: `test/grid-runtime-safety.test.mjs` covers global kill switch,
+concurrent lease denial, durable success/failure records, and the per-run
+placement budget.
+
+### Hardening follow-up (2026-07-23, five-pass review)
+
+1. The lease is now renewed before **each** replenishment and defaults to 120
+   seconds, preventing a long multi-order run from silently outliving its lock.
+2. An automatic breaker can be cleared only through the governed server
+   function with a non-empty recovery reason. Clearing it appends
+   `runtime.safety_resumed`; it deliberately does not restart the paused bot.
+3. Status evidence must carry a valid, non-future `checkedAt` within
+   `GRID_MAX_STATUS_AGE_SECONDS` (30 by default), otherwise placement is
+   blocked and the failed run is recorded.
+4. The open-order cap (`AEGIS_MAX_OPEN_ORDERS`, default 250) is checked again
+   immediately before each placement, accounting for orders already placed in
+   the same run. The cockpit exposes failure count/halt reason and recent run
+   records are returned by its governed read API.
+5. Adversarial coverage now includes stale/future evidence and lease-renewal
+   loss, in addition to the original kill-switch, concurrent-lease and budget
+   cases.
+
+## Runtime graph classification (2026-07-23, L3 additive)
+
+Pure helpers in `src/lib/grid-runtime-graph.ts` classify reconcile summaries
+into `ok | deferred | mismatch | error` and expose `shouldContinueReconcileLoop`
+for optional loop-until-dry planners. Cron / sync-all attach an additive
+`fleet` summary; they still run **one pass per bot** by default.
+
+### Persist route (migration 0007)
+
+`grid_runtime_runs` stores `route_severity`, `route_action`, `work_remaining`,
+and `deferred` when a run finishes (success or failure). The cockpit reads these
+via `listRecentRuntimeRuns`. Apply `0007_grid_runtime_route.sql` to the same D1
+database as 0001–0006 before relying on the new columns in production.
+
+### Opt-in dry-loop
+
+Set `GRID_RECONCILE_DRY_LOOP=true` to allow additional safe passes per bot while
+deferred work remains. Caps: `GRID_RECONCILE_DRY_ROUNDS` (default 1) and
+`GRID_RECONCILE_MAX_ROUNDS` (default 3, hard max 5). Each pass still goes through
+`reconcileTestnetGridSafely` (lease + durable run). Mismatch/error stops the
+loop and demands operator review. Unset keeps the historical one-pass behavior.
+
+Fleet responses include additive `telemetry` (`avgPassesPerBot`, `stopReasons`,
+`backlogStillDeferred`). Measurement playbook: `docs/DRY_LOOP_MEASUREMENT.md`.
+
+Agent harness modules are never imported here.
+
+### Migration status (2026-07-23)
+
+Remote D1 `GOVERNANCE_DB` has migrations **0004–0007** applied (including route
+columns and runtime safety tables that were previously pending). Local D1 also
+has `0007`. Confirm with `npx wrangler d1 migrations list GOVERNANCE_DB --remote`.

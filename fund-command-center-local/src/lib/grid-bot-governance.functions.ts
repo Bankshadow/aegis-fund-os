@@ -11,7 +11,8 @@ import {
   placeTestnetGrid,
 } from "./binance-testnet-execution";
 import { getBinanceTestnetGridStatus } from "./binance-testnet.server";
-import { reconcileAllRunningTestnetGrids, reconcileOneTestnetGrid } from "./grid-reconcile";
+import { assertTestnetPlacementEnabled, reconcileTestnetGridSafely, runtimeSafetyPolicyFromEnv } from "./grid-runtime-safety";
+import { dryLoopPolicyFromEnv, reconcileFleetWithOptionalDryLoop } from "./grid-runtime-fleet";
 import { resolveActorIdentity } from "./actor-identity";
 import {
   assertBotCreationAllowed,
@@ -60,6 +61,24 @@ const guardEnv = (request: Request) => {
   const merged: Record<string, string | undefined> = {};
   for (const key of GUARD_ENV_KEYS) merged[key] = binding?.[key] ?? global?.[key] ?? proc?.[key];
   return merged;
+};
+
+const runtimeSafetyEnv = (request: Request) => {
+  const binding = runtimeEnv(request) as Record<string, string | undefined> | undefined;
+  const global = (globalThis as { __env__?: Record<string, string | undefined> }).__env__;
+  const proc = (globalThis as { process?: { env?: Record<string, string | undefined> } }).process?.env;
+  const keys = [
+    "GRID_TESTNET_KILL_SWITCH",
+    "GRID_SYNC_LEASE_SECONDS",
+    "GRID_MAX_REPLENISHMENTS_PER_RUN",
+    "GRID_MAX_CONSECUTIVE_FAILURES",
+    "GRID_MAX_STATUS_AGE_SECONDS",
+    "AEGIS_MAX_OPEN_ORDERS",
+    "GRID_RECONCILE_DRY_LOOP",
+    "GRID_RECONCILE_DRY_ROUNDS",
+    "GRID_RECONCILE_MAX_ROUNDS",
+  ];
+  return Object.fromEntries(keys.map((key) => [key, binding?.[key] ?? global?.[key] ?? proc?.[key]]));
 };
 
 /** Reject before any durable write when creation would cross a public-deployment cap. */
@@ -135,6 +154,7 @@ export const createAndStartTestnetGridBot = createServerFn({ method: "POST" })
       throw new Error("One-click execution is restricted to Binance Spot Testnet");
     const repo = repository();
     const makerId = actorIdentity(data.makerId);
+    assertTestnetPlacementEnabled(runtimeSafetyPolicyFromEnv(runtimeSafetyEnv(getRequest())));
     await assertCreateAllowed(repo);
     await assertPlacementAllowed(repo, plannedOrderCount(data.configuration));
     const draft = await repo.createDraft(
@@ -166,10 +186,11 @@ export const createAndStartTestnetGridBot = createServerFn({ method: "POST" })
 
 export const getGridBotGovernance = createServerFn({ method: "GET" }).handler(async () => {
   const repo = repository();
-  const [bots, events, orders] = await Promise.all([
+  const [bots, events, orders, recentRuntimeRuns] = await Promise.all([
     repo.listBots(),
     repo.listEvents(),
     repo.listAllOrders(),
+    repo.listRecentRuntimeRuns(),
   ]);
   const profitByBot = Object.fromEntries(
     bots.map((bot) => {
@@ -185,14 +206,24 @@ export const getGridBotGovernance = createServerFn({ method: "GET" }).handler(as
       ];
     }),
   );
+  const runtimeSafetyByBot = Object.fromEntries(
+    await Promise.all(bots.map(async (bot) => [bot.id, await repo.getRuntimeSafetyControl(`BOT:${bot.id}`)] as const)),
+  );
   return {
     bots,
     events,
     profitByBot,
     auditValid: await verifyGovernanceChains(events),
+    recentRuntimeRuns,
+    runtimeSafetyByBot,
     publicTestMode: publicTestMode(getRequest()),
   };
 });
+
+/** Clears only an automatic per-bot breaker; the bot remains PAUSED until separately resumed. */
+export const clearGridBotSafetyHalt = createServerFn({ method: "POST" })
+  .validator(z.object({ botId: z.string().min(1), actorId: z.string().trim().min(1).optional(), reason: z.string().trim().min(3).max(500) }))
+  .handler(({ data }) => repository().clearRuntimeSafetyHalt(data.botId, actorIdentity(data.actorId), data.reason));
 
 export const getGridBotOrders = createServerFn({ method: "GET" })
   .validator(z.object({ botId: z.string().min(1) }))
@@ -259,6 +290,7 @@ export const startBinanceTestnetGridBot = createServerFn({ method: "POST" })
     const actorId = actorIdentity(data.actorId);
     const bot = await repo.getBot(data.botId);
     if (!bot) throw new Error("Bot not found");
+    assertTestnetPlacementEnabled(runtimeSafetyPolicyFromEnv(runtimeSafetyEnv(getRequest())));
     const existing = await repo.listOrders(bot.id);
     if (existing.length)
       throw new Error("This bot already has a Testnet execution ledger; duplicate start blocked");
@@ -293,10 +325,10 @@ export const syncBinanceTestnetGridBot = createServerFn({ method: "POST" })
     const actorId = actorIdentity(data.actorId);
     const bot = await repo.getBot(data.botId);
     if (!bot) throw new Error("Binance Spot Testnet bot not found");
-    return reconcileOneTestnetGrid(repo, bot, actorId, {
+    return reconcileTestnetGridSafely(repo, bot, actorId, {
       getStatus: getBinanceTestnetGridStatus,
       placeOrder: placeSingleTestnetOrder,
-    });
+    }, runtimeSafetyPolicyFromEnv(runtimeSafetyEnv(getRequest())));
   });
 
 /**
@@ -309,12 +341,14 @@ export const syncAllRunningTestnetGrids = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const repo = repository();
     const actorId = actorIdentity(data.actorId);
-    return {
-      results: await reconcileAllRunningTestnetGrids(repo, actorId, {
-        getStatus: getBinanceTestnetGridStatus,
-        placeOrder: placeSingleTestnetOrder,
-      }),
-    };
+    const env = runtimeSafetyEnv(getRequest());
+    return reconcileFleetWithOptionalDryLoop(
+      repo,
+      actorId,
+      { getStatus: getBinanceTestnetGridStatus, placeOrder: placeSingleTestnetOrder },
+      runtimeSafetyPolicyFromEnv(env),
+      dryLoopPolicyFromEnv(env),
+    );
   });
 
 export const stopBinanceTestnetGridBot = createServerFn({ method: "POST" })

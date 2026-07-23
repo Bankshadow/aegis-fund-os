@@ -63,6 +63,13 @@ export type TestnetOrderRow = {
   commissionAsset?: string;
 };
 
+export type RuntimeSafetyControl = {
+  placementDisabled: boolean;
+  consecutiveFailures: number;
+  reason?: string;
+  updatedAt?: string;
+};
+
 type TestnetOrderDbRow = {
   id: string; execution_id: string; bot_id: string; symbol: string;
   exchange_order_id: string; client_order_id: string; grid_index: number;
@@ -203,6 +210,144 @@ export class GridBotRepository {
       .prepare("SELECT * FROM grid_bot_orders ORDER BY bot_id, grid_index")
       .all<TestnetOrderDbRow>();
     return (rows.results ?? []).map(orderFromRow);
+  }
+
+  async getRuntimeSafetyControl(scope: "GLOBAL" | `BOT:${string}`): Promise<RuntimeSafetyControl> {
+    const row = await this.db.prepare("SELECT placement_disabled, consecutive_failures, reason, updated_at FROM grid_runtime_controls WHERE scope=?")
+      .bind(scope).first<{ placement_disabled: number; consecutive_failures: number; reason: string | null; updated_at: string }>();
+    return {
+      placementDisabled: row?.placement_disabled === 1,
+      consecutiveFailures: Number(row?.consecutive_failures ?? 0),
+      reason: row?.reason ?? undefined,
+      updatedAt: row?.updated_at,
+    };
+  }
+
+  /** Atomic compare-and-set lease: only one reconciler can place for a bot. */
+  async acquireRuntimeLease(botId: string, holder: string, expiresAt: string, now: string): Promise<boolean> {
+    const result = await this.db.prepare(
+      "INSERT INTO grid_runtime_leases (bot_id,holder,expires_at,updated_at) VALUES (?,?,?,?) " +
+      "ON CONFLICT(bot_id) DO UPDATE SET holder=excluded.holder,expires_at=excluded.expires_at,updated_at=excluded.updated_at " +
+      "WHERE grid_runtime_leases.expires_at <= ?",
+    ).bind(botId, holder, expiresAt, now, now).run();
+    return Number(result.meta?.changes ?? 0) === 1;
+  }
+
+  async releaseRuntimeLease(botId: string, holder: string) {
+    await this.db.prepare("DELETE FROM grid_runtime_leases WHERE bot_id=? AND holder=?").bind(botId, holder).run();
+  }
+
+  /** Renewal cannot resurrect an expired or stolen lease. */
+  async renewRuntimeLease(botId: string, holder: string, expiresAt: string, now: string): Promise<boolean> {
+    const result = await this.db.prepare(
+      "UPDATE grid_runtime_leases SET expires_at=?,updated_at=? WHERE bot_id=? AND holder=? AND expires_at > ?",
+    ).bind(expiresAt, now, botId, holder, now).run();
+    return Number(result.meta?.changes ?? 0) === 1;
+  }
+
+  async startRuntimeRun(botId: string, actorId: string, holder: string, now: string) {
+    const runId = id("RUN");
+    await this.db.prepare("INSERT INTO grid_runtime_runs (id,bot_id,actor_id,holder,status,placements,started_at) VALUES (?,?,?,?,?,?,?)")
+      .bind(runId, botId, actorId, holder, "STARTED", 0, now).run();
+    return runId;
+  }
+
+  async finishRuntimeRun(
+    runId: string,
+    status: "SUCCEEDED" | "FAILED" | "SKIPPED",
+    reason: string | null,
+    placements: number,
+    route?: { severity: string; action: string; workRemaining: boolean } | null,
+    deferred = 0,
+  ) {
+    await this.db.prepare(
+      "UPDATE grid_runtime_runs SET status=?,reason=?,placements=?,finished_at=?,route_severity=?,route_action=?,work_remaining=?,deferred=? WHERE id=? AND status='STARTED'",
+    ).bind(
+      status,
+      reason,
+      placements,
+      new Date().toISOString(),
+      route?.severity ?? null,
+      route?.action ?? null,
+      route ? (route.workRemaining ? 1 : 0) : null,
+      Math.max(0, Math.trunc(deferred)),
+      runId,
+    ).run();
+  }
+
+  async recordRuntimeSafety(botId: string, actorId: string, input: { failed: boolean; threshold: number; reason?: string }) {
+    const current = await this.requireBot(botId);
+    const scope = `BOT:${botId}` as const;
+    const control = await this.getRuntimeSafetyControl(scope);
+    const failures = input.failed ? control.consecutiveFailures + 1 : 0;
+    const halt = input.failed && failures >= input.threshold;
+    const now = new Date().toISOString();
+    await this.db.prepare(
+      "INSERT INTO grid_runtime_controls (scope,placement_disabled,consecutive_failures,reason,updated_by,updated_at) VALUES (?,?,?,?,?,?) " +
+      "ON CONFLICT(scope) DO UPDATE SET placement_disabled=excluded.placement_disabled,consecutive_failures=excluded.consecutive_failures,reason=excluded.reason,updated_by=excluded.updated_by,updated_at=excluded.updated_at",
+    ).bind(scope, halt ? 1 : 0, failures, halt ? input.reason ?? "Safety threshold reached" : null, actorId, now).run();
+    if (!halt) return;
+    const previous = (await this.listEvents(botId)).at(-1);
+    const event = await appendGovernanceEvent(previous ? [previous] : [], {
+      eventId: id("EVT"), botId, eventType: "runtime.safety_halted", actorId,
+      payload: { failures, threshold: input.threshold, reason: input.reason ?? "Safety threshold reached" }, occurredAt: now,
+    });
+    await this.db.batch([
+      this.db.prepare("UPDATE grid_bots SET runtime_state='PAUSED',version=?,updated_at=? WHERE id=? AND runtime_state='RUNNING' AND version=?")
+        .bind(current.version + 1, now, botId, current.version),
+      this.auditInsert(event, current.version + 1),
+    ]);
+  }
+
+  /** Human recovery is explicit and auditable; it does not restart a paused bot. */
+  async clearRuntimeSafetyHalt(botId: string, actorId: string, reason: string) {
+    if (!reason.trim()) throw new Error("A safety-halt recovery reason is required");
+    const current = await this.requireBot(botId);
+    const scope = `BOT:${botId}` as const;
+    const control = await this.getRuntimeSafetyControl(scope);
+    if (!control.placementDisabled) throw new Error("Bot does not have an active safety halt");
+    const now = new Date().toISOString();
+    const nextVersion = current.version + 1;
+    const previous = (await this.listEvents(botId)).at(-1);
+    const event = await appendGovernanceEvent(previous ? [previous] : [], {
+      eventId: id("EVT"), botId, eventType: "runtime.safety_resumed", actorId,
+      payload: { reason: reason.trim(), priorFailures: control.consecutiveFailures }, occurredAt: now,
+    });
+    await this.db.batch([
+      this.db.prepare("UPDATE grid_runtime_controls SET placement_disabled=0,consecutive_failures=0,reason=?,updated_by=?,updated_at=? WHERE scope=?")
+        .bind(`Cleared: ${reason.trim()}`, actorId, now, scope),
+      this.db.prepare("UPDATE grid_bots SET version=?,updated_at=? WHERE id=? AND version=?")
+        .bind(nextVersion, now, botId, current.version),
+      this.auditInsert(event, nextVersion),
+    ]);
+    return { ...current, version: nextVersion, updatedAt: now };
+  }
+
+  async listRecentRuntimeRuns(botId?: string, limit = 50) {
+    const bounded = Math.min(Math.max(Math.trunc(limit), 1), 200);
+    const statement = botId
+      ? this.db.prepare("SELECT id,bot_id,actor_id,holder,status,reason,placements,deferred,route_severity,route_action,work_remaining,started_at,finished_at FROM grid_runtime_runs WHERE bot_id=? ORDER BY started_at DESC LIMIT ?").bind(botId, bounded)
+      : this.db.prepare("SELECT id,bot_id,actor_id,holder,status,reason,placements,deferred,route_severity,route_action,work_remaining,started_at,finished_at FROM grid_runtime_runs ORDER BY started_at DESC LIMIT ?").bind(bounded);
+    const rows = await statement.all<{
+      id: string; bot_id: string; actor_id: string; holder: string; status: string; reason: string | null;
+      placements: number; deferred: number | null; route_severity: string | null; route_action: string | null;
+      work_remaining: number | null; started_at: string; finished_at: string | null;
+    }>();
+    return (rows.results ?? []).map((row) => ({
+      id: row.id,
+      botId: row.bot_id,
+      actorId: row.actor_id,
+      holder: row.holder,
+      status: row.status,
+      reason: row.reason ?? undefined,
+      placements: Number(row.placements),
+      deferred: Number(row.deferred ?? 0),
+      routeSeverity: row.route_severity ?? undefined,
+      routeAction: row.route_action ?? undefined,
+      workRemaining: row.work_remaining == null ? undefined : Number(row.work_remaining) === 1,
+      startedAt: row.started_at,
+      finishedAt: row.finished_at ?? undefined,
+    }));
   }
 
   async recordTestnetStart(

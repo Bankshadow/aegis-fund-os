@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { AppShell, PageHeader, Panel } from "@/components/app-shell";
 import { MetricCard, fmtMoney } from "@/components/metric-card";
@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import {
+  clearGridBotSafetyHalt,
   getGridBotGovernance,
   startBinanceTestnetGridBot,
   stopBinanceTestnetGridBot,
@@ -30,6 +31,8 @@ export const Route = createFileRoute("/bots")({
         bots: [],
         events: [],
         profitByBot: {} as Record<string, { orderCount: number; estimatedCycleProfit: string }>,
+        runtimeSafetyByBot: {} as Record<string, { placementDisabled: boolean; consecutiveFailures: number; reason?: string }>,
+        recentRuntimeRuns: [],
         auditValid: false,
         publicTestMode: false,
         storageAvailable: false as const,
@@ -64,7 +67,42 @@ function DetailMetric({ label, value, note }: { label: string; value: string; no
   return <div><div className="text-xs text-muted-foreground">{label}</div><div className="mt-1 font-medium">{value}</div>{note && <div className="mt-1 text-[11px] text-muted-foreground">{note}</div>}</div>;
 }
 
-function BotCard({ bot, profit, working, command }: { bot: BotRecord; profit?: ProfitSummary; working: boolean; command: (next: Exclude<RuntimeState, "IDLE">) => void }) {
+/**
+ * Recovery control for an automatic safety halt. The breaker can fire on any
+ * Testnet bot, so the clearing control must exist for Testnet too — without it a
+ * halted bot is unrecoverable from the cockpit. A reason is mandatory (the server
+ * function rejects fewer than 3 characters) because clearing a breaker is an
+ * audited act: it appends `runtime.safety_resumed` to the bot's hash chain.
+ */
+function ClearHaltControl({ botId, reason, onCleared }: { botId: string; reason?: string; onCleared: () => void }) {
+  const [open, setOpen] = useState(false);
+  const [note, setNote] = useState("");
+  const [busy, setBusy] = useState(false);
+  const submit = async () => {
+    setBusy(true);
+    try {
+      await clearGridBotSafetyHalt({ data: { botId, actorId: "local-operator@aegis", reason: note.trim() } });
+      toast.success("Safety halt cleared. The bot stays paused until you start it again.");
+      setOpen(false);
+      setNote("");
+      onCleared();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not clear the safety halt");
+    } finally {
+      setBusy(false);
+    }
+  };
+  if (!open)
+    return <Button size="sm" variant="outline" disabled={busy} onClick={() => setOpen(true)}>Clear safety halt</Button>;
+  return <div className="flex w-full flex-wrap items-center gap-2">
+    <Input className="h-8 max-w-xs" placeholder="Reason (required, min 3 chars)" value={note} onChange={(event) => setNote(event.target.value)} />
+    <Button size="sm" disabled={busy || note.trim().length < 3} onClick={submit}>{busy ? "Clearing..." : "Confirm"}</Button>
+    <Button size="sm" variant="ghost" disabled={busy} onClick={() => setOpen(false)}>Cancel</Button>
+    {reason && <span className="text-xs text-muted-foreground">Halted by: {reason}</span>}
+  </div>;
+}
+
+function BotCard({ bot, profit, safety, working, command, resume, onCleared }: { bot: BotRecord; profit?: ProfitSummary; safety?: { placementDisabled: boolean; consecutiveFailures: number; reason?: string }; working: boolean; command: (next: Exclude<RuntimeState, "IDLE">) => void; resume: () => void; onCleared: () => void }) {
   const projected = profit && profit.orderCount > 0 ? Number(profit.estimatedCycleProfit).toFixed(2) : null;
   const tp = String(bot.configuration.takeProfit || "—");
   const sl = String(bot.configuration.stopLoss || "—");
@@ -86,10 +124,17 @@ function BotCard({ bot, profit, working, command }: { bot: BotRecord; profit?: P
       <DetailMetric label="Last update" value={new Date(bot.updatedAt).toLocaleString()} />
       <DetailMetric label="Bot version" value={`v${bot.version}`} />
       <DetailMetric label="Cycle status" value={bot.runtimeState === "RUNNING" ? "Monitoring orders" : bot.runtimeState} />
+      <DetailMetric label="Safety control" value={safety?.placementDisabled ? "HALTED" : `${safety?.consecutiveFailures ?? 0} recent failures`} note={safety?.reason} />
     </div>
     <div className="mt-5 flex flex-wrap gap-2 border-t pt-4"><Button size="sm" variant="outline" asChild><Link to="/bots/$botId" params={{ botId: bot.id }}>Detail</Link></Button><Button size="sm" variant="outline" asChild><Link to="/bots/$botId/profit" params={{ botId: bot.id }}><CircleDollarSign className="h-3.5 w-3.5" />Grid profit</Link></Button>
       {bot.state === "APPROVED" && bot.runtimeState === "IDLE" && <Button size="sm" disabled={working} onClick={() => command("RUNNING")}>Start Testnet</Button>}
       {(bot.runtimeState === "RUNNING" || bot.runtimeState === "PAUSED") && <Button size="sm" variant="destructive" disabled={working} onClick={() => command("STOPPED")}><StopCircle className="h-3.5 w-3.5" />Stop</Button>}
+      {/* Resume must NOT route through `startBinanceTestnetGridBot`: that path places a
+          fresh ladder and refuses outright ("duplicate start blocked") once an execution
+          ledger exists, which left a paused Testnet bot with no way back to RUNNING.
+          The ladder is already on the exchange, so resuming is a pure state transition. */}
+      {bot.runtimeState === "PAUSED" && !safety?.placementDisabled && <Button size="sm" disabled={working} onClick={resume}>Resume</Button>}
+      {safety?.placementDisabled && <ClearHaltControl botId={bot.id} reason={safety.reason} onCleared={onCleared} />}
     </div>
   </article>;
 }
@@ -107,11 +152,21 @@ function BotsCockpit() {
   const syncAll = async () => {
     setSyncingAll(true);
     try {
-      const { results } = await syncAllRunningTestnetGrids({ data: { actorId: "local-operator@aegis" } });
+      const { results, fleet, dryLoop, telemetry } = await syncAllRunningTestnetGrids({ data: { actorId: "local-operator@aegis" } });
       const placed = results.reduce((sum, r) => sum + ("summary" in r ? r.summary.placed : 0), 0);
       const filled = results.reduce((sum, r) => sum + ("summary" in r ? r.summary.filled : 0), 0);
       const errors = results.filter((r) => "error" in r).length;
-      toast.success(`Synced ${results.length} running bot(s): ${filled} filled, ${placed} replenished${errors ? `, ${errors} failed` : ""}.`);
+      const fleetHint =
+        fleet?.action === "operator_review"
+          ? " Fleet route: operator review."
+          : fleet?.action === "retry_next"
+            ? " Fleet route: retry next pass."
+            : "";
+      const dryHint =
+        dryLoop?.enabled
+          ? ` Dry-loop on (${telemetry?.totalPasses ?? 0} passes, avg ${telemetry?.avgPassesPerBot ?? "?"}/bot${telemetry?.backlogStillDeferred ? ", backlog still deferred" : ""}).`
+          : "";
+      toast.success(`Synced ${results.length} running bot(s): ${filled} filled, ${placed} replenished${errors ? `, ${errors} failed` : ""}.${fleetHint}${dryHint}`);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Batch reconcile failed closed");
     } finally {
@@ -126,6 +181,24 @@ function BotsCockpit() {
     [bots, q],
   );
   const allocated = bots.reduce((sum, bot) => sum + numberConfig(bot.configuration.investment), 0);
+  const router = useRouter();
+  /**
+   * PAUSED → RUNNING for a bot whose ladder already exists on the exchange. This is a
+   * pure governed state transition with no exchange call, unlike `command(..., "RUNNING")`
+   * which for Testnet places a new grid and is rejected once an execution ledger exists.
+   */
+  const resumePaused = async (botId: string) => {
+    setWorking(botId);
+    try {
+      const updated = await transitionGridBotRuntime({ data: { botId, nextState: "RUNNING", actorId: "local-operator@aegis" } });
+      setBots((items) => items.map((bot) => (bot.id === botId ? updated : bot)));
+      toast.success(`${botId} → RUNNING; durable audit event appended.`);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Resume failed closed");
+    } finally {
+      setWorking(null);
+    }
+  };
   const command = async (botId: string, nextState: Exclude<RuntimeState, "IDLE">) => {
     setWorking(botId);
     try {
@@ -199,6 +272,44 @@ function BotsCockpit() {
             tone={initial.auditValid ? "positive" : "negative"}
           />
         </div>
+        {initial.recentRuntimeRuns.length > 0 && (
+          <Panel
+            title="Recent runtime routes"
+            subtitle="Durable reconcile outcomes with L3 severity classification (migration 0007)."
+          >
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[720px] text-sm">
+                <thead>
+                  <tr className="text-left text-xs uppercase text-muted-foreground">
+                    {["When", "Bot", "Status", "Route", "Placed", "Deferred"].map((heading) => (
+                      <th className="p-2" key={heading}>{heading}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {initial.recentRuntimeRuns.slice(0, 12).map((run) => (
+                    <tr className="border-t border-border/50" key={run.id}>
+                      <td className="p-2 text-xs text-muted-foreground">{new Date(run.startedAt).toLocaleString()}</td>
+                      <td className="p-2 font-mono text-xs">{run.botId}</td>
+                      <td className="p-2">{run.status}</td>
+                      <td className="p-2">
+                        {run.routeSeverity ? (
+                          <Badge variant="outline" className="font-mono text-[10px]">
+                            {run.routeSeverity}/{run.routeAction ?? "—"}
+                          </Badge>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">unset</span>
+                        )}
+                      </td>
+                      <td className="p-2 font-mono">{run.placements}</td>
+                      <td className="p-2 font-mono">{run.deferred ?? 0}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </Panel>
+        )}
         <Panel
           title="Bot Fleet"
           subtitle="Only durable D1 records are shown; fixture bots have been removed."
@@ -223,8 +334,11 @@ function BotsCockpit() {
                     key={bot.id}
                     bot={bot}
                     profit={initial.profitByBot[bot.id]}
+                    safety={initial.runtimeSafetyByBot[bot.id]}
                     working={working === bot.id}
                     command={(nextState) => command(bot.id, nextState)}
+                    resume={() => resumePaused(bot.id)}
+                    onCleared={() => router.invalidate()}
                   />
                 ))}
               </div>
