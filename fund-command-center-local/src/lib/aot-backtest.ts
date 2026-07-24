@@ -17,6 +17,17 @@ export type RegimeState = "RANGE" | "TREND_UP" | "TREND_DOWN";
  */
 export type TrailingConfig = { mode: "TRAIL_UP" };
 /**
+ * Exposure cap at re-anchor (E29). E28's trailing keeps the book in the market
+ * during a trend, which captures more upside but also lets long inventory
+ * accumulate across re-anchors — so robust (return - 2*maxDD) got worse even as
+ * alpha improved. GRID_CAPACITY caps long inventory at the initial grid's own
+ * maximum long capacity (Σ quantity over the initial BUY levels): a BUY does not
+ * fill while inventory sits at the cap, bounding the drawdown a reversal can
+ * inflict, while the SELL side (trailing's alpha source) is untouched. Not a
+ * tuned number — it is the grid's own geometry. `null` reproduces E28 exactly.
+ */
+export type ExposureCapConfig = { mode: "GRID_CAPACITY" };
+/**
  * Percentile-rank trend detector (E14 established percentile rank as the
  * detector that works on this project's data). It was built to answer one E26
  * finding: a grid sells its inventory into a rally and then watches price run
@@ -72,6 +83,7 @@ export type BacktestConfig = {
   maxParticipationRatePct?: number;
   regimeFilter?: RegimeFilterConfig | null;
   trailing?: TrailingConfig | null;
+  exposureCap?: ExposureCapConfig | null;
 };
 export type BacktestOrder = {
   id: string;
@@ -548,6 +560,17 @@ export function runAotBacktest(
       if (index !== reference) addOrder(index, index < reference ? "BUY" : "SELL", timestamp);
   };
   armGrid(bars[0].timestamp);
+  // E29 exposure cap: the initial grid's maximum long capacity = Σ quantity over
+  // the BUY levels as first armed. Fixed once here and held across re-anchors — the
+  // point is to bound long inventory to the ORIGINAL grid, not to grow the cap as
+  // the ladder lifts. Derived from geometry, so there is no tunable number.
+  const longCap =
+    config.exposureCap?.mode === "GRID_CAPACITY"
+      ? initialLevels.reduce(
+          (sum, level, index) => (index < reference ? sum.add(quantityFor(d(level))) : sum),
+          d(0),
+        )
+      : null;
   /**
    * Lift the whole ladder so `price` sits back inside it, keeping the existing
    * width ratio and spacing. Open orders are genuinely cancelled — not held —
@@ -582,6 +605,11 @@ export function runAotBacktest(
       inventory.add(quantity).gt(config.maxInventory)
     )
       return false;
+    // E29: do not fill a BUY while inventory sits at the grid-capacity cap. The
+    // order stays open at its geometry price and fills once a SELL frees room, so
+    // this bounds max long (and thus reversal drawdown) without cancelling or
+    // force-selling anything. Inactive when exposureCap is null → E28 unchanged.
+    if (order.side === "BUY" && longCap !== null && inventory.add(quantity).gt(longCap)) return false;
     const signedPrice =
       order.side === "BUY"
         ? price.mul(d(1).add(d(config.slippageRate).div(100)))

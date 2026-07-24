@@ -36,6 +36,10 @@ const CAPITAL = 1_000_000;
 const REGIME_ENABLED = process.argv.includes("--regime");
 // E28 mechanism: trailing re-anchor. Enable with --trailing.
 const TRAILING_ENABLED = process.argv.includes("--trailing");
+// E29 mechanism: exposure cap on top of E28. --exposure-cap implies trailing, since
+// E29 = E28 + cap; the cap is inert without trailing (no re-anchor accumulation).
+const EXPOSURE_CAP_ENABLED = process.argv.includes("--exposure-cap");
+const TRAILING_ON = TRAILING_ENABLED || EXPOSURE_CAP_ENABLED;
 const REGIME_FILTER = { lookback: 20, rankWindow: 252, upperRank: 80, lowerRank: 20 };
 
 // Thai retail cost model, percent units (engine divides by 100).
@@ -98,7 +102,8 @@ function configFor(geometry, window, executionMode, firstClose) {
     cashConstraint: true,
     executionMode,
     regimeFilter: REGIME_ENABLED ? REGIME_FILTER : null,
-    trailing: TRAILING_ENABLED ? { mode: "TRAIL_UP" } : null,
+    trailing: TRAILING_ON ? { mode: "TRAIL_UP" } : null,
+    exposureCap: EXPOSURE_CAP_ENABLED ? { mode: "GRID_CAPACITY" } : null,
   };
 }
 

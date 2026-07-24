@@ -34,6 +34,58 @@
 | E26 | 2026-07-22 | Walk-forward AOT grid 18 fold OOS (2005–2026) | ❌ **ไม่ผ่าน** — C1/C2/C7 ตก; alpha เฉลี่ย −10.79 แพ้ buy-and-hold |
 | E27 | 2026-07-23 | Percentile-rank regime filter (กลไกแก้ "แพ้ขาขึ้น") | ❌ **ไม่ผ่าน และแย่ลง** — alpha −10.79 → −12.19; 4 fold ที่แย่ที่สุดไม่ขยับ |
 | E28 | 2026-07-23 | Trailing re-anchor grid (ยกทั้ง grid ตามราคา) | ⚖️ **ผ่านกลไก (M1–M3) แต่ไม่ผ่าน gate** — alpha −10.79 → −9.40, engaged 83% → **100%** แลกกับ DD 15.17% → 16.84% |
+| E29 | 2026-07-25 | Exposure cap ตอน re-anchor (E28 + จำกัด long ที่ความจุ grid เดิม) | ⚖️ **M1–M3 ผ่านบน mean แต่ decomposition ล้ม** — robust −19.91 → −12.17, DD 16.84% → 13.52% แต่ 9/12 fold ที่เปลี่ยนเป็น selection artifact และผลดีมาจาก fold ที่ **หยุดเทรด** (engaged 100% → 78%) ไม่ใช่กลไก · gate ยัง FAIL |
+
+---
+
+## E29: Exposure cap ตอน re-anchor บน AOT — 2026-07-25
+
+**สมมติฐาน (ประกาศก่อนรัน, `AOT_VALIDATION_CRITERIA.md` §6c)**: E28 พิสูจน์ว่า
+trailing เก็บ alpha ได้แต่ robust แย่ลงเพราะสะสม long inventory ข้าม re-anchor
+สมมติฐาน E29: จำกัด long ไม่ให้เกิน **ความจุ grid เดิม** (Σ ปริมาณของทุกระดับ BUY
+ตอน arm ครั้งแรก) จะตัด drawdown ฝั่งกลับตัวโดยคงฝั่ง SELL (แหล่ง alpha) ไว้ครบ
+
+**Protocol**: เหมือน E28 ทุกประการ เปลี่ยนตัวแปรเดียวคือ `exposureCap: GRID_CAPACITY`
+· cap มาจาก geometry ของ grid เอง ไม่มีเลขจูน · BUY ไม่ fill ขณะ inventory ชน cap
+(order ยังอยู่, fill เมื่อ SELL ลด inventory) · **ไม่มีรอบจูน** · ปิด cap แล้วได้
+ตัวเลข E28 เดิม (ยืนยัน: 6/18 fold ที่ cap ไม่เคยชน ให้ผลตรง E28 บิตต่อบิต)
+
+**ผล (CONSERVATIVE_OHLC, 18 fold)**
+
+| ตัวชี้วัด | E28 | E29 | เกณฑ์กลไก (ประกาศก่อน) | ผ่าน? |
+|---|---|---|---|---|
+| mean maxDD | 16.84% | **13.52%** | M1: < 16.84% | ✅ |
+| mean robust | −19.91 | **−12.17** | M2: > −19.91 | ✅ |
+| mean alpha | −9.40 | **−8.28** | M3: > −10.79 | ✅ |
+| engaged | 100% | **78%** | — | ⚠️ ลดลง |
+| C1/C2/C7 | ตก | **ยังตก** | gate | ❌ |
+
+**M1–M3 ผ่านบน mean ตามที่ประกาศไว้ทุกตัว — แต่ decomposition ทำลายคำอ้างของกลไก**
+เทียบ fold ต่อ fold กับ E28: มีเพียง **6/18 fold ที่เหมือนเดิม** (cap ไม่เคยชน →
+reproduces E28 พิสูจน์ implementation สะอาด) ใน 12 fold ที่เปลี่ยน มีแค่ **3 fold
+ที่เป็นกลไกล้วน** (f1, f3, f18) อีก **9 fold เปลี่ยนเพราะ in-sample เลือก geometry
+คนละตัว** เมื่อเปิด cap — เป็น **selection artifact ไม่ใช่กลไก**
+
+ยิ่งกว่านั้น การที่ mean robust ดีขึ้นถูกขับด้วย fold ที่ **หยุดเทรด**:
+- f18: robust −73.0 → −28.8 แต่ **cycles 5 → 0** — alpha "ดีขึ้น" เป็น +25.7 เพราะ
+  แค่**ถือ inventory ไว้เฉย ๆ** ไม่ใช่ grid เก็บกำไร
+- f14: robust −3.0 → +2.2 แต่ **cycles 20 → 0** (selection)
+- f2: robust −158 → −66.9 แต่ **cycles 10 → 0** (selection)
+ในฝั่ง cycles=0 การ "ลด drawdown" คือ tautology — ไม่อยู่ในตลาดก็ไม่มี drawdown
+
+**3 fold ที่เป็นกลไกล้วน**: f1 robust −6.5→−6.7 (แย่ลงนิด), f3 20.6→18.5 (แย่ลง),
+f18 ดีขึ้นแต่ด้วยการหยุดเทรด → **กลไกโดด ๆ ไม่ได้สร้าง robust edge จริง**
+
+**คำตัดสิน**: ตามตารางที่ประกาศไว้ (§6c) M1+M2+M3 ผ่าน = **⚖️ ทิศถูกบน mean บันทึกผล
+บางส่วน ยังไม่ promote** — แต่ตามหลักฐาน decomposition ค่า mean ที่ผ่านคือ selection
+artifact บวก disengagement ไม่ใช่หลักฐานว่ากลไก "trailing + cap ทำงาน"
+**ห้ามจูนขนาด cap/trigger** (บทเรียน E23–E25/E27) · gate ยัง FAIL (C1/C2/C7)
+raw ต่อ fold ใน `docs/aot-walkforward-e29.json`
+
+**นัยเชิงกลยุทธ์**: E29 คือการทดลองกลไก grid ลำดับที่ 9 ต่อจาก E20–E28 ที่ไม่ผ่าน
+gate — geometry, regime filter, trailing, exposure cap ล้วนไม่พลิกให้ grid มี edge
+จริงบน AOT รายวัน นี่เป็นหลักฐานสะสมหนักแน่นว่า **ทิศทางถัดไปควรเป็น pivot** ไม่ใช่
+กลไก grid ตัวที่ 10 (ดู HANDOFF/STATE)
 
 ---
 

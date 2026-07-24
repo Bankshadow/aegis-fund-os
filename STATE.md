@@ -24,6 +24,16 @@
 
 ## Verified since previous handoff
 
+- Added a native, no-n8n runtime watchdog locally (2026-07-24):
+  `.github/workflows/runtime-watchdog.yml` polls only the token-gated,
+  read-only `/api/automation/runtime-status` endpoint every 15 minutes and
+  creates or updates a GitHub Issue only when halted bots or failed runs are
+  reported. It fails closed by skipping until its two GitHub secrets are set;
+  it contains no cron, exchange, broker, order, cancel, transfer, or withdrawal
+  path. Focused tests, all 156 frontend tests, TypeScript, and `gate/verify.ps1`
+  pass. It is not deployed or activated: the Worker status-endpoint code and
+  workflow still need an intentional, scoped commit/push plus paired secrets.
+
 - Handoff written for next session (2026-07-23): `docs/HANDOFF_CURSOR.md` §0
   summarizes Graph L2/L3 work, remote D1 0004–0007 applied, dry-loop measurement
   next steps, and commit/deploy note (code still uncommitted until user asks).
@@ -263,6 +273,42 @@
   confirming DNS/network access from the actual host.
 
 ## Last session
+
+- **E29: exposure cap on trailing — ⚖️ M1–M3 pass on the mean, but decomposition
+  kills the mechanism claim; gate still FAILs (2026-07-25).** Criteria declared in
+  `AOT_VALIDATION_CRITERIA.md` §6c before running. Hypothesis: E28's trailing lets
+  long inventory accumulate across re-anchors, so cap it at the initial grid's own
+  capacity (Σ quantity over the initial BUY levels — geometry, not a tuned number);
+  a BUY does not fill while inventory sits at the cap, bounding reversal drawdown
+  while the SELL/alpha side is untouched. One variable changed from E28
+  (`exposureCap: GRID_CAPACITY`); implemented on the existing maxInventory-style
+  guard in `aot-backtest.ts`; `--exposure-cap` in the walk-forward harness. **Note
+  I corrected the §6c parameter spec BEFORE running** (pre-run, pre-result): the
+  first draft capped BUY *leg count*, but `reAnchor`→`armGrid` already bounds leg
+  count each arming — the real drawdown source is inventory carried across
+  re-anchors, so the cap was moved to inventory to match the stated hypothesis.
+  **Result: mean robust −19.91 → −12.17 (biggest single improvement in the whole
+  E-series), mean maxDD 16.84% → 13.52%, mean alpha −9.40 → −8.28 — so M1, M2 and
+  M3 all pass as pre-declared.** But fold-by-fold vs E28: only **6/18 folds are
+  identical** (cap never bit → reproduces E28 bit-for-bit, proving the
+  implementation is clean and the one-variable invariant holds). Of the 12 changed
+  folds only **3 are pure mechanism** (f1, f3, f18); the other **9 changed because
+  the in-sample step selected a different geometry once the cap was active — a
+  selection artifact, not the mechanism.** Worse, the mean robust gain is driven by
+  folds that **stopped trading**: f18 robust −73→−28.8 but cycles 5→0 (its "+25.7
+  alpha" is just holding inventory, not grid profit), f14 cycles 20→0, f2 cycles
+  10→0. Where cycles=0 the drawdown reduction is a tautology (not in the market =
+  no drawdown), which is why engaged dropped 100%→78%. The 3 pure-mechanism folds
+  net slightly WORSE (f1, f3) or better only by disengaging (f18). **So per the
+  pre-declared table it logs as ⚖️ (M1+M2+M3 passed on the mean), but the honest
+  reading is: the mean pass is selection artifact + disengagement, not evidence the
+  mechanism works.** Do NOT tune cap size/trigger (E23–E25/E27 lesson). Raw folds
+  in `docs/aot-walkforward-e29.json`; full record in `VALIDATION_LOG.md` § E29.
+  **Strategic weight: E29 is the 9th grid-mechanism experiment (E20–E29) that does
+  not clear the gate. Geometry, regime filter, trailing and exposure cap have all
+  failed to give the grid a real edge on daily AOT. This is now strong cumulative
+  evidence to pivot rather than build grid-mechanism #10** — see the consultation
+  in this session and HANDOFF.
 
 - **Execution Safety Control Plane verified end-to-end against Binance Spot
   Testnet, and two blocking defects found and fixed (2026-07-24).** The prior two
