@@ -2,7 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import aotCsv from "../../data/historical/AOT.BK_daily_2005-2026.csv?raw";
 import { parseMarketCsv } from "./aot-backtest";
-import { runAotWalkForward, type WalkForwardResult } from "./aot-walkforward";
+import { COSTS as DEFAULT_COSTS, runAotWalkForward, type CostModel, type WalkForwardResult } from "./aot-walkforward";
 
 /**
  * Server function behind the Walk-Forward Lab education view. It runs the SAME
@@ -52,12 +52,14 @@ export type WalkForwardView = {
     flatSurfacePct: number;
   };
   criteria: { C1: boolean; C2: boolean; C3: boolean; C4: boolean; C5: boolean; C6: boolean; C7: boolean; passed: boolean };
+  costs: CostModel;
   protocol: WalkForwardResult["protocol"];
 };
 
-const buildView = (variant: WalkForwardVariant): WalkForwardView => {
+const buildView = (variant: WalkForwardVariant, costs?: Partial<CostModel>): WalkForwardView => {
   const { bars } = parseMarketCsv(aotCsv);
-  const result = runAotWalkForward(bars, VARIANTS[variant]);
+  const effectiveCosts = { ...DEFAULT_COSTS, ...(costs ?? {}) };
+  const result = runAotWalkForward(bars, { ...VARIANTS[variant], costs });
   const conservative = result.modeResults.find((r) => r.mode === "CONSERVATIVE_OHLC")!;
   const folds: WalkForwardFoldRow[] = result.folds.map((fold) => {
     const c = fold.oos.CONSERVATIVE_OHLC;
@@ -101,13 +103,27 @@ const buildView = (variant: WalkForwardVariant): WalkForwardView => {
       C7: result.C7,
       passed: result.passed,
     },
+    costs: effectiveCosts,
     protocol: result.protocol,
   };
 };
 
 export const getWalkForwardView = createServerFn({ method: "GET" })
-  .validator(z.object({ variant: z.enum(["baseline", "trailing", "exposure-cap"]).default("baseline") }))
-  .handler(({ data }) => buildView(data.variant));
+  .validator(
+    z.object({
+      variant: z.enum(["baseline", "trailing", "exposure-cap"]).default("baseline"),
+      // Student-adjustable cost knobs, clamped to sane education ranges. Omitted =
+      // Thai-retail default (reproduces the committed research).
+      commissionRate: z.number().min(0).max(2).optional(),
+      slippageRate: z.number().min(0).max(2).optional(),
+    }),
+  )
+  .handler(({ data }) => {
+    const costs: Partial<CostModel> = {};
+    if (data.commissionRate !== undefined) costs.commissionRate = data.commissionRate;
+    if (data.slippageRate !== undefined) costs.slippageRate = data.slippageRate;
+    return buildView(data.variant, Object.keys(costs).length ? costs : undefined);
+  });
 
 export type WalkForwardComparison = {
   variants: WalkForwardView[];
@@ -127,7 +143,7 @@ export type WalkForwardComparison = {
  */
 export const getWalkForwardComparison = createServerFn({ method: "GET" }).handler((): WalkForwardComparison => {
   const order: WalkForwardVariant[] = ["baseline", "trailing", "exposure-cap"];
-  const variants = order.map(buildView);
+  const variants = order.map((v) => buildView(v));
   const folds = variants[0].folds.map((fold, i) => ({
     index: fold.index,
     oosRange: fold.oosRange,

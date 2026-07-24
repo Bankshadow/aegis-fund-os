@@ -40,6 +40,20 @@ test("E29 exposure cap reproduces the committed walk-forward numbers", () => {
   assert.equal(round2(r.meanAlpha), -8.28);
 });
 
+test("cost override is opt-in and pins the honest lesson: no edge even at zero cost", () => {
+  const net = conservative(runAotWalkForward(bars, {}));
+  // Default must be unchanged by the new option (protects the pinned numbers above).
+  assert.equal(round2(net.meanRobust), -17.97);
+  const gross = conservative(runAotWalkForward(bars, { costs: { commissionRate: 0, slippageRate: 0, vatRate: 0, exchangeFeeRate: 0 } }));
+  // The teaching claim, verified rather than assumed: even with ZERO transaction
+  // cost the grid still loses badly to buy-and-hold — costs are not why it fails,
+  // the mechanism has no edge. (gross alpha ≈ -11 on this fixture.)
+  assert.ok(gross.meanAlpha < -5, `gross alpha ${gross.meanAlpha} should still be well below 0`);
+  // Heavier cost does make it strictly worse than the Thai-retail default.
+  const heavy = conservative(runAotWalkForward(bars, { costs: { commissionRate: 0.5, slippageRate: 0.3 } }));
+  assert.ok(heavy.meanRobust < net.meanRobust, `heavy robust ${heavy.meanRobust} should be worse than net ${net.meanRobust}`);
+});
+
 test("exposure cap is inert without re-anchor accumulation on the folds where it never binds", () => {
   // 6/18 folds are bit-identical between E28 and E29 (cap never bit). Assert the
   // invariant holds so the education view's 'cap vs no-cap' story is truthful.

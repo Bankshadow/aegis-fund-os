@@ -34,10 +34,16 @@ export const COSTS = {
   slippageRate: 0.05,
 };
 
+export type CostModel = typeof COSTS;
+
 export type WalkForwardOptions = {
   regime?: boolean;
   trailing?: boolean;
   exposureCap?: boolean;
+  // Cost override for the education view: let a student watch the grid edge survive
+  // gross and die net. Omitted keys fall back to the Thai-retail default, so the
+  // no-argument call still reproduces the committed E-series numbers exactly.
+  costs?: Partial<CostModel>;
 };
 
 type Geometry = { lowerPrice: number; upperPrice: number; gridCount: number; gridType: GridType };
@@ -141,6 +147,7 @@ function configFor(geometry: Geometry, window: MarketBar[], executionMode: Execu
   // level are possible from bar one; the rest in cash to buy the way down.
   const inventory = Math.floor(CAPITAL / 2 / firstClose / 100) * 100;
   const trailingOn = Boolean(options.trailing) || Boolean(options.exposureCap);
+  const costs = { ...COSTS, ...(options.costs ?? {}) };
   return {
     symbol: "AOT",
     startDate: dateOnly(window[0].timestamp),
@@ -151,7 +158,7 @@ function configFor(geometry: Geometry, window: MarketBar[], executionMode: Execu
     ...geometry,
     tickSize: 0.25,
     boardLot: 100,
-    ...COSTS,
+    ...costs,
     fillModel: "CONSERVATIVE",
     endTreatment: "MARK_TO_MARKET",
     dividendInclusion: false,
