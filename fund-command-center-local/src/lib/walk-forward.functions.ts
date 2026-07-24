@@ -108,3 +108,35 @@ const buildView = (variant: WalkForwardVariant): WalkForwardView => {
 export const getWalkForwardView = createServerFn({ method: "GET" })
   .validator(z.object({ variant: z.enum(["baseline", "trailing", "exposure-cap"]).default("baseline") }))
   .handler(({ data }) => buildView(data.variant));
+
+export type WalkForwardComparison = {
+  variants: WalkForwardView[];
+  // Per-fold robust and cycles across the three variants, so a student can see
+  // which folds a mechanism actually moved (and which it silenced to cycles=0).
+  folds: Array<{
+    index: number;
+    oosRange: [string, string];
+    cells: Array<{ robust: number; alpha: number; cycles: number; engaged: boolean }>;
+  }>;
+};
+
+/**
+ * Runs all three variants over the AOT fixture and lines them up for the
+ * E26 -> E28 -> E29 teaching comparison. Three walk-forwards is deliberately heavy
+ * (~a few seconds); it is a research view, not a hot path.
+ */
+export const getWalkForwardComparison = createServerFn({ method: "GET" }).handler((): WalkForwardComparison => {
+  const order: WalkForwardVariant[] = ["baseline", "trailing", "exposure-cap"];
+  const variants = order.map(buildView);
+  const folds = variants[0].folds.map((fold, i) => ({
+    index: fold.index,
+    oosRange: fold.oosRange,
+    cells: variants.map((v) => ({
+      robust: v.folds[i].robust,
+      alpha: v.folds[i].alpha,
+      cycles: v.folds[i].completedCycles,
+      engaged: v.folds[i].engaged,
+    })),
+  }));
+  return { variants, folds };
+});

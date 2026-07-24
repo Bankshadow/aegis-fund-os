@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as WalkForwardCompareRouteImport } from './routes/walk-forward-compare'
 import { Route as WalkForwardRouteImport } from './routes/walk-forward'
 import { Route as SignalsRouteImport } from './routes/signals'
 import { Route as SettingsRouteImport } from './routes/settings'
@@ -31,6 +32,11 @@ import { Route as BotsBotIdProfitRouteImport } from './routes/bots_.$botId_.prof
 import { Route as BotsBotIdOrdersRouteImport } from './routes/bots_.$botId_.orders'
 import { Route as BotsBotIdEventsRouteImport } from './routes/bots_.$botId_.events'
 
+const WalkForwardCompareRoute = WalkForwardCompareRouteImport.update({
+  id: '/walk-forward-compare',
+  path: '/walk-forward-compare',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const WalkForwardRoute = WalkForwardRouteImport.update({
   id: '/walk-forward',
   path: '/walk-forward',
@@ -154,6 +160,7 @@ export interface FileRoutesByFullPath {
   '/settings': typeof SettingsRoute
   '/signals': typeof SignalsRoute
   '/walk-forward': typeof WalkForwardRoute
+  '/walk-forward-compare': typeof WalkForwardCompareRoute
   '/bots/$botId': typeof BotsBotIdRoute
   '/bots/new': typeof BotsNewRoute
   '/bots/$botId/events': typeof BotsBotIdEventsRoute
@@ -177,6 +184,7 @@ export interface FileRoutesByTo {
   '/settings': typeof SettingsRoute
   '/signals': typeof SignalsRoute
   '/walk-forward': typeof WalkForwardRoute
+  '/walk-forward-compare': typeof WalkForwardCompareRoute
   '/bots/$botId': typeof BotsBotIdRoute
   '/bots/new': typeof BotsNewRoute
   '/bots/$botId/events': typeof BotsBotIdEventsRoute
@@ -201,6 +209,7 @@ export interface FileRoutesById {
   '/settings': typeof SettingsRoute
   '/signals': typeof SignalsRoute
   '/walk-forward': typeof WalkForwardRoute
+  '/walk-forward-compare': typeof WalkForwardCompareRoute
   '/bots_/$botId': typeof BotsBotIdRoute
   '/bots_/new': typeof BotsNewRoute
   '/bots_/$botId_/events': typeof BotsBotIdEventsRoute
@@ -226,6 +235,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/signals'
     | '/walk-forward'
+    | '/walk-forward-compare'
     | '/bots/$botId'
     | '/bots/new'
     | '/bots/$botId/events'
@@ -249,6 +259,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/signals'
     | '/walk-forward'
+    | '/walk-forward-compare'
     | '/bots/$botId'
     | '/bots/new'
     | '/bots/$botId/events'
@@ -272,6 +283,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/signals'
     | '/walk-forward'
+    | '/walk-forward-compare'
     | '/bots_/$botId'
     | '/bots_/new'
     | '/bots_/$botId_/events'
@@ -296,6 +308,7 @@ export interface RootRouteChildren {
   SettingsRoute: typeof SettingsRoute
   SignalsRoute: typeof SignalsRoute
   WalkForwardRoute: typeof WalkForwardRoute
+  WalkForwardCompareRoute: typeof WalkForwardCompareRoute
   BotsBotIdRoute: typeof BotsBotIdRoute
   BotsNewRoute: typeof BotsNewRoute
   BotsBotIdEventsRoute: typeof BotsBotIdEventsRoute
@@ -305,6 +318,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/walk-forward-compare': {
+      id: '/walk-forward-compare'
+      path: '/walk-forward-compare'
+      fullPath: '/walk-forward-compare'
+      preLoaderRoute: typeof WalkForwardCompareRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/walk-forward': {
       id: '/walk-forward'
       path: '/walk-forward'
@@ -472,6 +492,7 @@ const rootRouteChildren: RootRouteChildren = {
   SettingsRoute: SettingsRoute,
   SignalsRoute: SignalsRoute,
   WalkForwardRoute: WalkForwardRoute,
+  WalkForwardCompareRoute: WalkForwardCompareRoute,
   BotsBotIdRoute: BotsBotIdRoute,
   BotsNewRoute: BotsNewRoute,
   BotsBotIdEventsRoute: BotsBotIdEventsRoute,

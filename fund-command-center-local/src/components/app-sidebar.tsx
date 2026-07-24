@@ -43,6 +43,7 @@ const NAV_GROUPS = [
       { title: "Bots & Orders", url: "/bots", icon: Bot },
       { title: "AOT Paper Grid", url: "/aot-paper-grid", icon: ChartNoAxesCombined },
       { title: "Walk-Forward Lab", url: "/walk-forward", icon: ChartNoAxesCombined },
+      { title: "Mechanism Compare", url: "/walk-forward-compare", icon: ChartNoAxesCombined },
       { title: "Signals", url: "/signals", icon: RadioTower },
     ],
   },
