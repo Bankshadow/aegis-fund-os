@@ -167,3 +167,69 @@ test("recordGridSync fails closed when there is no active execution", async () =
     /No active Testnet execution/,
   );
 });
+
+const orderRow = (over = {}) => ({
+  id: over.id ?? "ORD-1",
+  execution_id: "EXE-1",
+  bot_id: "BOT-1",
+  symbol: "BTCUSDT",
+  exchange_order_id: over.exchange_order_id ?? "111",
+  client_order_id: over.client_order_id ?? "aegis-stuck",
+  grid_index: 3,
+  side: "SELL",
+  price: "101",
+  quantity: "0.01",
+  status: over.status ?? "NEW",
+  created_at: "2026-07-18T00:00:00Z",
+  updated_at: "2026-07-18T00:00:00Z",
+});
+
+// The guarded single-order UPDATE reports 1 changed row on success; the base fake
+// returns no meta, so give the cancel path a batch that reports it.
+const cancelDb = (orders) => {
+  const db = new FakeD1({ bot: botRow(), orders });
+  db.batch = async (statements) => {
+    db.batches.push(statements);
+    return statements.map((s) => ({ success: true, meta: { changes: s._sql.includes("grid_bot_orders") ? 1 : 0 } }));
+  };
+  return db;
+};
+
+test("recordSingleTestnetOrderCancel closes one order with a version bump and one audit event", async () => {
+  const db = cancelDb([orderRow({ status: "NEW" })]);
+  const repo = new GridBotRepository(db);
+  const result = await repo.recordSingleTestnetOrderCancel("BOT-1", "operator@x", "aegis-stuck", "CANCELED");
+  assert.equal(result.bot.version, 6);
+  const sqls = db.batches[0].map((s) => s._sql);
+  assert.ok(sqls.some((s) => s.includes("UPDATE grid_bot_orders SET status=?") && s.includes("NOT IN ('FILLED','CANCELED')")));
+  assert.ok(sqls.some((s) => s.includes("UPDATE grid_bots SET version")));
+  assert.equal(sqls.filter((s) => s.includes("INSERT INTO grid_bot_audit")).length, 1);
+});
+
+test("recordSingleTestnetOrderCancel reconciles a RECONCILIATION_REQUIRED row (exchange twin already gone)", async () => {
+  const db = cancelDb([orderRow({ status: "RECONCILIATION_REQUIRED" })]);
+  const repo = new GridBotRepository(db);
+  const result = await repo.recordSingleTestnetOrderCancel("BOT-1", "operator@x", "aegis-stuck", "CANCELED");
+  assert.equal(result.bot.version, 6);
+});
+
+test("recordSingleTestnetOrderCancel refuses an already-settled order", async () => {
+  const repo = new GridBotRepository(cancelDb([orderRow({ status: "FILLED" })]));
+  await assert.rejects(() => repo.recordSingleTestnetOrderCancel("BOT-1", "operator@x", "aegis-stuck", "CANCELED"), /already FILLED/);
+});
+
+test("recordSingleTestnetOrderCancel fails closed on an unknown order id", async () => {
+  const repo = new GridBotRepository(cancelDb([orderRow({ client_order_id: "aegis-other" })]));
+  await assert.rejects(() => repo.recordSingleTestnetOrderCancel("BOT-1", "operator@x", "aegis-missing", "CANCELED"), /not found/);
+});
+
+test("recordSingleTestnetOrderCancel surfaces a concurrent state change as a conflict", async () => {
+  const db = new FakeD1({ bot: botRow(), orders: [orderRow({ status: "NEW" })] });
+  // The row was terminal by the time the guarded UPDATE ran: zero rows changed.
+  db.batch = async (statements) => {
+    db.batches.push(statements);
+    return statements.map(() => ({ success: true, meta: { changes: 0 } }));
+  };
+  const repo = new GridBotRepository(db);
+  await assert.rejects(() => repo.recordSingleTestnetOrderCancel("BOT-1", "operator@x", "aegis-stuck", "CANCELED"), /changed state concurrently/);
+});

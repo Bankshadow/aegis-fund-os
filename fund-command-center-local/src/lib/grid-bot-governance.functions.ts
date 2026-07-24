@@ -351,6 +351,44 @@ export const syncAllRunningTestnetGrids = createServerFn({ method: "POST" })
     );
   });
 
+/**
+ * Operator control to cancel a single stuck Testnet order and close its ledger row.
+ * Covers the case that previously needed a manual script: a stray order still open
+ * on the exchange, or one the reconciler flagged RECONCILIATION_REQUIRED because its
+ * exchange twin was cancelled out of band.
+ *
+ * The exchange cancel is attempted first. If Binance reports the order is already
+ * gone (-2011 unknown order / -2013 no such order), that is treated as success —
+ * the whole point is to reconcile a ledger row whose exchange side no longer exists
+ * — and the ledger is still closed to CANCELED. Any other exchange error fails
+ * closed and the ledger is left untouched.
+ */
+const ALREADY_GONE = /(-2011|-2013|Unknown order|No such order)/i;
+
+export const cancelTestnetGridOrder = createServerFn({ method: "POST" })
+  .validator(z.object({ botId: z.string().min(1), clientOrderId: z.string().trim().min(1), actorId: z.string().trim().min(1).optional() }))
+  .handler(async ({ data }) => {
+    const repo = repository();
+    const actorId = actorIdentity(data.actorId);
+    const bot = await repo.getBot(data.botId);
+    if (!bot || bot.environment !== "BINANCE_TESTNET") throw new Error("Binance Testnet bot not found");
+    const order = (await repo.listOrders(bot.id)).find((item) => item.clientOrderId === data.clientOrderId);
+    if (!order) throw new Error("Order not found in the durable ledger");
+    if (order.status === "FILLED" || order.status === "CANCELED")
+      throw new Error(`Order is already ${order.status}; nothing to cancel`);
+
+    let status = "CANCELED";
+    try {
+      const cancelled = await cancelTestnetOrder(bot.pair, order.clientOrderId);
+      status = cancelled.status ?? "CANCELED";
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      if (!ALREADY_GONE.test(message)) throw error; // real exchange error: leave the ledger untouched
+      status = "CANCELED"; // already off the book — reconcile the ledger to match
+    }
+    return repo.recordSingleTestnetOrderCancel(bot.id, actorId, order.clientOrderId, status);
+  });
+
 export const stopBinanceTestnetGridBot = createServerFn({ method: "POST" })
   .validator(z.object({ botId: z.string().min(1), actorId: z.string().trim().min(1).optional() }))
   .handler(async ({ data }) => {

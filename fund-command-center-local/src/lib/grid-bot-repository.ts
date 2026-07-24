@@ -564,6 +564,54 @@ export class GridBotRepository {
     return { ...current, runtimeState: next, version: nextVersion, updatedAt: now };
   }
 
+  /**
+   * Terminate one order in the ledger after it was cancelled (or found already
+   * gone) on the exchange. This is the durable half of the operator "Cancel order"
+   * control: it exists so a stuck order — a stray NEW leg, or a row the reconciler
+   * flagged RECONCILIATION_REQUIRED because its exchange twin vanished — can be
+   * closed out from the UI instead of a manual script.
+   *
+   * Fails closed on an unknown order and refuses an already-terminal one (FILLED or
+   * CANCELED) so a double click cannot rewrite a settled row. The single status
+   * update, the version bump and the hash-chained `testnet.order_cancelled` event
+   * are one atomic batch, keeping the audit chain intact.
+   */
+  async recordSingleTestnetOrderCancel(botId: string, actorId: string, clientOrderId: string, status: string) {
+    const current = await this.requireBot(botId);
+    if (current.environment !== "BINANCE_TESTNET") throw new Error("Bot is not a Binance Testnet bot");
+    const order = (await this.listOrders(botId)).find((item) => item.clientOrderId === clientOrderId);
+    if (!order) throw new Error("Order not found in the durable ledger");
+    if (order.status === "FILLED" || order.status === "CANCELED")
+      throw new Error(`Order ${clientOrderId} is already ${order.status}; nothing to cancel`);
+
+    const now = new Date().toISOString();
+    const nextVersion = current.version + 1;
+    const previous = (await this.listEvents(botId)).at(-1);
+    const event = await appendGovernanceEvent(previous ? [previous] : [], {
+      eventId: id("EVT"),
+      botId,
+      eventType: "testnet.order_cancelled",
+      actorId,
+      payload: { clientOrderId, fromStatus: order.status, toStatus: status, environment: "BINANCE_TESTNET" },
+      occurredAt: now,
+    });
+    const result = await this.db.batch([
+      this.db
+        .prepare("UPDATE grid_bot_orders SET status=?,updated_at=? WHERE bot_id=? AND client_order_id=? AND status NOT IN ('FILLED','CANCELED')")
+        .bind(status, now, botId, clientOrderId),
+      this.db
+        .prepare("UPDATE grid_bots SET version=?,updated_at=? WHERE id=? AND version=?")
+        .bind(nextVersion, now, botId, current.version),
+      this.auditInsert(event, nextVersion),
+    ]);
+    // The guarded UPDATE writes zero rows if the status changed under us between the
+    // read and the batch (a concurrent reconcile or a second click). Surface that as
+    // a conflict rather than reporting a cancel that did not happen.
+    if ((result[0]?.meta?.changes ?? 0) === 0)
+      throw new Error(`Order ${clientOrderId} changed state concurrently; refresh and retry`);
+    return { bot: { ...current, version: nextVersion, updatedAt: now }, orders: await this.listOrders(botId) };
+  }
+
   async createDraft(
     input: Omit<
       BotRecord,

@@ -12,6 +12,7 @@ export type GovernanceEventType =
   | "runtime.stopped"
   | "testnet.orders_placed"
   | "testnet.orders_cancelled"
+  | "testnet.order_cancelled"
   | "testnet.grid_synced"
   | "runtime.safety_halted"
   | "runtime.safety_resumed";
