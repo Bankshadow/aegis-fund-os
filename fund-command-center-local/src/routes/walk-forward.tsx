@@ -109,7 +109,15 @@ function WalkForwardLab() {
         subtitle="ทดสอบกลยุทธ์ grid กับหุ้น AOT รายวัน ปี 2005–2026 แบ่งเป็น 18 ช่วง แต่ละช่วงใช้ข้อมูล 2 ปีแรกตั้งค่า แล้ววัดผลจริงในปีถัดไปที่ยังไม่เคยเห็น (จำลองการเทรดจริงที่ทำนายอนาคตไม่ได้) · engine เดียวกับงานวิจัย E26–E29"
       />
       <div className="space-y-6 p-6">
-        <WalkForwardGlossary />
+        <WalkForwardGlossary
+          figures={{
+            robust: summary.meanRobust,
+            buyAndHoldRobust: summary.meanBuyAndHoldRobust,
+            drawdown: summary.meanDrawdown,
+            buyAndHoldDrawdown: summary.meanBuyAndHoldDrawdown,
+            alpha: summary.meanAlpha,
+          }}
+        />
 
         <Panel title="เลือกกลไกที่จะทดสอบ" subtitle="แต่ละตัวเพิ่มกลไกทีละอย่างจาก baseline — ดูว่ามันแก้หรือไม่แก้ปัญหา">
           <div className="flex flex-wrap gap-2">

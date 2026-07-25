@@ -138,6 +138,36 @@ const dateOnly = (timestamp: string) => timestamp.slice(0, 10);
 const mean = (values: number[]) => (values.length ? values.reduce((a, b) => a + b, 0) / values.length : 0);
 const pct = (part: number, whole: number) => (whole ? (part / whole) * 100 : 0);
 
+/**
+ * Single place where an engine run becomes a scored fold. Both walk-forwards go
+ * through here so their numbers cannot drift apart — they are compared against each
+ * other in the UI, and a metric fixed in one copy but not the other would be a
+ * silent inconsistency rather than a visible bug.
+ */
+function toFoldMeasure(run: ReturnType<typeof runAotBacktest>): FoldMeasure {
+  const m = run.metrics;
+  return {
+    runId: run.id,
+    configHash: run.metadata?.configurationHash ?? null,
+    totalReturn: m.totalReturn,
+    maxDrawdown: m.maxDrawdown,
+    robust: m.totalReturn - 2 * m.maxDrawdown,
+    alpha: m.alpha ?? 0,
+    buyAndHoldReturn: m.buyAndHoldReturn ?? 0,
+    completedCycles: m.completedCycles,
+    fills: m.fills,
+    engaged: m.completedCycles >= 1,
+    isReconciled: m.isReconciled,
+    ambiguousBars: m.ambiguousBars,
+    reAnchors: m.reAnchors,
+    regimeSuspendedBars: m.regimeSuspendedBars,
+    totalFees: m.totalFees,
+    forcedLiquidation: m.forcedLiquidation,
+    endingInventory: m.endingInventory,
+    maxCapitalDeployed: m.maxCapitalDeployed,
+  };
+}
+
 /** Buy-and-hold max drawdown over a bar window, in percent (C3 needs this). */
 function buyAndHoldDrawdown(bars: MarketBar[]) {
   let peak = bars[0].close;
@@ -245,31 +275,8 @@ export function runFixedGeometryWalkForward(
 ): FixedGeometryResult {
   const WARMUP = REGIME_FILTER.rankWindow + REGIME_FILTER.lookback + 30;
   const withWarmup = (from: number, to: number) => bars.slice(Math.max(0, from - WARMUP), to);
-  const measure = (geo: Geometry, window: MarketBar[], supplied: MarketBar[]): FoldMeasure => {
-    const config = configFor(geo, window, "CONSERVATIVE_OHLC", window[0].close, options);
-    const run = runAotBacktest(config, supplied);
-    const m = run.metrics;
-    return {
-      runId: run.id,
-      configHash: run.metadata?.configurationHash ?? null,
-      totalReturn: m.totalReturn,
-      maxDrawdown: m.maxDrawdown,
-      robust: m.totalReturn - 2 * m.maxDrawdown,
-      alpha: m.alpha ?? 0,
-      buyAndHoldReturn: m.buyAndHoldReturn ?? 0,
-      completedCycles: m.completedCycles,
-      fills: m.fills,
-      engaged: m.completedCycles >= 1,
-      isReconciled: m.isReconciled,
-      ambiguousBars: m.ambiguousBars,
-      reAnchors: m.reAnchors,
-      regimeSuspendedBars: m.regimeSuspendedBars,
-      totalFees: m.totalFees,
-      forcedLiquidation: m.forcedLiquidation,
-      endingInventory: m.endingInventory,
-      maxCapitalDeployed: m.maxCapitalDeployed,
-    };
-  };
+  const measure = (geo: Geometry, window: MarketBar[], supplied: MarketBar[]): FoldMeasure =>
+    toFoldMeasure(runAotBacktest(configFor(geo, window, "CONSERVATIVE_OHLC", window[0].close, options), supplied));
 
   const folds: FixedGeometryFold[] = [];
   const midpoint = (geometry.lowerPrice + geometry.upperPrice) / 2;
@@ -372,29 +379,9 @@ export function runAotWalkForward(bars: MarketBar[], options: WalkForwardOptions
     countsTowardProtocol = true,
   ): FoldMeasure => {
     if (countsTowardProtocol) runCount += 1;
-    const config = configFor(geometry, window, executionMode, window[0].close, options);
-    const run = runAotBacktest(config, supplied);
-    const m = run.metrics;
-    return {
-      runId: run.id,
-      configHash: run.metadata?.configurationHash ?? null,
-      totalReturn: m.totalReturn,
-      maxDrawdown: m.maxDrawdown,
-      robust: m.totalReturn - 2 * m.maxDrawdown,
-      alpha: m.alpha ?? 0,
-      buyAndHoldReturn: m.buyAndHoldReturn ?? 0,
-      completedCycles: m.completedCycles,
-      fills: m.fills,
-      engaged: m.completedCycles >= 1,
-      isReconciled: m.isReconciled,
-      ambiguousBars: m.ambiguousBars,
-      reAnchors: m.reAnchors,
-      regimeSuspendedBars: m.regimeSuspendedBars,
-      totalFees: m.totalFees,
-      forcedLiquidation: m.forcedLiquidation,
-      endingInventory: m.endingInventory,
-      maxCapitalDeployed: m.maxCapitalDeployed,
-    };
+    return toFoldMeasure(
+      runAotBacktest(configFor(geometry, window, executionMode, window[0].close, options), supplied),
+    );
   };
 
   const folds: WalkForwardFold[] = [];

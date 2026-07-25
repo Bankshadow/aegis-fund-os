@@ -19,6 +19,24 @@ import {
  * Variant maps to the E-series mechanisms so a student can compare the honest
  * results: baseline grid (E26), + trailing (E28), + trailing & exposure cap (E29).
  */
+/**
+ * These walk-forwards are pure: the fixture is bundled and the engine is
+ * deterministic, so the same arguments always produce the same result. They are also
+ * expensive — the comparison view alone is 972 backtests, ~8.9s of CPU — and every
+ * page view was recomputing them from scratch. Memoise per isolate, bounded so a
+ * user-driven key space (the paper console's geometry check) cannot grow unbounded.
+ */
+const CACHE_LIMIT = 32;
+const cache = new Map<string, unknown>();
+function memoise<T>(key: string, compute: () => T): T {
+  const hit = cache.get(key);
+  if (hit !== undefined) return hit as T;
+  const value = compute();
+  if (cache.size >= CACHE_LIMIT) cache.delete(cache.keys().next().value as string);
+  cache.set(key, value);
+  return value;
+}
+
 const VARIANTS = {
   baseline: {},
   trailing: { trailing: true },
@@ -68,7 +86,10 @@ export type WalkForwardView = {
   protocol: WalkForwardResult["protocol"];
 };
 
-const buildView = (variant: WalkForwardVariant, costs?: Partial<CostModel>): WalkForwardView => {
+const buildView = (variant: WalkForwardVariant, costs?: Partial<CostModel>): WalkForwardView =>
+  memoise(`view:${variant}:${JSON.stringify(costs ?? null)}`, () => buildViewUncached(variant, costs));
+
+const buildViewUncached = (variant: WalkForwardVariant, costs?: Partial<CostModel>): WalkForwardView => {
   const { bars } = parseMarketCsv(aotCsv);
   const effectiveCosts = { ...DEFAULT_COSTS, ...(costs ?? {}) };
   const result = runAotWalkForward(bars, { ...VARIANTS[variant], costs });
@@ -163,20 +184,22 @@ export const getFixedGeometryWalkForward = createServerFn({ method: "GET" })
   )
   .handler(({ data }) => {
     if (data.upperPrice <= data.lowerPrice) throw new Error("upperPrice must exceed lowerPrice");
-    const { bars } = parseMarketCsv(aotCsv);
-    const costs: Partial<CostModel> = {};
-    if (data.commissionRate !== undefined) costs.commissionRate = data.commissionRate;
-    if (data.slippageRate !== undefined) costs.slippageRate = data.slippageRate;
-    return runFixedGeometryWalkForward(
-      bars,
-      {
-        lowerPrice: data.lowerPrice,
-        upperPrice: data.upperPrice,
-        gridCount: data.gridCount,
-        gridType: data.gridType,
-      },
-      Object.keys(costs).length ? { costs } : {},
-    );
+    return memoise(`fixed:${JSON.stringify(data)}`, () => {
+      const { bars } = parseMarketCsv(aotCsv);
+      const costs: Partial<CostModel> = {};
+      if (data.commissionRate !== undefined) costs.commissionRate = data.commissionRate;
+      if (data.slippageRate !== undefined) costs.slippageRate = data.slippageRate;
+      return runFixedGeometryWalkForward(
+        bars,
+        {
+          lowerPrice: data.lowerPrice,
+          upperPrice: data.upperPrice,
+          gridCount: data.gridCount,
+          gridType: data.gridType,
+        },
+        Object.keys(costs).length ? { costs } : {},
+      );
+    });
   });
 
 export type OverfitView = {
@@ -209,7 +232,11 @@ export type OverfitView = {
  * that picking the in-sample winner does not predict the out-of-sample winner.
  * Uses the diagnostics option, which is excluded from the protocol's run count.
  */
-export const getOverfitView = createServerFn({ method: "GET" }).handler((): OverfitView => {
+export const getOverfitView = createServerFn({ method: "GET" }).handler((): OverfitView =>
+  memoise("overfit", () => buildOverfitView()),
+);
+
+function buildOverfitView(): OverfitView {
   const { bars } = parseMarketCsv(aotCsv);
   const result = runAotWalkForward(bars, { diagnostics: true });
   const folds = result.folds.map((fold) => {
@@ -246,7 +273,7 @@ export const getOverfitView = createServerFn({ method: "GET" }).handler((): Over
       meanHindsightBestOos: avg(folds.map((f) => Math.max(...f.candidates.map((c) => c.oosRobust)))),
     },
   };
-});
+}
 
 export type WalkForwardComparison = {
   variants: WalkForwardView[];

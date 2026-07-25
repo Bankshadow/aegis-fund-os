@@ -7,6 +7,24 @@ import { Panel } from "@/components/app-shell";
  * or catastrophic. Every entry therefore says what the number MEANS and what
  * counts as good, not just what the word stands for.
  */
+/**
+ * Live figures from the page the glossary is sitting on. The scale lines used to
+ * hardcode the baseline numbers, which then contradicted the screen as soon as a
+ * student switched mechanism or cost preset (the exposure-cap view shows -12.17
+ * beside a glossary insisting on "about -18"). Passed in where the page has them;
+ * omitted, the wording stays qualitative rather than quoting a stale number.
+ */
+export type GlossaryFigures = {
+  robust?: number;
+  buyAndHoldRobust?: number;
+  drawdown?: number;
+  buyAndHoldDrawdown?: number;
+  alpha?: number;
+};
+
+const fmt = (value: number | undefined, digits = 0, suffix = "") =>
+  value === undefined ? null : `${value >= 0 ? "" : "−"}${Math.abs(value).toFixed(digits)}${suffix}`;
+
 const TERMS: Array<{ term: string; short: string; scale?: string }> = [
   {
     term: "fold (ช่วงทดสอบ)",
@@ -32,17 +50,17 @@ const TERMS: Array<{ term: string; short: string; scale?: string }> = [
   {
     term: "alpha",
     short: "ผลตอบแทนของกลยุทธ์ ลบด้วยผลตอบแทนของการถือเฉย ๆ",
-    scale: "บวก = ชนะการถือเฉย ๆ · ลบ = แพ้ · ที่นี่ได้ราว −11 แปลว่าแพ้ประมาณ 11% ต่อปีโดยเฉลี่ย",
+    scale: "บวก = ชนะการถือเฉย ๆ · ลบ = แพ้ (ตัวเลขคือกี่ % ต่อปีโดยเฉลี่ย)",
   },
   {
     term: "max drawdown (DD)",
     short: "ขาดทุนหนักสุดจากจุดสูงสุดถึงจุดต่ำสุดระหว่างทาง คิดเป็น % — คือความเจ็บที่ต้องทนถือผ่าน",
-    scale: "ยิ่งต่ำยิ่งดี · grid ที่นี่ราว 15% ขณะที่ถือเฉย ๆ เจ็บราว 29% (นี่คือข้อดีจริงของ grid)",
+    scale: "ยิ่งต่ำยิ่งดี · ข้อดีที่ชัดที่สุดของ grid คือกดตัวเลขนี้ให้ต่ำกว่าการถือเฉย ๆ ได้จริง",
   },
   {
     term: "robust",
     short: "คะแนนรวมที่หักโทษความเสี่ยง = ผลตอบแทน − 2 × ขาดทุนหนักสุด (คิดว่าความเจ็บสำคัญเป็น 2 เท่าของกำไร)",
-    scale: "ต้องมากกว่า 0 ถึงจะผ่านเกณฑ์ · grid ที่นี่ราว −18 · ถือเฉย ๆ ราว −34 (grid ดีกว่าแต่ยังไม่ถึงเกณฑ์)",
+    scale: "ต้องมากกว่า 0 ถึงจะผ่านเกณฑ์ — ดีกว่าการถือเฉย ๆ อย่างเดียวยังไม่พอ",
   },
   {
     term: "engaged",
@@ -57,7 +75,18 @@ const TERMS: Array<{ term: string; short: string; scale?: string }> = [
   },
 ];
 
-export function WalkForwardGlossary() {
+export function WalkForwardGlossary({ figures }: { figures?: GlossaryFigures } = {}) {
+  // Only quote a number when this page actually shows it, so the glossary and the
+  // table beside it can never disagree.
+  const live: Record<string, string | null> = {
+    alpha: fmt(figures?.alpha, 2) && `ค่าที่หน้านี้แสดงอยู่: ${fmt(figures?.alpha, 2)}`,
+    "max drawdown (DD)":
+      fmt(figures?.drawdown, 1, "%") &&
+      `ค่าที่หน้านี้แสดงอยู่: grid ${fmt(figures?.drawdown, 1, "%")} · ถือเฉย ๆ ${fmt(figures?.buyAndHoldDrawdown, 1, "%")}`,
+    robust:
+      fmt(figures?.robust, 2) &&
+      `ค่าที่หน้านี้แสดงอยู่: grid ${fmt(figures?.robust, 2)} · ถือเฉย ๆ ${fmt(figures?.buyAndHoldRobust, 2)}`,
+  };
   return (
     <Panel title="อ่านก่อน — ศัพท์ที่ใช้ในหน้านี้" subtitle="เปิดดูได้ตลอด ไม่ต้องจำ">
       <details className="group">
@@ -70,6 +99,7 @@ export function WalkForwardGlossary() {
               <dt className="text-sm font-semibold">{entry.term}</dt>
               <dd className="mt-1 text-xs text-muted-foreground">{entry.short}</dd>
               {entry.scale && <dd className="mt-1.5 text-xs text-foreground/80">📏 {entry.scale}</dd>}
+              {live[entry.term] && <dd className="mt-1 font-mono text-xs text-foreground/70">{live[entry.term]}</dd>}
             </div>
           ))}
         </dl>

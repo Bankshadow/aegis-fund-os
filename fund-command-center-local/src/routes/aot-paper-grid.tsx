@@ -371,21 +371,37 @@ function AotPaperGridPage() {
                     {[
                       { key: "abs", label: "ราคาตามที่ตั้งไว้เป๊ะ", row: oosCheck.summary.absolute },
                       { key: "sca", label: "รูปทรงเดิม ปรับระดับราคาตามยุค", row: oosCheck.summary.scaled },
-                    ].map((entry) => (
-                      <tr className="border-t" key={entry.key}>
-                        <td className="p-2">{entry.label}</td>
-                        <td className={`p-2 font-mono ${entry.row.meanRobust >= 0 ? "text-positive" : "text-destructive"}`}>
-                          {entry.row.meanRobust.toFixed(2)}
-                        </td>
-                        <td className={`p-2 font-mono ${entry.row.meanAlpha >= 0 ? "text-positive" : "text-destructive"}`}>
-                          {entry.row.meanAlpha.toFixed(2)}
-                        </td>
-                        <td className="p-2 font-mono">{entry.row.meanDrawdown.toFixed(1)}%</td>
-                        <td className={`p-2 font-mono ${entry.row.engagedPct < 50 ? "text-destructive" : ""}`}>
-                          {entry.row.engagedPct.toFixed(0)}%
-                        </td>
-                      </tr>
-                    ))}
+                    ].map((entry) => {
+                      // A grid that never traded still posts a flattering robust score:
+                      // it just holds the opening inventory, so it books little drawdown
+                      // and can "beat" buy-and-hold without ever having an edge. That is
+                      // the exact tautology E29 exposed, so the score is withheld rather
+                      // than annotated — a number on screen gets believed.
+                      const dead = entry.row.engagedPct === 0;
+                      return (
+                        <tr className={`border-t ${dead ? "opacity-60" : ""}`} key={entry.key}>
+                          <td className="p-2">{entry.label}</td>
+                          {dead ? (
+                            <td className="p-2 text-destructive" colSpan={3}>
+                              ไม่ได้เทรดเลยสักช่วง — ตัวเลขไม่มีความหมาย (คะแนนที่ได้มาจากการถือหุ้นเฉย ๆ ไม่ใช่จากกลยุทธ์)
+                            </td>
+                          ) : (
+                            <>
+                              <td className={`p-2 font-mono ${entry.row.meanRobust >= 0 ? "text-positive" : "text-destructive"}`}>
+                                {entry.row.meanRobust.toFixed(2)}
+                              </td>
+                              <td className={`p-2 font-mono ${entry.row.meanAlpha >= 0 ? "text-positive" : "text-destructive"}`}>
+                                {entry.row.meanAlpha.toFixed(2)}
+                              </td>
+                              <td className="p-2 font-mono">{entry.row.meanDrawdown.toFixed(1)}%</td>
+                            </>
+                          )}
+                          <td className={`p-2 font-mono ${entry.row.engagedPct < 50 ? "text-destructive" : ""}`}>
+                            {entry.row.engagedPct.toFixed(0)}%
+                          </td>
+                        </tr>
+                      );
+                    })}
                     <tr className="border-t text-muted-foreground">
                       <td className="p-2">ถือเฉย ๆ (คู่เทียบ)</td>
                       <td className="p-2 font-mono">{oosCheck.summary.meanBuyAndHoldRobust.toFixed(2)}</td>
