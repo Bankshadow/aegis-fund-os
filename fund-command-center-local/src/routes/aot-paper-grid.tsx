@@ -345,7 +345,7 @@ function AotPaperGridPage() {
                 }
               }}
             >
-              {oosRunning ? "กำลังรัน 18 ช่วง…" : "ทดสอบ config นี้แบบ walk-forward"}
+              {oosRunning ? "กำลังรัน 18 ช่วง + ทดสอบความไว…" : "ทดสอบ config นี้แบบ walk-forward"}
             </Button>
             <Button variant="outline" asChild>
               <Link to="/walk-forward" search={{ variant: "baseline" }}>
@@ -395,6 +395,27 @@ function AotPaperGridPage() {
                     </tr>
                   </tbody>
                 </table>
+              </div>
+              <div className="rounded-md border p-3">
+                <div className="text-xs text-muted-foreground">
+                  ความไวต่อพารามิเตอร์ — ขยับจำนวนชั้น (±2) และความกว้าง (±10%) รวม{" "}
+                  {oosCheck.summary.perturbationCount} แบบ
+                </div>
+                <div className="mt-1 flex flex-wrap items-baseline gap-2">
+                  <span
+                    className={`text-2xl font-semibold ${oosCheck.summary.flatSurfacePct >= 60 ? "text-positive" : "text-destructive"}`}
+                  >
+                    {oosCheck.summary.flatSurfacePct.toFixed(1)}%
+                  </span>
+                  <span className="text-xs text-muted-foreground">
+                    ของแบบที่ขยับแล้วยังได้คะแนนเป็นบวก · เกณฑ์งานวิจัยต้อง ≥ 60% · ช่วงห่างคะแนนเฉลี่ยในแต่ละช่วง{" "}
+                    {oosCheck.summary.meanPerturbationSpread.toFixed(1)}
+                  </span>
+                </div>
+                <p className="mt-2 text-xs text-muted-foreground">
+                  ถ้าตัวเลขนี้ต่ำ แปลว่าผลดีอยู่ได้เฉพาะค่าที่ตั้งไว้เป๊ะ ๆ ขยับนิดเดียวก็พัง — นั่นคือ
+                  “บังเอิญเจอจุดที่สวย” ไม่ใช่ความได้เปรียบที่ใช้ได้จริง
+                </p>
               </div>
               <div className="rounded-md border border-warning/40 bg-warning/5 p-3 text-sm">
                 <div className="mb-1 font-semibold">อ่านผลยังไง</div>
@@ -856,7 +877,12 @@ function AotPaperGridPage() {
                             ? `Tested: robust ${oosCheck.summary.scaled.meanRobust.toFixed(2)} (shape-adjusted)`
                             : "Not tested",
                         ],
-                        ["Parameter sensitivity", "Not tested"],
+                        [
+                          "Parameter sensitivity",
+                          oosCheck
+                            ? `Tested: ${oosCheck.summary.flatSurfacePct.toFixed(0)}% of ${oosCheck.summary.perturbationCount} nudged variants stay positive`
+                            : "Not tested",
+                        ],
                         [
                           "Ending positions",
                           backtest.metrics.endingInventory === 0

@@ -202,6 +202,8 @@ export type FixedGeometryFold = {
   scaled: FoldMeasure;
   scaledBounds: [number, number];
   buyAndHoldDrawdown: number;
+  /** Nudged variants of the shape-adjusted grid, scored on the same OOS window. */
+  perturbations: Array<{ gridCount: number; scale: number; robust: number; engaged: boolean }>;
 };
 
 export type FixedGeometryResult = {
@@ -212,6 +214,15 @@ export type FixedGeometryResult = {
     absolute: { meanRobust: number; meanAlpha: number; meanDrawdown: number; engagedPct: number };
     scaled: { meanRobust: number; meanAlpha: number; meanDrawdown: number; engagedPct: number };
     meanBuyAndHoldRobust: number;
+    /**
+     * C7-style sensitivity on the shape-adjusted grid: share of nudged variants that
+     * still score robust > 0. A result that only survives at the exact settings the
+     * user typed is a knife-edge, not an edge.
+     */
+    flatSurfacePct: number;
+    perturbationCount: number;
+    /** Spread of robust across the nudged variants, averaged per fold. */
+    meanPerturbationSpread: number;
   };
 };
 
@@ -278,6 +289,25 @@ export function runFixedGeometryWalkForward(
       upperPrice: Math.max(0.02, geometry.upperPrice * factor),
     };
 
+    // Parameter sensitivity: nudge count and width around the shape-adjusted grid
+    // (the absolute one is era-locked and mostly out of the market, so perturbing it
+    // would measure absence rather than sensitivity).
+    const scaledMid = (scaledGeometry.lowerPrice + scaledGeometry.upperPrice) / 2;
+    const perturbations: FixedGeometryFold["perturbations"] = [];
+    for (const gridCount of [geometry.gridCount - 2, geometry.gridCount, geometry.gridCount + 2]) {
+      if (gridCount < 4) continue;
+      for (const scale of RANGE_SCALES) {
+        const variant: Geometry = {
+          ...scaledGeometry,
+          gridCount,
+          lowerPrice: Math.max(0.01, scaledMid - (scaledMid - scaledGeometry.lowerPrice) * scale),
+          upperPrice: scaledMid + (scaledGeometry.upperPrice - scaledMid) * scale,
+        };
+        const result = measure(variant, oosWindow, oosSupplied);
+        perturbations.push({ gridCount, scale, robust: result.robust, engaged: result.engaged });
+      }
+    }
+
     folds.push({
       index: folds.length + 1,
       oosRange: [dateOnly(oosWindow[0].timestamp), dateOnly(oosWindow[oosWindow.length - 1].timestamp)],
@@ -285,9 +315,11 @@ export function runFixedGeometryWalkForward(
       scaled: measure(scaledGeometry, oosWindow, oosSupplied),
       scaledBounds: [scaledGeometry.lowerPrice, scaledGeometry.upperPrice],
       buyAndHoldDrawdown: buyAndHoldDrawdown(oosWindow),
+      perturbations,
     });
   }
 
+  const allPerturbations = folds.flatMap((fold) => fold.perturbations);
   const agg = (pick: (fold: FixedGeometryFold) => FoldMeasure) => ({
     meanRobust: mean(folds.map((f) => pick(f).robust)),
     meanAlpha: mean(folds.map((f) => pick(f).alpha)),
@@ -303,6 +335,19 @@ export function runFixedGeometryWalkForward(
       absolute: agg((f) => f.absolute),
       scaled: agg((f) => f.scaled),
       meanBuyAndHoldRobust: mean(folds.map((f) => f.absolute.buyAndHoldReturn - 2 * f.buyAndHoldDrawdown)),
+      flatSurfacePct: pct(
+        allPerturbations.filter((p) => p.robust > 0).length,
+        allPerturbations.length,
+      ),
+      perturbationCount: allPerturbations.length,
+      meanPerturbationSpread: mean(
+        folds.map((fold) =>
+          fold.perturbations.length
+            ? Math.max(...fold.perturbations.map((p) => p.robust)) -
+              Math.min(...fold.perturbations.map((p) => p.robust))
+            : 0,
+        ),
+      ),
     },
   };
 }

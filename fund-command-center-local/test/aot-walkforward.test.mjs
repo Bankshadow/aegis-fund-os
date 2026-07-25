@@ -108,6 +108,13 @@ test("fixed-geometry walk-forward scores a user config without fitting to the sc
   const [firstLow, firstHigh] = result.folds[0].scaledBounds;
   assert.ok(firstLow > 0 && firstHigh < 20, `first fold bounds ${firstLow}-${firstHigh} should sit in the early-price era`);
   assert.ok(result.folds[17].scaledBounds[1] > result.folds[0].scaledBounds[1]);
+
+  // Parameter sensitivity (C7-style): 3 counts x 3 widths per fold, and the surface
+  // must be reported honestly — on this fixture it is nowhere near the 60% bar, in
+  // line with the E-series (23-29%).
+  assert.equal(result.summary.perturbationCount, 162);
+  assert.ok(result.summary.flatSurfacePct < 60, "a knife-edge surface must not read as stable");
+  assert.ok(result.summary.meanPerturbationSpread > 0, "nudging parameters must actually change the score");
 });
 
 test("exposure cap is inert without re-anchor accumulation on the folds where it never binds", () => {
