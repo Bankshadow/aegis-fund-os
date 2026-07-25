@@ -12,7 +12,7 @@ import { Link } from "@tanstack/react-router";
  * unambiguous "this is teaching material, nothing is live" line.
  */
 const LINKS = [
-  { to: "/walk-forward", label: "ผลราย fold", search: { variant: "baseline" as const } },
+  { to: "/walk-forward", label: "ผลราย fold", search: { variant: "baseline" as const, cost: "thai" as const } },
   { to: "/walk-forward-compare", label: "เปรียบเทียบกลไก" },
   { to: "/walk-forward-overfit", label: "บทเรียน overfitting" },
 ];

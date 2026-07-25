@@ -8,12 +8,10 @@ import { getOverfitView } from "@/lib/walk-forward.functions";
 export const Route = createFileRoute("/walk-forward-overfit")({
   head: () => ({ meta: [{ title: "Overfitting Lab · Walk-Forward Lab" }] }),
   loader: async () => getOverfitView(),
-  pendingMs: 200,
+  pendingMs: 300,
   pendingComponent: () => (
     <EducationShell>
-      <div className="p-6 text-sm text-muted-foreground">
-        กำลังให้คะแนนรูปแบบ grid ทุกตัวเลือก ทั้งในช่วงที่ใช้ตั้งค่าและช่วงที่ยังไม่เคยเห็น… (ไม่กี่วินาที)
-      </div>
+      <div className="p-6 text-sm text-muted-foreground">กำลังโหลดผล…</div>
     </EducationShell>
   ),
   component: OverfitLab,
@@ -140,7 +138,7 @@ function OverfitLab() {
 
         <div className="flex flex-wrap gap-2">
           <Button variant="outline" asChild>
-            <Link to="/walk-forward" search={{ variant: "baseline" }}>
+            <Link to="/walk-forward" search={{ variant: "baseline", cost: "thai" }}>
               ← ผลราย fold แบบละเอียด
             </Link>
           </Button>

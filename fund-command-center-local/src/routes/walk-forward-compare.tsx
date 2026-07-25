@@ -8,14 +8,10 @@ import { getWalkForwardComparison } from "@/lib/walk-forward.functions";
 export const Route = createFileRoute("/walk-forward-compare")({
   head: () => ({ meta: [{ title: "Mechanism Comparison · Walk-Forward Lab" }] }),
   loader: async () => getWalkForwardComparison(),
-  // This page runs THREE full 18-fold walk-forwards (~8s). Without a pending state
-  // a student on a phone just sees a dead screen.
-  pendingMs: 200,
+  pendingMs: 300,
   pendingComponent: () => (
     <EducationShell>
-      <div className="p-6 text-sm text-muted-foreground">
-        กำลังรัน walk-forward ทั้ง 3 กลไก กลไกละ 18 ช่วงเวลา… ใช้เวลาราว 8 วินาที
-      </div>
+      <div className="p-6 text-sm text-muted-foreground">กำลังโหลดผล…</div>
     </EducationShell>
   ),
   component: WalkForwardCompare,
@@ -148,7 +144,7 @@ function WalkForwardCompare() {
 
         <div className="flex gap-2">
           <Button variant="outline" asChild>
-            <Link to="/walk-forward" search={{ variant: "baseline" }}>
+            <Link to="/walk-forward" search={{ variant: "baseline", cost: "thai" }}>
               ← กลับไปดูราย fold แบบละเอียด
             </Link>
           </Button>

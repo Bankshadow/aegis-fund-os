@@ -348,7 +348,7 @@ function AotPaperGridPage() {
               {oosRunning ? "กำลังรัน 18 ช่วง + ทดสอบความไว…" : "ทดสอบ config นี้แบบ walk-forward"}
             </Button>
             <Button variant="outline" asChild>
-              <Link to="/walk-forward" search={{ variant: "baseline" }}>
+              <Link to="/walk-forward" search={{ variant: "baseline", cost: "thai" }}>
                 ดูบทเรียนเต็มใน Walk-Forward Lab →
               </Link>
             </Button>

@@ -3,7 +3,7 @@ import { PageHeader, Panel } from "@/components/app-shell";
 import { EducationShell } from "@/components/education-shell";
 import { WalkForwardGlossary } from "@/components/walk-forward-glossary";
 import { Button } from "@/components/ui/button";
-import { getWalkForwardView, type WalkForwardVariant } from "@/lib/walk-forward.functions";
+import { getWalkForwardView, type CostPresetId, type WalkForwardVariant } from "@/lib/walk-forward.functions";
 
 // Labels describe the mechanism in plain Thai; the E-number stays in parentheses so
 // the research log is still traceable, but a student never has to decode "E26".
@@ -25,46 +25,31 @@ const VARIANTS: Array<{ id: WalkForwardVariant; label: string; note: string }> =
   },
 ];
 
-type CostKnobs = { commissionRate?: number; slippageRate?: number; exchangeFeeRate?: number; vatRate?: number };
-type WalkForwardSearch = { variant: WalkForwardVariant } & CostKnobs;
+type WalkForwardSearch = { variant: WalkForwardVariant; cost: CostPresetId };
 
-// Cost presets in percent (engine divides by 100). Thai retail is the research
-// default. "No cost" zeroes EVERY component — a student testing the "it's just the
+// A closed preset set rather than free-form numbers, so every reachable page is
+// precomputed at build time and no student request runs a walk-forward on the
+// Worker. "No cost" zeroes EVERY component — a student testing the "it's just the
 // fees" theory must get a genuinely fee-free run, not one with VAT still applied.
-const COST_PRESETS: Array<{ id: string; label: string } & CostKnobs> = [
+const COST_PRESETS: Array<{ id: CostPresetId; label: string }> = [
   { id: "thai", label: "ต้นทุนจริงไทย (ค่าเริ่มต้น)" },
-  { id: "zero", label: "ไม่มีต้นทุนเลย", commissionRate: 0, slippageRate: 0, exchangeFeeRate: 0, vatRate: 0 },
-  {
-    id: "heavy",
-    label: "ต้นทุนสูง (คอม 0.5% + สลิป 0.3%)",
-    commissionRate: 0.5,
-    slippageRate: 0.3,
-  },
+  { id: "zero", label: "ไม่มีต้นทุนเลย" },
+  { id: "heavy", label: "ต้นทุนสูง (คอม 0.5% + สลิป 0.3%)" },
 ];
-
-const num = (value: unknown, max = 2): number | undefined => {
-  const n = typeof value === "string" ? Number(value) : typeof value === "number" ? value : NaN;
-  return Number.isFinite(n) && n >= 0 && n <= max ? n : undefined;
-};
 
 export const Route = createFileRoute("/walk-forward")({
   head: () => ({ meta: [{ title: "Walk-Forward Lab · Aegis Fund OS" }] }),
   validateSearch: (search: Record<string, unknown>): WalkForwardSearch => ({
     variant:
       search.variant === "trailing" || search.variant === "exposure-cap" ? search.variant : "baseline",
-    commissionRate: num(search.commissionRate),
-    slippageRate: num(search.slippageRate),
-    exchangeFeeRate: num(search.exchangeFeeRate),
-    vatRate: num(search.vatRate, 20),
+    cost: search.cost === "zero" || search.cost === "heavy" ? search.cost : "thai",
   }),
   loaderDeps: ({ search }) => ({ ...search }),
   loader: async ({ deps }) => getWalkForwardView({ data: deps }),
-  // Each run is a real 18-fold walk-forward and takes seconds; without this a
-  // student on a phone sees a frozen screen and assumes it is broken.
-  pendingMs: 200,
+  pendingMs: 300,
   pendingComponent: () => (
     <EducationShell>
-      <div className="p-6 text-sm text-muted-foreground">กำลังรัน walk-forward 18 ช่วงเวลาใหม่ทั้งหมด… (ไม่กี่วินาที)</div>
+      <div className="p-6 text-sm text-muted-foreground">กำลังโหลดผล…</div>
     </EducationShell>
   ),
   component: WalkForwardLab,
@@ -87,19 +72,8 @@ function Tile({ label, value, tone, note }: { label: string; value: string; tone
 function WalkForwardLab() {
   const view = Route.useLoaderData();
   const search = Route.useSearch();
-  const { variant } = search;
+  const { variant, cost } = search;
   const { summary, criteria, costs } = view;
-  // Carry the current cost knobs onto the variant links so switching mechanism
-  // keeps the student's cost scenario.
-  const costSearch: CostKnobs = {
-    commissionRate: search.commissionRate,
-    slippageRate: search.slippageRate,
-    exchangeFeeRate: search.exchangeFeeRate,
-    vatRate: search.vatRate,
-  };
-  const KNOBS = ["commissionRate", "slippageRate", "exchangeFeeRate", "vatRate"] as const;
-  const activePreset =
-    COST_PRESETS.find((preset) => KNOBS.every((knob) => preset[knob] === search[knob]))?.id ?? "custom";
 
   return (
     <EducationShell>
@@ -123,7 +97,7 @@ function WalkForwardLab() {
           <div className="flex flex-wrap gap-2">
             {VARIANTS.map((item) => (
               <Button key={item.id} variant={item.id === variant ? "default" : "outline"} size="sm" asChild>
-                <Link to="/walk-forward" search={{ variant: item.id, ...costSearch }}>
+                <Link to="/walk-forward" search={{ variant: item.id, cost }}>
                   {item.label}
                 </Link>
               </Button>
@@ -140,20 +114,11 @@ function WalkForwardLab() {
             {COST_PRESETS.map((preset) => (
               <Button
                 key={preset.id}
-                variant={activePreset === preset.id ? "default" : "outline"}
+                variant={cost === preset.id ? "default" : "outline"}
                 size="sm"
                 asChild
               >
-                <Link
-                  to="/walk-forward"
-                  search={{
-                    variant,
-                    commissionRate: preset.commissionRate,
-                    slippageRate: preset.slippageRate,
-                    exchangeFeeRate: preset.exchangeFeeRate,
-                    vatRate: preset.vatRate,
-                  }}
-                >
+                <Link to="/walk-forward" search={{ variant, cost: preset.id }}>
                   {preset.label}
                 </Link>
               </Button>
@@ -162,7 +127,7 @@ function WalkForwardLab() {
           <p className="mt-3 text-sm text-muted-foreground">
             ต้นทุนที่ใช้อยู่: commission {costs.commissionRate}% · slippage {costs.slippageRate}% · exchange fee{" "}
             {costs.exchangeFeeRate}% · VAT {costs.vatRate}%
-            {activePreset === "zero" && " — แม้ต้นทุน 0 grid ก็ยังแพ้ buy-and-hold: ต้นทุนไม่ใช่สาเหตุ"}
+            {cost === "zero" && " — แม้ต้นทุน 0 grid ก็ยังแพ้ buy-and-hold: ต้นทุนไม่ใช่สาเหตุ"}
           </p>
         </Panel>
 
