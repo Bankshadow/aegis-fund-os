@@ -54,6 +54,38 @@ test("cost override is opt-in and pins the honest lesson: no edge even at zero c
   assert.ok(heavy.meanRobust < net.meanRobust, `heavy robust ${heavy.meanRobust} should be worse than net ${net.meanRobust}`);
 });
 
+test("diagnostics are additive only: same numbers, same protocol run count", () => {
+  const base = runAotWalkForward(bars, {});
+  const diag = runAotWalkForward(bars, { diagnostics: true });
+  assert.equal(round2(conservative(diag).meanRobust), round2(conservative(base).meanRobust));
+  // Diagnostic runs select nothing, so they must NOT inflate the multiple-testing
+  // count the research reports (docs/AOT_VALIDATION_CRITERIA.md).
+  assert.equal(diag.runCount, base.runCount);
+  assert.equal(base.folds[0].candidates, undefined);
+  assert.equal(diag.folds[0].candidates.length, 6);
+  // The selected candidate's diagnostic OOS must equal its real measured OOS.
+  for (const fold of diag.folds) {
+    const picked = fold.candidates.find((c) => c.selected);
+    assert.ok(Math.abs(picked.oosRobust - fold.oos.CONSERVATIVE_OHLC.robust) < 1e-9);
+  }
+});
+
+test("in-sample selection is no better than random at picking the OOS winner", () => {
+  // The teaching claim, verified: on this fixture the in-sample winner is the
+  // out-of-sample winner about as often as chance (1 in 6), and even the
+  // hindsight-best geometry is still deeply negative — geometry is not the problem.
+  const diag = runAotWalkForward(bars, { diagnostics: true });
+  const picks = diag.folds.map((fold) => {
+    const sorted = [...fold.candidates].sort((a, b) => b.oosRobust - a.oosRobust);
+    return sorted.findIndex((c) => c.selected) + 1;
+  });
+  const meanRank = picks.reduce((a, b) => a + b, 0) / picks.length;
+  assert.ok(meanRank > 2.8, `mean OOS rank ${meanRank} should be near the random 3.5, not near 1`);
+  const hindsight =
+    diag.folds.reduce((sum, fold) => sum + Math.max(...fold.candidates.map((c) => c.oosRobust)), 0) / diag.folds.length;
+  assert.ok(hindsight < 0, `hindsight-best robust ${hindsight} is still negative — geometry cannot rescue this`);
+});
+
 test("exposure cap is inert without re-anchor accumulation on the folds where it never binds", () => {
   // 6/18 folds are bit-identical between E28 and E29 (cap never bit). Assert the
   // invariant holds so the education view's 'cap vs no-cap' story is truthful.

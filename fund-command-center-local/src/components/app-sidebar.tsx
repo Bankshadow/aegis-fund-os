@@ -44,6 +44,7 @@ const NAV_GROUPS = [
       { title: "AOT Paper Grid", url: "/aot-paper-grid", icon: ChartNoAxesCombined },
       { title: "Walk-Forward Lab", url: "/walk-forward", icon: ChartNoAxesCombined },
       { title: "Mechanism Compare", url: "/walk-forward-compare", icon: ChartNoAxesCombined },
+      { title: "Overfitting Lab", url: "/walk-forward-overfit", icon: ChartNoAxesCombined },
       { title: "Signals", url: "/signals", icon: RadioTower },
     ],
   },

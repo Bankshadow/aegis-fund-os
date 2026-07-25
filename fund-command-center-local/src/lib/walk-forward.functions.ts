@@ -125,6 +125,75 @@ export const getWalkForwardView = createServerFn({ method: "GET" })
     return buildView(data.variant, Object.keys(costs).length ? costs : undefined);
   });
 
+export type OverfitView = {
+  folds: Array<{
+    index: number;
+    isRange: [string, string];
+    oosRange: [string, string];
+    candidates: Array<{ label: string; isRobust: number; oosRobust: number; selected: boolean; oosRank: number }>;
+    pickOosRank: number;
+  }>;
+  summary: {
+    folds: number;
+    candidatesPerFold: number;
+    /** How often the in-sample winner was also the out-of-sample winner. */
+    pickWasBest: number;
+    /** Same, if you had picked at random: folds / candidatesPerFold. */
+    randomWouldBe: number;
+    meanPickRank: number;
+    /** Mean rank a random pick would get, i.e. (n+1)/2. */
+    randomMeanRank: number;
+    meanPickOos: number;
+    meanCandidateOos: number;
+    /** Best OOS candidate per fold, averaged — the unattainable hindsight ceiling. */
+    meanHindsightBestOos: number;
+  };
+};
+
+/**
+ * The overfitting lesson: score every geometry candidate on BOTH windows and show
+ * that picking the in-sample winner does not predict the out-of-sample winner.
+ * Uses the diagnostics option, which is excluded from the protocol's run count.
+ */
+export const getOverfitView = createServerFn({ method: "GET" }).handler((): OverfitView => {
+  const { bars } = parseMarketCsv(aotCsv);
+  const result = runAotWalkForward(bars, { diagnostics: true });
+  const folds = result.folds.map((fold) => {
+    const scored = fold.candidates ?? [];
+    const byOos = [...scored].sort((a, b) => b.oosRobust - a.oosRobust);
+    const candidates = scored.map((candidate) => ({
+      label: `${candidate.gridType === "GEOMETRIC" ? "GEO" : "ARI"} ×${candidate.gridCount}`,
+      isRobust: candidate.isRobust,
+      oosRobust: candidate.oosRobust,
+      selected: candidate.selected,
+      oosRank: byOos.findIndex((c) => c.gridType === candidate.gridType && c.gridCount === candidate.gridCount) + 1,
+    }));
+    return {
+      index: fold.index,
+      isRange: fold.isRange,
+      oosRange: fold.oosRange,
+      candidates,
+      pickOosRank: candidates.find((c) => c.selected)?.oosRank ?? 0,
+    };
+  });
+  const avg = (values: number[]) => (values.length ? values.reduce((a, b) => a + b, 0) / values.length : 0);
+  const n = folds[0]?.candidates.length ?? 0;
+  return {
+    folds,
+    summary: {
+      folds: folds.length,
+      candidatesPerFold: n,
+      pickWasBest: folds.filter((f) => f.pickOosRank === 1).length,
+      randomWouldBe: n ? folds.length / n : 0,
+      meanPickRank: avg(folds.map((f) => f.pickOosRank)),
+      randomMeanRank: (n + 1) / 2,
+      meanPickOos: avg(folds.map((f) => f.candidates.find((c) => c.selected)?.oosRobust ?? 0)),
+      meanCandidateOos: avg(folds.map((f) => avg(f.candidates.map((c) => c.oosRobust)))),
+      meanHindsightBestOos: avg(folds.map((f) => Math.max(...f.candidates.map((c) => c.oosRobust)))),
+    },
+  };
+});
+
 export type WalkForwardComparison = {
   variants: WalkForwardView[];
   // Per-fold robust and cycles across the three variants, so a student can see

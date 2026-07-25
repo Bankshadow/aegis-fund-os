@@ -44,6 +44,14 @@ export type WalkForwardOptions = {
   // gross and die net. Omitted keys fall back to the Thai-retail default, so the
   // no-argument call still reproduces the committed E-series numbers exactly.
   costs?: Partial<CostModel>;
+  /**
+   * Also measure OOS for the geometry candidates that selection REJECTED, so the
+   * education view can show that winning in-sample does not predict out-of-sample.
+   * Off by default and deliberately excluded from `runCount`: those runs are not
+   * part of the protocol's multiple-testing surface (nothing is selected on them),
+   * and inflating the reported count would misstate the research.
+   */
+  diagnostics?: boolean;
 };
 
 type Geometry = { lowerPrice: number; upperPrice: number; gridCount: number; gridType: GridType };
@@ -69,6 +77,19 @@ export type FoldMeasure = {
   maxCapitalDeployed: number;
 };
 
+/**
+ * One geometry candidate scored on BOTH windows. `isRobust` is what selection is
+ * allowed to see; `oosRobust` is what actually happened afterwards. Present only
+ * when `diagnostics` is on — it is teaching material, not part of the protocol.
+ */
+export type CandidateScore = {
+  gridType: GridType;
+  gridCount: number;
+  isRobust: number;
+  oosRobust: number;
+  selected: boolean;
+};
+
 export type WalkForwardFold = {
   index: number;
   isRange: [string, string];
@@ -78,6 +99,7 @@ export type WalkForwardFold = {
   oos: Record<string, FoldMeasure>;
   buyAndHoldDrawdown: number;
   perturbations: Array<{ gridCount: number; scale: number } & FoldMeasure>;
+  candidates?: CandidateScore[];
 };
 
 export type ModeResult = {
@@ -181,8 +203,16 @@ export function runAotWalkForward(bars: MarketBar[], options: WalkForwardOptions
   const WARMUP = REGIME_FILTER.rankWindow + REGIME_FILTER.lookback + 30;
   const withWarmup = (from: number, to: number) => bars.slice(Math.max(0, from - WARMUP), to);
 
-  const measure = (geometry: Geometry, window: MarketBar[], executionMode: ExecutionMode, supplied: MarketBar[] = window): FoldMeasure => {
-    runCount += 1;
+  const measure = (
+    geometry: Geometry,
+    window: MarketBar[],
+    executionMode: ExecutionMode,
+    supplied: MarketBar[] = window,
+    // Diagnostic runs feed the education view only; they select nothing, so they are
+    // kept out of the multiple-testing count the research reports.
+    countsTowardProtocol = true,
+  ): FoldMeasure => {
+    if (countsTowardProtocol) runCount += 1;
     const config = configFor(geometry, window, executionMode, window[0].close, options);
     const run = runAotBacktest(config, supplied);
     const m = run.metrics;
@@ -217,10 +247,12 @@ export function runAotWalkForward(bars: MarketBar[], options: WalkForwardOptions
 
     // Selection step: pick geometry on IS only, by IS robust score.
     let selected: { geometry: Geometry; result: FoldMeasure } | null = null;
+    const tried: Array<{ geometry: Geometry; isRobust: number }> = [];
     for (const gridType of ["ARITHMETIC", "GEOMETRIC"] as GridType[]) {
       for (const gridCount of GRID_COUNTS) {
         const geometry = geometryFromInSample(isWindow, gridCount, 1.0, gridType);
         const result = measure(geometry, isWindow, "CONSERVATIVE_OHLC", isSupplied);
+        tried.push({ geometry, isRobust: result.robust });
         if (!selected || result.robust > selected.result.robust) selected = { geometry, result };
       }
     }
@@ -228,6 +260,27 @@ export function runAotWalkForward(bars: MarketBar[], options: WalkForwardOptions
 
     const oos: Record<string, FoldMeasure> = {};
     for (const mode of MODES) oos[mode] = measure(selected.geometry, oosWindow, mode, oosSupplied);
+
+    // Education diagnostic: score every candidate on OOS too, including the ones
+    // selection rejected. The selected one reuses its already-measured OOS run.
+    let candidates: CandidateScore[] | undefined;
+    if (options.diagnostics) {
+      candidates = tried.map((candidate) => {
+        const isSelected =
+          candidate.geometry.gridType === selected!.geometry.gridType &&
+          candidate.geometry.gridCount === selected!.geometry.gridCount;
+        const oosRobust = isSelected
+          ? oos.CONSERVATIVE_OHLC.robust
+          : measure(candidate.geometry, oosWindow, "CONSERVATIVE_OHLC", oosSupplied, false).robust;
+        return {
+          gridType: candidate.geometry.gridType,
+          gridCount: candidate.geometry.gridCount,
+          isRobust: candidate.isRobust,
+          oosRobust,
+          selected: isSelected,
+        };
+      });
+    }
 
     // C7 sensitivity: perturb the selected geometry, evaluate on OOS.
     const perturbations: Array<{ gridCount: number; scale: number } & FoldMeasure> = [];
@@ -247,6 +300,7 @@ export function runAotWalkForward(bars: MarketBar[], options: WalkForwardOptions
       isRobust: selected.result.robust,
       oos,
       buyAndHoldDrawdown: buyAndHoldDrawdown(oosWindow),
+      candidates,
       perturbations,
     });
   }
