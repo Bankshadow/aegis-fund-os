@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { PageHeader, Panel } from "@/components/app-shell";
 import { EducationShell } from "@/components/education-shell";
+import { WalkForwardGlossary } from "@/components/walk-forward-glossary";
 import { Button } from "@/components/ui/button";
 import { getOverfitView } from "@/lib/walk-forward.functions";
 
@@ -11,7 +12,7 @@ export const Route = createFileRoute("/walk-forward-overfit")({
   pendingComponent: () => (
     <EducationShell>
       <div className="p-6 text-sm text-muted-foreground">
-        กำลังให้คะแนน geometry ทุกตัวเลือกทั้งใน in-sample และ out-of-sample… (ไม่กี่วินาที)
+        กำลังให้คะแนนรูปแบบ grid ทุกตัวเลือก ทั้งในช่วงที่ใช้ตั้งค่าและช่วงที่ยังไม่เคยเห็น… (ไม่กี่วินาที)
       </div>
     </EducationShell>
   ),
@@ -30,10 +31,12 @@ function OverfitLab() {
     <EducationShell>
       <PageHeader
         kicker="EDUCATION · READ-ONLY RESEARCH · NO LIVE ORDER"
-        title="Overfitting Lab — จูนใน in-sample แล้วได้อะไรใน out-of-sample?"
-        subtitle="ทุก fold เลือก geometry จากข้อมูล in-sample เท่านั้น (6 ตัวเลือก) แล้ววัดผลจริงในปีถัดไปที่ยังไม่เคยเห็น คำถามเดียว: การเลือกจากอดีต ทำนายอนาคตได้ไหม"
+        title="บทเรียน overfitting — จูนจากอดีตแล้วใช้ได้จริงกับอนาคตไหม?"
+        subtitle="ทุกช่วงทดสอบ ระบบเลือกรูปแบบ grid ที่ดีที่สุดจากข้อมูล 2 ปีแรกเท่านั้น (มี 6 แบบให้เลือก) แล้ววัดผลจริงในปีถัดไปที่ยังไม่เคยเห็น คำถามเดียว: การเลือกจากอดีต ทำนายอนาคตได้ไหม"
       />
       <div className="space-y-6 p-6">
+        <WalkForwardGlossary />
+
         <Panel title="คำตอบ" subtitle="เทียบกับการสุ่มเลือกแบบไม่ดูข้อมูลเลย">
           <div className="grid gap-3 md:grid-cols-2">
             <div className="rounded-md border p-4">
@@ -82,14 +85,14 @@ function OverfitLab() {
           </div>
           <p className="mt-3 text-sm text-muted-foreground">
             ประเด็นสำคัญ: แม้แต่ช่องขวาสุด — ซึ่งต้องรู้อนาคตถึงจะทำได้ — ก็ยัง<strong>ติดลบหนัก</strong>
-            แปลว่าปัญหาไม่ได้อยู่ที่ "เลือก geometry ผิด" การจูน geometry ให้ดีขึ้นแก้อะไรไม่ได้เลย เพราะกลไกไม่มี edge
+            แปลว่าปัญหาไม่ได้อยู่ที่ "เลือกรูปแบบ grid ผิด" ต่อให้จูนรูปแบบให้ดีขึ้นก็แก้อะไรไม่ได้ เพราะตัวกลไกไม่มีความได้เปรียบ
             ตั้งแต่ต้น (robust ต้อง &gt; 0 ถึงจะผ่านเกณฑ์)
           </p>
         </Panel>
 
         <Panel
           title="ราย fold: อันดับ in-sample vs อันดับจริง"
-          subtitle="แถบไฮไลต์คือตัวที่ระบบเลือก (ชนะ in-sample) · ตัวเลขคือ robust ใน OOS และอันดับจริง"
+          subtitle="แถบไฮไลต์คือตัวที่ระบบเลือก (ชนะในช่วงตั้งค่า) · ตัวเลขคือคะแนนรวมในช่วงจริงและอันดับที่ได้จริง"
         >
           <div className="overflow-x-auto">
             <table className="w-full min-w-[820px] text-sm">
@@ -99,7 +102,7 @@ function OverfitLab() {
                   <th className="p-2">OOS range</th>
                   <th className="p-2">ตัวที่เลือก</th>
                   <th className="p-2">อันดับจริง</th>
-                  <th className="p-2">ตัวเลือกทั้งหมด (OOS robust · อันดับ)</th>
+                  <th className="p-2">ตัวเลือกทั้งหมด (คะแนนจริง · อันดับ)</th>
                 </tr>
               </thead>
               <tbody>
@@ -142,7 +145,7 @@ function OverfitLab() {
             </Link>
           </Button>
           <Button variant="outline" asChild>
-            <Link to="/walk-forward-compare">เปรียบเทียบกลไก E26 → E29</Link>
+            <Link to="/walk-forward-compare">เปรียบเทียบกลไกทั้งสามแบบ</Link>
           </Button>
         </div>
 

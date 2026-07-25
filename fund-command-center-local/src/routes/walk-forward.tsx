@@ -5,10 +5,24 @@ import { WalkForwardGlossary } from "@/components/walk-forward-glossary";
 import { Button } from "@/components/ui/button";
 import { getWalkForwardView, type WalkForwardVariant } from "@/lib/walk-forward.functions";
 
+// Labels describe the mechanism in plain Thai; the E-number stays in parentheses so
+// the research log is still traceable, but a student never has to decode "E26".
 const VARIANTS: Array<{ id: WalkForwardVariant; label: string; note: string }> = [
-  { id: "baseline", label: "Baseline grid (E26)", note: "grid ธรรมดา ไม่มีกลไกเสริม" },
-  { id: "trailing", label: "+ Trailing (E28)", note: "ยกทั้ง grid ตามราคาเมื่อหลุดขึ้น" },
-  { id: "exposure-cap", label: "+ Exposure cap (E29)", note: "จำกัด long ที่ความจุ grid เดิม" },
+  {
+    id: "baseline",
+    label: "grid ธรรมดา",
+    note: "วาง grid ไว้กับที่ ไม่มีกลไกเสริม — ถ้าราคาวิ่งหนีขึ้นไป grid จะขายหมดแล้วยืนดูเฉย ๆ (งานวิจัย E26)",
+  },
+  {
+    id: "trailing",
+    label: "+ ยก grid ตามราคา",
+    note: "ถ้าราคาทะลุขึ้นเหนือ grid ให้ยกทั้งชุดขึ้นตาม เพื่อให้กลับมาเทรดได้แทนที่จะยืนดู (งานวิจัย E28)",
+  },
+  {
+    id: "exposure-cap",
+    label: "+ จำกัดการถือครอง",
+    note: "ยก grid ตามราคาได้ แต่ห้ามถือหุ้นเกินความจุของ grid เดิม เพื่อคุมความเจ็บตอนราคากลับตัว (งานวิจัย E29)",
+  },
 ];
 
 type CostKnobs = { commissionRate?: number; slippageRate?: number; exchangeFeeRate?: number; vatRate?: number };

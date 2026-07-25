@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { PageHeader, Panel } from "@/components/app-shell";
 import { EducationShell } from "@/components/education-shell";
+import { WalkForwardGlossary } from "@/components/walk-forward-glossary";
 import { Button } from "@/components/ui/button";
 import { getWalkForwardComparison } from "@/lib/walk-forward.functions";
 
@@ -24,17 +25,19 @@ const pct = (value: number) => `${value.toFixed(1)}%`;
 const signed = (value: number, digits = 2) => `${value >= 0 ? "+" : ""}${value.toFixed(digits)}`;
 const tone = (value: number) => (value >= 0 ? "text-positive" : "text-destructive");
 
-const LABELS = ["Baseline (E26)", "+ Trailing (E28)", "+ Exposure cap (E29)"];
+// Plain-Thai mechanism names; the E-number stays in parentheses for traceability
+// back to VALIDATION_LOG without making a student decode it.
+const LABELS = ["grid ธรรมดา (E26)", "+ ยก grid ตามราคา (E28)", "+ จำกัดการถือครอง (E29)"];
 
 // Each transition's honest teaching point, straight from VALIDATION_LOG §E26-E29.
 const NARRATIVE = [
   {
-    title: "E26 → E28 : trailing ทำให้ grid กลับมาเทรด แต่แลกด้วย drawdown",
-    body: "baseline grid ขายหมดแล้วยืนดูราคาวิ่งหนี — trailing ยกทั้ง grid ตามราคา engaged 83% → 100% และ alpha ดีขึ้นเล็กน้อย แต่การอยู่ในตลาดตลอด trend ทำให้สะสม inventory → drawdown แย่ลง 15.2% → 16.8% และ robust แย่ลง −17.97 → −19.91 สรุป: ซื้อ alpha มาด้วย drawdown",
+    title: "ก้าวที่ 1 — ยก grid ตามราคา: กลับมาเทรดได้ แต่แลกด้วยความเจ็บที่มากขึ้น (E26 → E28)",
+    body: "grid ธรรมดาขายหมดแล้วยืนดูราคาวิ่งหนีขึ้นไป พอให้ยก grid ตามราคา มันกลับมาเทรดได้ทุกช่วง (จาก 83% เป็น 100%) และตามหลังการถือเฉย ๆ น้อยลงเล็กน้อย แต่การอยู่ในตลาดตลอดขาขึ้นทำให้สะสมหุ้นไว้มาก พอราคากลับตัวจึงเจ็บหนักขึ้น (ขาดทุนหนักสุด 15.2% → 16.8%) คะแนนรวมจึงแย่ลง −17.97 → −19.91 · บทเรียน: มันไม่ได้ 'ดีขึ้น' แต่ไปแลกความเจ็บมาเพื่อผลตอบแทน",
   },
   {
-    title: "E28 → E29 : cap ลด drawdown บน mean แต่ decomposition ล้ม",
-    body: "จำกัด long ที่ความจุ grid เดิม → robust ดีขึ้น −19.91 → −12.17, DD 16.8% → 13.5% แต่เทียบ fold ต่อ fold: มีแค่ 6/18 ที่ cap ไม่ทำงาน (ตรง E28) และผลดีส่วนใหญ่มาจาก fold ที่ 'หยุดเทรด' (engaged 100% → 78%, cycles=0) ซึ่งลด drawdown แบบ tautology ไม่ใช่กลไกจริง",
+    title: "ก้าวที่ 2 — จำกัดการถือครอง: ตัวเลขเฉลี่ยดีขึ้น แต่แยกดูราย fold แล้วไม่ใช่ของจริง (E28 → E29)",
+    body: "พอห้ามถือหุ้นเกินความจุของ grid เดิม ตัวเลขเฉลี่ยดูดีขึ้นชัด (คะแนนรวม −19.91 → −12.17, ขาดทุนหนักสุด 16.8% → 13.5%) แต่พอแยกดูทีละช่วงกลับไม่ใช่แบบนั้น: ส่วนใหญ่ที่ตัวเลขขยับเป็นเพราะระบบไป 'เลือก' รูปแบบ grid คนละแบบ ไม่ใช่ตัวกลไกเอง และช่วงที่ดูดีขึ้นมากที่สุดคือช่วงที่มัน 'หยุดเทรดไปเลย' (เทรดจริงเหลือ 78% จาก 100%) — ไม่อยู่ในตลาดก็ไม่ขาดทุน ตัวเลขความเสี่ยงเลยสวยขึ้นแบบหลอก ๆ · บทเรียน: ค่าเฉลี่ยที่ดีขึ้นอาจไม่ได้แปลว่ากลไกได้ผล ต้องแยกดูเสมอ",
   },
 ];
 
@@ -55,11 +58,13 @@ function WalkForwardCompare() {
     <EducationShell>
       <PageHeader
         kicker="EDUCATION · READ-ONLY RESEARCH · NO LIVE ORDER"
-        title="เปรียบเทียบกลไก: E26 → E28 → E29"
-        subtitle="กลไกทั้งสามบน walk-forward AOT ชุดเดียวกัน — เพิ่มทีละอย่าง เพื่อเห็นว่าอะไรแก้และอะไรไม่แก้"
+        title="เปรียบเทียบกลไก: เพิ่มทีละอย่าง แล้วดูว่าอะไรดีขึ้นจริง"
+        subtitle="กลไกทั้งสามทดสอบบนช่วงเวลาชุดเดียวกันทั้งหมด ต่างกันแค่กลไกที่เปิด — จึงเทียบกันได้ตรง ๆ (ตรงกับงานวิจัย E26 → E28 → E29)"
       />
       <div className="space-y-6 p-6">
-        <Panel title="ผลรวมข้างกัน" subtitle="engine เดียวกัน fold เดียวกัน ต่างกันแค่กลไกที่เปิด">
+        <WalkForwardGlossary />
+
+        <Panel title="ผลรวมข้างกัน" subtitle="engine เดียวกัน ช่วงเวลาเดียวกัน ต่างกันแค่กลไกที่เปิด">
           <div className="overflow-x-auto">
             <table className="w-full min-w-[640px] text-sm">
               <thead>
