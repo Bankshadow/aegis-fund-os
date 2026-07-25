@@ -5,7 +5,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { parseMarketCsv } from "../src/lib/aot-backtest.ts";
-import { runAotWalkForward } from "../src/lib/aot-walkforward.ts";
+import { runAotWalkForward, runFixedGeometryWalkForward } from "../src/lib/aot-walkforward.ts";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const DATA = path.join(here, "..", "data", "historical", "AOT.BK_daily_2005-2026.csv");
@@ -84,6 +84,30 @@ test("in-sample selection is no better than random at picking the OOS winner", (
   const hindsight =
     diag.folds.reduce((sum, fold) => sum + Math.max(...fold.candidates.map((c) => c.oosRobust)), 0) / diag.folds.length;
   assert.ok(hindsight < 0, `hindsight-best robust ${hindsight} is still negative — geometry cannot rescue this`);
+});
+
+test("fixed-geometry walk-forward scores a user config without fitting to the scored window", () => {
+  // Backs the paper console's out-of-sample check. A grid drawn in absolute THB is
+  // tied to the era it was drawn in — AOT ran ~5 -> 64 THB — so a 55-70 grid should
+  // be out of the market for a large share of the folds. That is the point of the
+  // 'engaged' column, and of offering a shape-adjusted row beside it.
+  const result = runFixedGeometryWalkForward(bars, {
+    lowerPrice: 55,
+    upperPrice: 70,
+    gridCount: 10,
+    gridType: "GEOMETRIC",
+  });
+  assert.equal(result.summary.folds, 18);
+  assert.ok(result.summary.absolute.engagedPct < 60, "a 55-70 THB grid cannot trade in the 5 THB era");
+  assert.ok(
+    result.summary.scaled.engagedPct > result.summary.absolute.engagedPct,
+    "re-anchoring the same shape to each era must let it trade more often",
+  );
+  // Re-anchoring uses in-sample bars only; early folds must land near the early price
+  // level rather than anywhere near the modern one.
+  const [firstLow, firstHigh] = result.folds[0].scaledBounds;
+  assert.ok(firstLow > 0 && firstHigh < 20, `first fold bounds ${firstLow}-${firstHigh} should sit in the early-price era`);
+  assert.ok(result.folds[17].scaledBounds[1] > result.folds[0].scaledBounds[1]);
 });
 
 test("exposure cap is inert without re-anchor accumulation on the folds where it never binds", () => {

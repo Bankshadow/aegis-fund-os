@@ -13,12 +13,16 @@ import {
   type PaperStrategyStatus,
 } from "@/lib/aot-paper-domain";
 import { createAotPaperStrategy } from "@/lib/aot-paper.functions";
+import { getFixedGeometryWalkForward } from "@/lib/walk-forward.functions";
+import { COSTS as RESEARCH_COSTS, type FixedGeometryResult } from "@/lib/aot-walkforward";
 import { generateSyntheticAotBars, runAotPaperGridSimulation } from "@/lib/aot-paper-simulation";
 import {
+  analyzeMarketData,
   parseMarketCsv,
   runAotBacktest,
   type BacktestRun,
   type EndTreatment,
+  type ExecutionMode,
   type MarketBar,
 } from "@/lib/aot-backtest";
 import { ArrowLeft, Calculator, Pause, Play, Save, ShieldAlert, Square } from "lucide-react";
@@ -96,12 +100,29 @@ function AotPaperGridPage() {
     null,
   );
   const [historicalBars, setHistoricalBars] = useState<MarketBar[]>([]);
+  const [intrabarBars, setIntrabarBars] = useState<MarketBar[]>([]);
   const [dataWarnings, setDataWarnings] = useState<string[]>([]);
   const [backtest, setBacktest] = useState<BacktestRun | null>(null);
   const [syntheticBacktests, setSyntheticBacktests] = useState<BacktestRun[]>([]);
-  const [curveWindow, setCurveWindow] = useState<"ALL" | "30" | "90" | "180">("90");
+  const [curveWindow, setCurveWindow] = useState<"ALL" | "30" | "90" | "180">("ALL");
   const [endTreatment, setEndTreatment] = useState<EndTreatment>("MARK_TO_MARKET");
+  const [executionMode, setExecutionMode] = useState<ExecutionMode>("CONSERVATIVE_OHLC");
+  const [oosCheck, setOosCheck] = useState<FixedGeometryResult | null>(null);
+  const [oosRunning, setOosRunning] = useState(false);
   const calculation = useMemo(() => calculatePaperGrid(config), [config]);
+  const dataQuality = useMemo(() => analyzeMarketData(historicalBars), [historicalBars]);
+  const insights = useMemo(() => {
+    if (!backtest) return [];
+    const items: Array<{ id: string; severity: "info" | "warning" | "critical"; title: string; detail: string }> = [];
+    if (backtest.metrics.maxDrawdown > 30)
+      items.push({ id: "DD_LIMIT", severity: "critical", title: "Drawdown exceeds 30% review limit", detail: `Observed ${backtest.metrics.maxDrawdown.toFixed(2)}% max drawdown.` });
+    if (backtest.metrics.completedCycles < 30)
+      items.push({ id: "SAMPLE_SIZE", severity: "warning", title: "Small realized-cycle sample", detail: `${backtest.metrics.completedCycles} completed cycles; validate with more history.` });
+    if (backtest.metrics.unrealizedPnl > Math.abs(backtest.metrics.netPnl) * 0.5)
+      items.push({ id: "INVENTORY_DEPENDENCE", severity: "warning", title: "Return depends materially on open inventory", detail: `Unrealized P/L is ${thb(backtest.metrics.unrealizedPnl)}; review liquidation and path risk.` });
+    items.push({ id: "OOS_STATUS", severity: "warning", title: "Out-of-sample validation is not tested", detail: "This run is research evidence only; do not promote from full-period results alone." });
+    return items;
+  }, [backtest]);
   const blocked = calculation.validation.some((item) => item.level === "BLOCKED");
   const visibleCurve = useMemo(() => {
     if (!backtest) return [];
@@ -296,6 +317,108 @@ function AotPaperGridPage() {
           </Panel>
         </div>
         <Panel
+          title="Out-of-sample check — ตรวจ config นี้กับ 18 ช่วงที่ไม่เคยเห็น"
+          subtitle="ตัวเลข backtest ด้านล่างเป็น in-sample เสมอ เพราะคุณเลือก geometry เองโดยเห็นกราฟแล้ว · ปุ่มนี้เอา geometry เดิมไปวัดบนข้อมูล AOT 2005–2026 ชุดเดียวกับงานวิจัย โดยไม่มีการเลือกอะไรจากข้อมูลที่ใช้วัด"
+        >
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              disabled={oosRunning || !(Number(config.upperPrice) > Number(config.lowerPrice))}
+              onClick={async () => {
+                setOosRunning(true);
+                try {
+                  const result = await getFixedGeometryWalkForward({
+                    data: {
+                      lowerPrice: Number(config.lowerPrice),
+                      upperPrice: Number(config.upperPrice),
+                      gridCount: config.levelCount,
+                      gridType: config.mode,
+                      commissionRate: Number(config.oneWayCostPct),
+                      slippageRate: Number(config.slippagePct),
+                    },
+                  });
+                  setOosCheck(result);
+                  toast.success(`ตรวจแล้ว ${result.summary.folds} ช่วง`);
+                } catch (error) {
+                  toast.error(error instanceof Error ? error.message : "Out-of-sample check failed");
+                } finally {
+                  setOosRunning(false);
+                }
+              }}
+            >
+              {oosRunning ? "กำลังรัน 18 ช่วง…" : "ทดสอบ config นี้แบบ walk-forward"}
+            </Button>
+            <Button variant="outline" asChild>
+              <Link to="/walk-forward" search={{ variant: "baseline" }}>
+                ดูบทเรียนเต็มใน Walk-Forward Lab →
+              </Link>
+            </Button>
+          </div>
+
+          {oosCheck && (
+            <div className="mt-4 grid gap-4">
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-[560px] text-sm">
+                  <thead>
+                    <tr className="text-left text-xs uppercase text-muted-foreground">
+                      <th className="p-2">แบบที่วัด</th>
+                      <th className="p-2">คะแนนรวม (robust)</th>
+                      <th className="p-2">แพ้/ชนะการถือเฉย ๆ</th>
+                      <th className="p-2">ขาดทุนหนักสุด</th>
+                      <th className="p-2">ช่วงที่ได้เทรดจริง</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {[
+                      { key: "abs", label: "ราคาตามที่ตั้งไว้เป๊ะ", row: oosCheck.summary.absolute },
+                      { key: "sca", label: "รูปทรงเดิม ปรับระดับราคาตามยุค", row: oosCheck.summary.scaled },
+                    ].map((entry) => (
+                      <tr className="border-t" key={entry.key}>
+                        <td className="p-2">{entry.label}</td>
+                        <td className={`p-2 font-mono ${entry.row.meanRobust >= 0 ? "text-positive" : "text-destructive"}`}>
+                          {entry.row.meanRobust.toFixed(2)}
+                        </td>
+                        <td className={`p-2 font-mono ${entry.row.meanAlpha >= 0 ? "text-positive" : "text-destructive"}`}>
+                          {entry.row.meanAlpha.toFixed(2)}
+                        </td>
+                        <td className="p-2 font-mono">{entry.row.meanDrawdown.toFixed(1)}%</td>
+                        <td className={`p-2 font-mono ${entry.row.engagedPct < 50 ? "text-destructive" : ""}`}>
+                          {entry.row.engagedPct.toFixed(0)}%
+                        </td>
+                      </tr>
+                    ))}
+                    <tr className="border-t text-muted-foreground">
+                      <td className="p-2">ถือเฉย ๆ (คู่เทียบ)</td>
+                      <td className="p-2 font-mono">{oosCheck.summary.meanBuyAndHoldRobust.toFixed(2)}</td>
+                      <td className="p-2 font-mono">—</td>
+                      <td className="p-2 font-mono">—</td>
+                      <td className="p-2 font-mono">—</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div className="rounded-md border border-warning/40 bg-warning/5 p-3 text-sm">
+                <div className="mb-1 font-semibold">อ่านผลยังไง</div>
+                <ul className="grid gap-1 text-muted-foreground">
+                  <li>
+                    • <strong>แถวแรก</strong> คือ grid ของคุณที่ราคาเป๊ะ ๆ — AOT วิ่งจากราว 5 ถึง 64 บาทในช่วงนี้
+                    ถ้า "ช่วงที่ได้เทรดจริง" ต่ำ แปลว่า grid ของคุณอยู่คนละระดับราคากับตลาดในยุคนั้น ๆ
+                    ไม่ใช่ว่ากลยุทธ์แย่ แต่มันผูกกับยุคที่คุณวาดมัน
+                  </li>
+                  <li>
+                    • <strong>แถวสอง</strong> คงรูปทรงและจำนวนชั้นเดิม แต่ย้ายระดับราคาตามแต่ละยุค
+                    (คำนวณจากข้อมูลช่วงตั้งค่าเท่านั้น ไม่แอบดูอนาคต) — แถวนี้บอกว่า <em>รูปทรง</em> ของ grid
+                    มีค่าจริงไหม
+                  </li>
+                  <li>
+                    • เทียบกับแถวล่างสุดเสมอ: คะแนนต้องมากกว่า 0 ถึงจะผ่านเกณฑ์ และควรดีกว่าการถือเฉย ๆ
+                  </li>
+                </ul>
+              </div>
+            </div>
+          )}
+        </Panel>
+
+        <Panel
           title="Paper strategy actions"
           subtitle="Lifecycle actions are enabled only for valid paper states; persistence requires a verified identity."
         >
@@ -434,6 +557,16 @@ function AotPaperGridPage() {
                     }}
                   />
                 </Field>
+                <Field label="Intrabar OHLCV CSV (optional)" note="Use 1m/5m bars for Intrabar exact execution; these bars are never used for signal calculation.">
+                  <Input type="file" accept=".csv,text/csv" onChange={async (event) => {
+                    const file = event.target.files?.[0];
+                    if (!file) return;
+                    const parsed = parseMarketCsv(await file.text());
+                    setIntrabarBars(parsed.bars);
+                    if (parsed.warnings.some((warning) => warning.severity === "BLOCKED")) toast.error("Intrabar data validation blocked exact execution");
+                    else toast.success(`Loaded ${parsed.bars.length} intrabar bars`);
+                  }} />
+                </Field>
                 <Field label="End treatment">
                   <select
                     aria-label="Backtest end treatment"
@@ -444,6 +577,14 @@ function AotPaperGridPage() {
                     <option value="MARK_TO_MARKET">Mark-to-market</option>
                     <option value="FORCE_CLOSE">Force close</option>
                     <option value="KEEP_OPEN">Keep open</option>
+                  </select>
+                </Field>
+                <Field label="Execution mode" note="Intrabar exact requires a lower-timeframe dataset; otherwise the engine falls back conservatively.">
+                  <select aria-label="Execution mode" className="h-9 rounded-md border bg-transparent px-3" value={executionMode} onChange={(event) => setExecutionMode(event.target.value as ExecutionMode)}>
+                    <option value="CONSERVATIVE_OHLC">Conservative OHLC</option>
+                    <option value="INTRABAR_EXACT">Intrabar exact</option>
+                    <option value="OPTIMISTIC_OHLC">Optimistic OHLC (comparison)</option>
+                    <option value="WORST_CASE">Worst-case path</option>
                   </select>
                 </Field>
                 <Button
@@ -465,7 +606,10 @@ function AotPaperGridPage() {
                           tickSize: Number(AOT_PAPER_RULES.tickSize),
                           boardLot: Number(AOT_PAPER_RULES.boardLot),
                           commissionRate: Number(config.oneWayCostPct),
-                          exchangeFeeRate: 0,
+                          // Match the research cost model (src/lib/aot-walkforward.ts
+                          // COSTS); this was 0 here, so the same inputs gave slightly
+                          // different numbers on this page than in the E-series.
+                          exchangeFeeRate: RESEARCH_COSTS.exchangeFeeRate,
                           vatRate: 7,
                           slippageRate: Number(config.slippagePct),
                           fillModel: "CONSERVATIVE",
@@ -473,8 +617,12 @@ function AotPaperGridPage() {
                           dividendInclusion: true,
                           dividendReinvestment: false,
                           cashConstraint: true,
+                          executionMode,
                         },
                         historicalBars,
+                        [],
+                        undefined,
+                        intrabarBars,
                       );
                       setBacktest(result);
                       toast.success(
@@ -559,6 +707,15 @@ function AotPaperGridPage() {
                 </div>
               ))}
               {backtest && (
+                // The caveat belongs where the number is, not only in a side panel:
+                // people read the headline figure first and the disclaimer never.
+                <div className="mt-4 rounded-md border border-warning/50 bg-warning/10 p-3 text-sm">
+                  <span className="font-semibold">ตัวเลขชุดนี้เป็น in-sample</span> — geometry ถูกเลือกโดยคนที่เห็นกราฟช่วงนี้แล้ว
+                  ผลจึงดูดีได้เองโดยไม่ต้องมีความได้เปรียบจริง ใช้ปุ่ม “ทดสอบ config นี้แบบ walk-forward” ด้านบน
+                  เพื่อดูผลบนช่วงที่ยังไม่เคยเห็น
+                </div>
+              )}
+              {backtest && (
                 <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                   <Metric
                     label="Final portfolio value"
@@ -592,7 +749,236 @@ function AotPaperGridPage() {
                 </div>
               )}
               {backtest && (
+                <div className="mt-4 grid gap-4 lg:grid-cols-3">
+                  <Panel title="P/L reconciliation" subtitle="Independent accounting check">
+                    <div className="grid gap-2 text-sm">
+                      <div className="flex justify-between">
+                        <span>Initial equity</span>
+                        <span>{thb(backtest.metrics.startEquity)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Ending cash</span>
+                        <span>{thb(backtest.metrics.endingCash)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Ending inventory value</span>
+                        <span>{thb(backtest.metrics.endingInventoryMarketValue)}</span>
+                      </div>
+                      <div className="flex justify-between border-t pt-2 font-semibold">
+                        <span>Reported Net P/L</span>
+                        <span>{thb(backtest.metrics.netPnl)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Realized + unrealized + dividends</span>
+                        <span>
+                          {thb(
+                            backtest.metrics.realizedPnl +
+                              backtest.metrics.unrealizedPnl +
+                              backtest.metrics.dividendIncome,
+                          )}
+                        </span>
+                      </div>
+                      <div
+                        className={`mt-1 rounded border p-2 text-xs ${backtest.metrics.isReconciled ? "border-positive/40 text-positive" : "border-destructive/40 text-destructive"}`}
+                      >
+                        {backtest.metrics.isReconciled
+                          ? "Passed: difference within ฿0.01 tolerance"
+                          : `Failed: difference ${thb(backtest.metrics.reconciliationDifference)}`}
+                      </div>
+                    </div>
+                  </Panel>
+                  <Panel title="Trade quality" subtitle="Only realized cycles are scored">
+                    <div className="grid gap-2 text-sm sm:grid-cols-2">
+                      <Metric
+                        label="Win rate"
+                        value={
+                          backtest.metrics.winRate == null
+                            ? "N/A"
+                            : `${backtest.metrics.winRate.toFixed(2)}%`
+                        }
+                      />
+                      <Metric
+                        label="Profit factor"
+                        value={
+                          backtest.metrics.profitFactor == null
+                            ? "N/A"
+                            : backtest.metrics.profitFactor.toFixed(2)
+                        }
+                      />
+                      <Metric
+                        label="Expectancy / cycle"
+                        value={
+                          backtest.metrics.expectancyPerCycle == null
+                            ? "N/A"
+                            : thb(backtest.metrics.expectancyPerCycle)
+                        }
+                      />
+                      <Metric
+                        label="Avg win / loss"
+                        value={
+                          backtest.metrics.averageWin == null
+                            ? "N/A"
+                            : `${thb(backtest.metrics.averageWin)} / ${thb(backtest.metrics.averageLoss ?? 0)}`
+                        }
+                      />
+                      <Metric
+                        label="Max consecutive losses"
+                        value={String(backtest.metrics.maxConsecutiveLosses)}
+                      />
+                      <Metric
+                        label="Recovery / underwater"
+                        value={`${backtest.metrics.longestRecoveryBars} bars / ${backtest.metrics.timeUnderwaterPct.toFixed(2)}%`}
+                      />
+                      <Metric
+                        label="Peak capital utilization"
+                        value={`${((backtest.metrics.maxCapitalDeployed / Math.max(backtest.metrics.startEquity, 1)) * 100).toFixed(2)}%`}
+                      />
+                      <Metric
+                        label="Ending inventory exposure"
+                        value={`${((backtest.metrics.endingInventoryMarketValue / Math.max(backtest.metrics.finalPortfolioValue, 1)) * 100).toFixed(2)}%`}
+                      />
+                    </div>
+                  </Panel>
+                  <Panel title="Backtest confidence" subtitle="What has and has not been tested">
+                    <div className="grid gap-2 text-sm">
+                      {[
+                        ["P/L reconciliation", backtest.metrics.isReconciled ? "Passed" : "Failed"],
+                        ["Look-ahead bias", "Passed: chronological OHLC"],
+                        // These reflect the out-of-sample check above rather than
+                        // being permanently "Not tested" with no way to act on it.
+                        [
+                          "Out-of-sample",
+                          oosCheck ? `Tested: ${oosCheck.summary.folds} unseen periods` : "Not tested",
+                        ],
+                        [
+                          "Walk-forward",
+                          oosCheck
+                            ? `Tested: robust ${oosCheck.summary.scaled.meanRobust.toFixed(2)} (shape-adjusted)`
+                            : "Not tested",
+                        ],
+                        ["Parameter sensitivity", "Not tested"],
+                        [
+                          "Ending positions",
+                          backtest.metrics.endingInventory === 0
+                            ? "Liquidated"
+                            : "Open / mark-to-market",
+                        ],
+                      ].map(([label, value]) => (
+                        <div
+                          className="flex items-start justify-between gap-2 border-b border-border/40 pb-1"
+                          key={label}
+                        >
+                          <span className="text-muted-foreground">{label}</span>
+                          <span
+                            className={
+                              value === "Passed" || value === "Liquidated" || value.startsWith("Tested")
+                                ? "text-positive"
+                                : value === "Failed"
+                                  ? "text-destructive"
+                                  : "text-warning"
+                            }
+                          >
+                            {value}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </Panel>
+                </div>
+              )}
+              {backtest && (
+                <div className="mt-4 rounded-md border border-warning/40 bg-warning/5 p-4 text-sm">
+                  <div className="mb-2 font-semibold">Backtest interpretation</div>
+                  <ul className="grid gap-1 text-muted-foreground">
+                    {backtest.metrics.maxDrawdown > 30 && (
+                      <li>
+                        • High drawdown: {backtest.metrics.maxDrawdown.toFixed(2)}% requires
+                        explicit risk-budget review.
+                      </li>
+                    )}
+                    {backtest.metrics.unrealizedPnl >
+                      Math.max(1, Math.abs(backtest.metrics.netPnl) * 0.5) && (
+                      <li>
+                        • A material share of profit is unrealized and depends on open inventory
+                        valuation.
+                      </li>
+                    )}
+                    {backtest.metrics.durationYears < 1 && (
+                      <li>
+                        • Annualized figures are based on less than one year and may be unstable.
+                      </li>
+                    )}
+                    {backtest.metrics.completedCycles < 30 && (
+                      <li>
+                        • Sample size is limited: {backtest.metrics.completedCycles} completed
+                        cycles.
+                      </li>
+                    )}
+                    {backtest.metrics.completedCycles >= 30 &&
+                      backtest.metrics.maxDrawdown <= 30 && (
+                        <li>
+                          • Results should still be validated out-of-sample before any promotion
+                          decision.
+                        </li>
+                      )}
+                  </ul>
+                </div>
+              )}
+              {backtest && (
                 <div className="mt-4 grid gap-4 lg:grid-cols-[1.15fr_1fr]">
+                  <Panel title="Data lineage & reproducibility" subtitle="Every run is traceable and exportable">
+                    <div className="grid gap-2 text-sm sm:grid-cols-2">
+                      <Metric label="Run ID" value={backtest.metadata.runId} />
+                      <Metric label="Configuration hash" value={backtest.metadata.configurationHash} />
+                      <Metric label="Dataset" value={`${backtest.metadata.datasetId} / ${backtest.metadata.datasetVersion}`} />
+                      <Metric label="Data source" value={backtest.metadata.dataSource} />
+                      <Metric label="Engine / environment" value={`${backtest.metadata.engineVersion} / ${backtest.metadata.environment}`} />
+                      <Metric label="Execution mode" value={`${backtest.metadata.executionMode}${backtest.metadata.intrabarFallback ? " / intrabar data unavailable" : ""}`} />
+                      <Metric label="Timezone / currency" value={`${backtest.metadata.timezone} / ${backtest.metadata.currency}`} />
+                    </div>
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      <Button size="sm" variant="outline" onClick={async () => { await navigator.clipboard?.writeText(backtest.metadata.runId); toast.success("Run ID copied"); }}>Copy Run ID</Button>
+                      <Button size="sm" variant="outline" onClick={() => {
+                        const blob = new Blob([JSON.stringify({ metadata: backtest.metadata, config: backtest.config }, null, 2)], { type: "application/json" });
+                        const url = URL.createObjectURL(blob);
+                        const anchor = document.createElement("a"); anchor.href = url; anchor.download = `${backtest.metadata.runId}-configuration.json`; anchor.click(); URL.revokeObjectURL(url);
+                      }}>Export configuration</Button>
+                    </div>
+                  </Panel>
+                  <Panel title="Data quality report" subtitle="Validation is shown before relying on results">
+                    <div className="grid gap-2 text-sm sm:grid-cols-2">
+                      <Metric label="Bars" value={String(dataQuality.bars)} />
+                      <Metric label="Duplicate timestamps" value={String(dataQuality.duplicates)} />
+                      <Metric label="Missing OHLC" value={String(dataQuality.missingOhlcv)} />
+                      <Metric label="Invalid prices" value={String(dataQuality.invalidPrices)} />
+                      <Metric label="Negative volume" value={String(dataQuality.negativeVolume)} />
+                      <Metric label="Abnormal gaps" value={String(dataQuality.abnormalGaps)} />
+                    </div>
+                    <div className={`mt-3 rounded border p-2 text-xs ${dataQuality.duplicates || dataQuality.missingOhlcv || dataQuality.invalidPrices ? "border-destructive/40 text-destructive" : "border-positive/40 text-positive"}`}>
+                      {dataQuality.duplicates || dataQuality.missingOhlcv || dataQuality.invalidPrices ? "Blocked: data quality issues require review." : "Passed: no blocking OHLC quality issues detected."}
+                    </div>
+                  </Panel>
+                  <Panel title="Deterministic insights" subtitle="Rule-based evidence linked to observed metrics">
+                    <div className="space-y-2 text-sm">
+                      {insights.map((item) => (
+                        <div key={item.id} className={`rounded border p-2 ${item.severity === "critical" ? "border-destructive/50 text-destructive" : item.severity === "warning" ? "border-warning/50 text-warning" : "border-positive/50 text-positive"}`}>
+                          <div className="font-medium">{item.title}</div>
+                          <div className="mt-1 text-xs text-muted-foreground">{item.id}: {item.detail}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </Panel>
+                  <Panel title="Event-driven execution trace" subtitle={`${backtest.events.length} ordered events; market → decision → order → fill → ledger → valuation`}>
+                    <div className="max-h-64 space-y-1 overflow-auto text-xs">
+                      {backtest.events.slice(-16).map((event) => (
+                        <div key={event.id} className="flex items-center gap-2 border-b border-border/30 pb-1">
+                          <span className="w-8 text-muted-foreground">#{event.sequence}</span>
+                          <span className="font-medium">{event.type}</span>
+                          <span className="truncate text-muted-foreground">{event.timestamp}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </Panel>
                   <div className="rounded-md border border-border/60 bg-background/20 p-4">
                     <div className="mb-3 flex items-center justify-between gap-3">
                       <div>

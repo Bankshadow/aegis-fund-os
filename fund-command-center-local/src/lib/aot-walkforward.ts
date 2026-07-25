@@ -54,7 +54,7 @@ export type WalkForwardOptions = {
   diagnostics?: boolean;
 };
 
-type Geometry = { lowerPrice: number; upperPrice: number; gridCount: number; gridType: GridType };
+export type Geometry = { lowerPrice: number; upperPrice: number; gridCount: number; gridType: GridType };
 
 export type FoldMeasure = {
   runId: string;
@@ -190,6 +190,120 @@ function configFor(geometry: Geometry, window: MarketBar[], executionMode: Execu
     regimeFilter: options.regime ? REGIME_FILTER : null,
     trailing: trailingOn ? { mode: "TRAIL_UP" } : null,
     exposureCap: options.exposureCap ? { mode: "GRID_CAPACITY" } : null,
+  };
+}
+
+export type FixedGeometryFold = {
+  index: number;
+  oosRange: [string, string];
+  /** The user's geometry exactly as configured. */
+  absolute: FoldMeasure;
+  /** Same shape (width ratio, count, type) re-anchored to that era's price level. */
+  scaled: FoldMeasure;
+  scaledBounds: [number, number];
+  buyAndHoldDrawdown: number;
+};
+
+export type FixedGeometryResult = {
+  geometry: Geometry;
+  folds: FixedGeometryFold[];
+  summary: {
+    folds: number;
+    absolute: { meanRobust: number; meanAlpha: number; meanDrawdown: number; engagedPct: number };
+    scaled: { meanRobust: number; meanAlpha: number; meanDrawdown: number; engagedPct: number };
+    meanBuyAndHoldRobust: number;
+  };
+};
+
+/**
+ * Evaluate ONE fixed geometry across every out-of-sample window — the question a
+ * user of the paper console actually has: "the grid I configured, what would it have
+ * done in 18 periods it never saw?" There is no selection step, so nothing here is
+ * fitted to the data it is scored on.
+ *
+ * Two rows, because a grid written in absolute prices carries a hidden assumption.
+ * AOT ran roughly 5 -> 64 THB over this file, so a 60-70 THB grid is simply absent
+ * from the market for most of the history: `absolute` shows that honestly (expect
+ * engaged to collapse), while `scaled` keeps the same width ratio and level count
+ * but re-anchors to each era's price, isolating whether the SHAPE has any merit.
+ */
+export function runFixedGeometryWalkForward(
+  bars: MarketBar[],
+  geometry: Geometry,
+  options: WalkForwardOptions = {},
+): FixedGeometryResult {
+  const WARMUP = REGIME_FILTER.rankWindow + REGIME_FILTER.lookback + 30;
+  const withWarmup = (from: number, to: number) => bars.slice(Math.max(0, from - WARMUP), to);
+  const measure = (geo: Geometry, window: MarketBar[], supplied: MarketBar[]): FoldMeasure => {
+    const config = configFor(geo, window, "CONSERVATIVE_OHLC", window[0].close, options);
+    const run = runAotBacktest(config, supplied);
+    const m = run.metrics;
+    return {
+      runId: run.id,
+      configHash: run.metadata?.configurationHash ?? null,
+      totalReturn: m.totalReturn,
+      maxDrawdown: m.maxDrawdown,
+      robust: m.totalReturn - 2 * m.maxDrawdown,
+      alpha: m.alpha ?? 0,
+      buyAndHoldReturn: m.buyAndHoldReturn ?? 0,
+      completedCycles: m.completedCycles,
+      fills: m.fills,
+      engaged: m.completedCycles >= 1,
+      isReconciled: m.isReconciled,
+      ambiguousBars: m.ambiguousBars,
+      reAnchors: m.reAnchors,
+      regimeSuspendedBars: m.regimeSuspendedBars,
+      totalFees: m.totalFees,
+      forcedLiquidation: m.forcedLiquidation,
+      endingInventory: m.endingInventory,
+      maxCapitalDeployed: m.maxCapitalDeployed,
+    };
+  };
+
+  const folds: FixedGeometryFold[] = [];
+  const midpoint = (geometry.lowerPrice + geometry.upperPrice) / 2;
+  for (let start = 0; start + IS_BARS + OOS_BARS <= bars.length; start += STEP) {
+    const isWindow = bars.slice(start, start + IS_BARS);
+    const oosWindow = bars.slice(start + IS_BARS, start + IS_BARS + OOS_BARS);
+    const oosSupplied = withWarmup(start + IS_BARS, start + IS_BARS + OOS_BARS);
+
+    // Re-anchor on the IN-SAMPLE median only: using out-of-sample prices to place
+    // the grid would be lookahead, which is the whole thing this page must not do.
+    const closes = isWindow.map((bar) => bar.close).sort((a, b) => a - b);
+    const isMedian = closes[Math.floor(closes.length / 2)];
+    const factor = midpoint > 0 ? isMedian / midpoint : 1;
+    const scaledGeometry: Geometry = {
+      ...geometry,
+      lowerPrice: Math.max(0.01, geometry.lowerPrice * factor),
+      upperPrice: Math.max(0.02, geometry.upperPrice * factor),
+    };
+
+    folds.push({
+      index: folds.length + 1,
+      oosRange: [dateOnly(oosWindow[0].timestamp), dateOnly(oosWindow[oosWindow.length - 1].timestamp)],
+      absolute: measure(geometry, oosWindow, oosSupplied),
+      scaled: measure(scaledGeometry, oosWindow, oosSupplied),
+      scaledBounds: [scaledGeometry.lowerPrice, scaledGeometry.upperPrice],
+      buyAndHoldDrawdown: buyAndHoldDrawdown(oosWindow),
+    });
+  }
+
+  const agg = (pick: (fold: FixedGeometryFold) => FoldMeasure) => ({
+    meanRobust: mean(folds.map((f) => pick(f).robust)),
+    meanAlpha: mean(folds.map((f) => pick(f).alpha)),
+    meanDrawdown: mean(folds.map((f) => pick(f).maxDrawdown)),
+    engagedPct: pct(folds.filter((f) => pick(f).engaged).length, folds.length),
+  });
+
+  return {
+    geometry,
+    folds,
+    summary: {
+      folds: folds.length,
+      absolute: agg((f) => f.absolute),
+      scaled: agg((f) => f.scaled),
+      meanBuyAndHoldRobust: mean(folds.map((f) => f.absolute.buyAndHoldReturn - 2 * f.buyAndHoldDrawdown)),
+    },
   };
 }
 

@@ -2,7 +2,13 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import aotCsv from "../../data/historical/AOT.BK_daily_2005-2026.csv?raw";
 import { parseMarketCsv } from "./aot-backtest";
-import { COSTS as DEFAULT_COSTS, runAotWalkForward, type CostModel, type WalkForwardResult } from "./aot-walkforward";
+import {
+  COSTS as DEFAULT_COSTS,
+  runAotWalkForward,
+  runFixedGeometryWalkForward,
+  type CostModel,
+  type WalkForwardResult,
+} from "./aot-walkforward";
 
 /**
  * Server function behind the Walk-Forward Lab education view. It runs the SAME
@@ -136,6 +142,41 @@ export const getWalkForwardView = createServerFn({ method: "GET" })
     if (data.exchangeFeeRate !== undefined) costs.exchangeFeeRate = data.exchangeFeeRate;
     if (data.vatRate !== undefined) costs.vatRate = data.vatRate;
     return buildView(data.variant, Object.keys(costs).length ? costs : undefined);
+  });
+
+/**
+ * "Take the grid I configured on the paper console and score it on 18 periods it
+ * never saw." The paper console can only ever produce an in-sample number — the
+ * geometry is chosen by a human looking at the same chart — so this is the missing
+ * half its own "Out-of-sample: Not tested" panel admits to.
+ */
+export const getFixedGeometryWalkForward = createServerFn({ method: "GET" })
+  .validator(
+    z.object({
+      lowerPrice: z.number().positive(),
+      upperPrice: z.number().positive(),
+      gridCount: z.number().int().min(2).max(200),
+      gridType: z.enum(["ARITHMETIC", "GEOMETRIC"]),
+      commissionRate: z.number().min(0).max(2).optional(),
+      slippageRate: z.number().min(0).max(2).optional(),
+    }),
+  )
+  .handler(({ data }) => {
+    if (data.upperPrice <= data.lowerPrice) throw new Error("upperPrice must exceed lowerPrice");
+    const { bars } = parseMarketCsv(aotCsv);
+    const costs: Partial<CostModel> = {};
+    if (data.commissionRate !== undefined) costs.commissionRate = data.commissionRate;
+    if (data.slippageRate !== undefined) costs.slippageRate = data.slippageRate;
+    return runFixedGeometryWalkForward(
+      bars,
+      {
+        lowerPrice: data.lowerPrice,
+        upperPrice: data.upperPrice,
+        gridCount: data.gridCount,
+        gridType: data.gridType,
+      },
+      Object.keys(costs).length ? { costs } : {},
+    );
   });
 
 export type OverfitView = {
