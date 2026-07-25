@@ -50,6 +50,12 @@ export type WalkForwardView = {
     engagedPct: number;
     beatsBuyHoldPct: number;
     flatSurfacePct: number;
+    /**
+     * Buy-and-hold scored on the SAME robust formula, averaged per fold. Without
+     * this a student has no scale: "robust -17.97" means nothing on its own, but
+     * "-17.97 vs buy-and-hold's -34.06, and the bar to pass is 0" is readable.
+     */
+    meanBuyAndHoldRobust: number;
   };
   criteria: { C1: boolean; C2: boolean; C3: boolean; C4: boolean; C5: boolean; C6: boolean; C7: boolean; passed: boolean };
   costs: CostModel;
@@ -92,6 +98,9 @@ const buildView = (variant: WalkForwardVariant, costs?: Partial<CostModel>): Wal
       engagedPct: conservative.engagedPct,
       beatsBuyHoldPct: conservative.beatsBuyHoldPct,
       flatSurfacePct: result.flatSurfacePct,
+      meanBuyAndHoldRobust:
+        folds.reduce((sum, fold) => sum + (fold.buyAndHoldReturn - 2 * fold.buyAndHoldDrawdown), 0) /
+        (folds.length || 1),
     },
     criteria: {
       C1: conservative.C1,

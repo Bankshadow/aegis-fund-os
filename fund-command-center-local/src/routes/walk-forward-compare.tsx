@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { AppShell, PageHeader, Panel } from "@/components/app-shell";
+import { PageHeader, Panel } from "@/components/app-shell";
+import { EducationShell } from "@/components/education-shell";
 import { Button } from "@/components/ui/button";
 import { getWalkForwardComparison } from "@/lib/walk-forward.functions";
 
@@ -10,11 +11,11 @@ export const Route = createFileRoute("/walk-forward-compare")({
   // a student on a phone just sees a dead screen.
   pendingMs: 200,
   pendingComponent: () => (
-    <AppShell>
+    <EducationShell>
       <div className="p-6 text-sm text-muted-foreground">
         กำลังรัน walk-forward ทั้ง 3 กลไก กลไกละ 18 ช่วงเวลา… ใช้เวลาราว 8 วินาที
       </div>
-    </AppShell>
+    </EducationShell>
   ),
   component: WalkForwardCompare,
 });
@@ -51,7 +52,7 @@ function WalkForwardCompare() {
   ];
 
   return (
-    <AppShell>
+    <EducationShell>
       <PageHeader
         kicker="EDUCATION · READ-ONLY RESEARCH · NO LIVE ORDER"
         title="เปรียบเทียบกลไก: E26 → E28 → E29"
@@ -152,6 +153,6 @@ function WalkForwardCompare() {
           Research/education เท่านั้น ไม่ใช่คำแนะนำการลงทุน · เกณฑ์เต็มใน docs/AOT_VALIDATION_CRITERIA.md
         </p>
       </div>
-    </AppShell>
+    </EducationShell>
   );
 }

@@ -1,5 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { AppShell, PageHeader, Panel } from "@/components/app-shell";
+import { PageHeader, Panel } from "@/components/app-shell";
+import { EducationShell } from "@/components/education-shell";
+import { WalkForwardGlossary } from "@/components/walk-forward-glossary";
 import { Button } from "@/components/ui/button";
 import { getWalkForwardView, type WalkForwardVariant } from "@/lib/walk-forward.functions";
 
@@ -47,9 +49,9 @@ export const Route = createFileRoute("/walk-forward")({
   // student on a phone sees a frozen screen and assumes it is broken.
   pendingMs: 200,
   pendingComponent: () => (
-    <AppShell>
+    <EducationShell>
       <div className="p-6 text-sm text-muted-foreground">กำลังรัน walk-forward 18 ช่วงเวลาใหม่ทั้งหมด… (ไม่กี่วินาที)</div>
-    </AppShell>
+    </EducationShell>
   ),
   component: WalkForwardLab,
 });
@@ -86,13 +88,15 @@ function WalkForwardLab() {
     COST_PRESETS.find((preset) => KNOBS.every((knob) => preset[knob] === search[knob]))?.id ?? "custom";
 
   return (
-    <AppShell>
+    <EducationShell>
       <PageHeader
         kicker="EDUCATION · READ-ONLY RESEARCH · NO LIVE ORDER"
         title="Walk-Forward Lab"
         subtitle="ทดสอบกลยุทธ์ grid กับหุ้น AOT รายวัน ปี 2005–2026 แบ่งเป็น 18 ช่วง แต่ละช่วงใช้ข้อมูล 2 ปีแรกตั้งค่า แล้ววัดผลจริงในปีถัดไปที่ยังไม่เคยเห็น (จำลองการเทรดจริงที่ทำนายอนาคตไม่ได้) · engine เดียวกับงานวิจัย E26–E29"
       />
       <div className="space-y-6 p-6">
+        <WalkForwardGlossary />
+
         <Panel title="เลือกกลไกที่จะทดสอบ" subtitle="แต่ละตัวเพิ่มกลไกทีละอย่างจาก baseline — ดูว่ามันแก้หรือไม่แก้ปัญหา">
           <div className="flex flex-wrap gap-2">
             {VARIANTS.map((item) => (
@@ -158,7 +162,7 @@ function WalkForwardLab() {
               label="Mean robust (return − 2×maxDD)"
               value={signed(summary.meanRobust)}
               tone={summary.meanRobust > 0 ? "pos" : "neg"}
-              note="เกณฑ์ C1 ต้อง > 0"
+              note={`ต้อง > 0 ถึงผ่าน · ถือเฉย ๆ ได้ ${signed(summary.meanBuyAndHoldRobust)} (grid ดีกว่าแต่ยังไม่ถึงเกณฑ์)`}
             />
             <Tile
               label="Mean alpha vs buy-and-hold"
@@ -228,6 +232,6 @@ function WalkForwardLab() {
           บันทึกผลใน docs/VALIDATION_LOG.md § E26–E29
         </p>
       </div>
-    </AppShell>
+    </EducationShell>
   );
 }

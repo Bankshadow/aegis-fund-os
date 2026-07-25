@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { AppShell, PageHeader, Panel } from "@/components/app-shell";
+import { PageHeader, Panel } from "@/components/app-shell";
+import { EducationShell } from "@/components/education-shell";
 import { Button } from "@/components/ui/button";
 import { getOverfitView } from "@/lib/walk-forward.functions";
 
@@ -8,11 +9,11 @@ export const Route = createFileRoute("/walk-forward-overfit")({
   loader: async () => getOverfitView(),
   pendingMs: 200,
   pendingComponent: () => (
-    <AppShell>
+    <EducationShell>
       <div className="p-6 text-sm text-muted-foreground">
         กำลังให้คะแนน geometry ทุกตัวเลือกทั้งใน in-sample และ out-of-sample… (ไม่กี่วินาที)
       </div>
-    </AppShell>
+    </EducationShell>
   ),
   component: OverfitLab,
 });
@@ -26,7 +27,7 @@ function OverfitLab() {
   const randomPct = 100 / summary.candidatesPerFold;
 
   return (
-    <AppShell>
+    <EducationShell>
       <PageHeader
         kicker="EDUCATION · READ-ONLY RESEARCH · NO LIVE ORDER"
         title="Overfitting Lab — จูนใน in-sample แล้วได้อะไรใน out-of-sample?"
@@ -150,6 +151,6 @@ function OverfitLab() {
           สำหรับการสอน ไม่ถูกนับใน multiple-testing count ของงานวิจัย (ไม่มีการเลือกอะไรจากมัน)
         </p>
       </div>
-    </AppShell>
+    </EducationShell>
   );
 }
