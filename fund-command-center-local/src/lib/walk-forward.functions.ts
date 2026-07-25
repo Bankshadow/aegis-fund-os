@@ -116,12 +116,16 @@ export const getWalkForwardView = createServerFn({ method: "GET" })
       // Thai-retail default (reproduces the committed research).
       commissionRate: z.number().min(0).max(2).optional(),
       slippageRate: z.number().min(0).max(2).optional(),
+      exchangeFeeRate: z.number().min(0).max(2).optional(),
+      vatRate: z.number().min(0).max(20).optional(),
     }),
   )
   .handler(({ data }) => {
     const costs: Partial<CostModel> = {};
     if (data.commissionRate !== undefined) costs.commissionRate = data.commissionRate;
     if (data.slippageRate !== undefined) costs.slippageRate = data.slippageRate;
+    if (data.exchangeFeeRate !== undefined) costs.exchangeFeeRate = data.exchangeFeeRate;
+    if (data.vatRate !== undefined) costs.vatRate = data.vatRate;
     return buildView(data.variant, Object.keys(costs).length ? costs : undefined);
   });
 

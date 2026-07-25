@@ -6,6 +6,16 @@ import { getWalkForwardComparison } from "@/lib/walk-forward.functions";
 export const Route = createFileRoute("/walk-forward-compare")({
   head: () => ({ meta: [{ title: "Mechanism Comparison · Walk-Forward Lab" }] }),
   loader: async () => getWalkForwardComparison(),
+  // This page runs THREE full 18-fold walk-forwards (~8s). Without a pending state
+  // a student on a phone just sees a dead screen.
+  pendingMs: 200,
+  pendingComponent: () => (
+    <AppShell>
+      <div className="p-6 text-sm text-muted-foreground">
+        กำลังรัน walk-forward ทั้ง 3 กลไก กลไกละ 18 ช่วงเวลา… ใช้เวลาราว 8 วินาที
+      </div>
+    </AppShell>
+  ),
   component: WalkForwardCompare,
 });
 

@@ -9,19 +9,26 @@ const VARIANTS: Array<{ id: WalkForwardVariant; label: string; note: string }> =
   { id: "exposure-cap", label: "+ Exposure cap (E29)", note: "จำกัด long ที่ความจุ grid เดิม" },
 ];
 
-type WalkForwardSearch = { variant: WalkForwardVariant; commissionRate?: number; slippageRate?: number };
+type CostKnobs = { commissionRate?: number; slippageRate?: number; exchangeFeeRate?: number; vatRate?: number };
+type WalkForwardSearch = { variant: WalkForwardVariant } & CostKnobs;
 
 // Cost presets in percent (engine divides by 100). Thai retail is the research
-// default; zero-cost shows the gross edge; heavy shows how costs bury the grid.
-const COST_PRESETS: Array<{ id: string; label: string; commissionRate?: number; slippageRate?: number }> = [
-  { id: "thai", label: "Thai retail (ค่าเริ่มต้น)" },
-  { id: "zero", label: "ไม่มีต้นทุน (gross)", commissionRate: 0, slippageRate: 0 },
-  { id: "heavy", label: "ต้นทุนสูง 0.5% + slip 0.3%", commissionRate: 0.5, slippageRate: 0.3 },
+// default. "No cost" zeroes EVERY component — a student testing the "it's just the
+// fees" theory must get a genuinely fee-free run, not one with VAT still applied.
+const COST_PRESETS: Array<{ id: string; label: string } & CostKnobs> = [
+  { id: "thai", label: "ต้นทุนจริงไทย (ค่าเริ่มต้น)" },
+  { id: "zero", label: "ไม่มีต้นทุนเลย", commissionRate: 0, slippageRate: 0, exchangeFeeRate: 0, vatRate: 0 },
+  {
+    id: "heavy",
+    label: "ต้นทุนสูง (คอม 0.5% + สลิป 0.3%)",
+    commissionRate: 0.5,
+    slippageRate: 0.3,
+  },
 ];
 
-const num = (value: unknown): number | undefined => {
+const num = (value: unknown, max = 2): number | undefined => {
   const n = typeof value === "string" ? Number(value) : typeof value === "number" ? value : NaN;
-  return Number.isFinite(n) && n >= 0 && n <= 2 ? n : undefined;
+  return Number.isFinite(n) && n >= 0 && n <= max ? n : undefined;
 };
 
 export const Route = createFileRoute("/walk-forward")({
@@ -31,16 +38,19 @@ export const Route = createFileRoute("/walk-forward")({
       search.variant === "trailing" || search.variant === "exposure-cap" ? search.variant : "baseline",
     commissionRate: num(search.commissionRate),
     slippageRate: num(search.slippageRate),
+    exchangeFeeRate: num(search.exchangeFeeRate),
+    vatRate: num(search.vatRate, 20),
   }),
-  loaderDeps: ({ search }) => ({
-    variant: search.variant,
-    commissionRate: search.commissionRate,
-    slippageRate: search.slippageRate,
-  }),
-  loader: async ({ deps }) =>
-    getWalkForwardView({
-      data: { variant: deps.variant, commissionRate: deps.commissionRate, slippageRate: deps.slippageRate },
-    }),
+  loaderDeps: ({ search }) => ({ ...search }),
+  loader: async ({ deps }) => getWalkForwardView({ data: deps }),
+  // Each run is a real 18-fold walk-forward and takes seconds; without this a
+  // student on a phone sees a frozen screen and assumes it is broken.
+  pendingMs: 200,
+  pendingComponent: () => (
+    <AppShell>
+      <div className="p-6 text-sm text-muted-foreground">กำลังรัน walk-forward 18 ช่วงเวลาใหม่ทั้งหมด… (ไม่กี่วินาที)</div>
+    </AppShell>
+  ),
   component: WalkForwardLab,
 });
 
@@ -65,18 +75,22 @@ function WalkForwardLab() {
   const { summary, criteria, costs } = view;
   // Carry the current cost knobs onto the variant links so switching mechanism
   // keeps the student's cost scenario.
-  const costSearch = { commissionRate: search.commissionRate, slippageRate: search.slippageRate };
+  const costSearch: CostKnobs = {
+    commissionRate: search.commissionRate,
+    slippageRate: search.slippageRate,
+    exchangeFeeRate: search.exchangeFeeRate,
+    vatRate: search.vatRate,
+  };
+  const KNOBS = ["commissionRate", "slippageRate", "exchangeFeeRate", "vatRate"] as const;
   const activePreset =
-    COST_PRESETS.find(
-      (p) => (p.commissionRate ?? undefined) === search.commissionRate && (p.slippageRate ?? undefined) === search.slippageRate,
-    )?.id ?? (search.commissionRate === undefined && search.slippageRate === undefined ? "thai" : "custom");
+    COST_PRESETS.find((preset) => KNOBS.every((knob) => preset[knob] === search[knob]))?.id ?? "custom";
 
   return (
     <AppShell>
       <PageHeader
         kicker="EDUCATION · READ-ONLY RESEARCH · NO LIVE ORDER"
         title="Walk-Forward Lab"
-        subtitle="Out-of-sample walk-forward on AOT.BK daily (2005–2026), 18 non-overlapping folds. Geometry is chosen on in-sample bars only. Same engine as the E26–E29 research."
+        subtitle="ทดสอบกลยุทธ์ grid กับหุ้น AOT รายวัน ปี 2005–2026 แบ่งเป็น 18 ช่วง แต่ละช่วงใช้ข้อมูล 2 ปีแรกตั้งค่า แล้ววัดผลจริงในปีถัดไปที่ยังไม่เคยเห็น (จำลองการเทรดจริงที่ทำนายอนาคตไม่ได้) · engine เดียวกับงานวิจัย E26–E29"
       />
       <div className="space-y-6 p-6">
         <Panel title="เลือกกลไกที่จะทดสอบ" subtitle="แต่ละตัวเพิ่มกลไกทีละอย่างจาก baseline — ดูว่ามันแก้หรือไม่แก้ปัญหา">
@@ -106,7 +120,13 @@ function WalkForwardLab() {
               >
                 <Link
                   to="/walk-forward"
-                  search={{ variant, commissionRate: preset.commissionRate, slippageRate: preset.slippageRate }}
+                  search={{
+                    variant,
+                    commissionRate: preset.commissionRate,
+                    slippageRate: preset.slippageRate,
+                    exchangeFeeRate: preset.exchangeFeeRate,
+                    vatRate: preset.vatRate,
+                  }}
                 >
                   {preset.label}
                 </Link>

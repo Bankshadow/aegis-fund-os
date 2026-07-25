@@ -6,6 +6,14 @@ import { getOverfitView } from "@/lib/walk-forward.functions";
 export const Route = createFileRoute("/walk-forward-overfit")({
   head: () => ({ meta: [{ title: "Overfitting Lab · Walk-Forward Lab" }] }),
   loader: async () => getOverfitView(),
+  pendingMs: 200,
+  pendingComponent: () => (
+    <AppShell>
+      <div className="p-6 text-sm text-muted-foreground">
+        กำลังให้คะแนน geometry ทุกตัวเลือกทั้งใน in-sample และ out-of-sample… (ไม่กี่วินาที)
+      </div>
+    </AppShell>
+  ),
   component: OverfitLab,
 });
 
