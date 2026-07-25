@@ -4,46 +4,113 @@
 
 ---
 
-## 0. อ่านก่อน — สถานะสด ณ 2026-07-19 (session handoff)
+## 0-NEW. อ่านก่อนสุด — เปลี่ยนทิศ: research → education (2026-07-25)
 
-**⚠️ มี fix + feature ที่ verify แล้วค้างใน working tree ยังไม่ commit และยังไม่
-deploy — production เสิร์ฟ bundle เก่าที่มีบั๊ก route จริงอยู่.** งานแรกของ session
-ถัดไปควรเป็น commit + push (ขออนุญาต user ก่อน push เพราะกระทบ production public)
-แล้วปล่อยทั้งชุด:
+**ผู้ใช้อนุมัติแล้ว: เปลี่ยนหน้าตาผลิตภัณฑ์จาก "bot ที่เทรด" เป็น "เครื่องมือสอน"
+โดยใช้ engine ตัวเดิม** เหตุผล: E20–E29 คือ 9 การทดลองติดกันที่ไม่ผ่าน gate —
+geometry, regime filter (E27), trailing (E28), exposure cap (E29) ไม่มีตัวไหน
+ทำให้ grid มี edge จริงบน AOT รายวัน การสร้าง ops/safety ห่อกลยุทธ์ที่ยังไม่มี
+edge คือปัญหาที่แท้จริง ส่วน engine + walk-forward harness + evidence ledger
+นั้นดีจริง และการสอนว่า **ทำไม grid ถึงแพ้** ไม่ต้องใช้ edge เลย
 
-Deploy queue (ทุกตัว: tsc สะอาด · frontend tests 39/39 · build ผ่าน · gate SHIP):
+**ที่ทำเสร็จ (verify สดในแอปทุกหน้า · commit แล้ว):**
+1. `/walk-forward` — ตาราง OOS ราย fold + verdict + สรุป
+2. `/walk-forward-compare` — E26 → E28 → E29 ข้างกัน + คำอธิบายตรงไปตรงมา
+3. ต้นทุนปรับได้ใน `/walk-forward` — Thai retail / 0 / สูง
+4. `/walk-forward-overfit` — บทเรียน overfitting
 
-1. Orphaned-fill rollback — `placeTestnetGrid` + `startBinanceTestnetGridBot`
-   โยน `OrphanedTestnetOrdersError` แทนกลืน error เมื่อ cancel ล้ม (fill แล้ว)
-2. N+1 serverTime — sync `/api/v3/time` ครั้งเดียวต่อการวางกริด
-3. **Route un-nesting** — `bots_.$botId_.orders.tsx` / `_.events.tsx`
-   (เดิม nested ใต้ detail ที่ไม่มี `<Outlet/>` → สองหน้านี้เข้าไม่ถึงบน prod)
-4. Toast เมื่อ Save Draft ยังไม่ติ๊ก risk ack (`bots_.new.tsx`)
-5. Route titles ให้ bot detail / orders / events
-6. **`/audit` ใช้ hash chain จริง** — เลิกโชว์ "verified" ปลอมจาก `AUDIT_EVENTS`
-   fixture (ลบ fixture แล้ว); + แก้ latent type bug `profitByBot` ใน `bots.tsx`
-7. **Grid runtime loop (Phase 3, 2026-07-19)** — fill tracking + replenishment:
-   `grid-runtime.ts` planner, `recordGridSync`, `syncBinanceTestnetGridBot`,
-   event ใหม่ `testnet.grid_synced`, ปุ่ม "Reconcile fills" บนหน้า Grid Profit
-   (ดู `docs/GRID_BOT_PHASE3.md`). ไม่มี cron อัตโนมัติ — trigger ด้วยมือต่อรอบ
+**กติกาสำคัญที่ต้องรักษา:** walk-forward เป็น **pure function เดียว**
+`src/lib/aot-walkforward.ts` ใช้ร่วมกันทั้ง CLI research (ตอนนี้เป็น wrapper บาง ๆ)
+และ server functions ในแอป มีเทสต์ pin ค่า E26/E28/E29 + invariant 6/18 fold
+→ **หน้า education drift จากงานวิจัยไม่ได้** ห้ามแยกสองทาง
 
-**ยังไม่ทำ (แนะนำทำในชุด deploy เดียวกัน):**
-- หน้า Bot Audit Events ต่อบอท (`/bots/$botId/events`) ยังทิ้ง `event.payload`
-  ทั้งหมด — ย้าย pattern payload+hash จาก `/audit` ที่เพิ่งทำมาใช้
-- TOCTOU: re-check balance ก่อนวางแต่ละออเดอร์ (execution slice, ข้อ 4 ของ audit)
+**สองคำอ้างที่ "วัดแล้ว" และผลค้านสัญชาตญาณ — เขียน copy ตามหลักฐาน ไม่ใช่ตามที่คิด:**
+- "grid แพ้เพราะค่าธรรมเนียม" **ผิด**: ต้นทุน 0 alpha ยัง ≈ −11.2 → ต้นทุนไม่ใช่สาเหตุ
+- "เลือก geometry ที่ชนะ in-sample" **ไม่มีค่า**: ตรงกับ OOS 3/18 = 16.7% ซึ่ง
+  เท่ากับสุ่มเป๊ะ (1/6); อันดับเฉลี่ย 3.56 vs สุ่ม 3.50; แม้เลือกแบบรู้อนาคตก็ได้
+  −16.61 ยังติดลบหนัก
+
+**ความสมบูรณ์ของงานวิจัย:** Overfitting Lab วัด OOS ของ candidate ที่ถูกปฏิเสธ —
+เป็น opt-in (`diagnostics`) และ **ไม่นับใน `runCount`** เพราะไม่มีการเลือกอะไรจากมัน
+ถ้านับจะรายงาน multiple-testing count ผิด · มีเทสต์ pin ว่า runCount ยัง 324
+
+**งานถัดไป:** เอาไปให้นักเรียนใช้จริง แล้วให้ feedback เลือกว่า slice 5 คืออะไร
+**อย่าเพิ่มหน้าใหม่แบบเดา** — การสร้างของที่ไม่มีคนใช้คือสิ่งที่ pivot นี้กำลังแก้
+ห้ามเทรดจริงเหมือนเดิม ทุกหน้าเป็น read-only research
+
+---
+
+## 0. อ่านก่อน — สถานะสด ณ 2026-07-23 (Graph L2/L3 + D1 migrations)
+
+### สิ่งที่ทำใน session นี้ (verify แล้ว · gate SHIP)
+
+วิเคราะห์ Graph Engineering (0xCodez) เทียบโครงสร้างเดิม แล้วลงมือเฉพาะ L2+L3
+โดยไม่ให้กระทบ placement path:
+
+| ชั้น | สิ่งที่เพิ่ม | Firewall |
+|---|---|---|
+| **L2 harness** | `agent/graph_contracts.py`, `agent/graph_ops.py`, diamond แรก `python -m agent.diamonds.runtime_safety_review` | ไม่ import Fund OS / exchange |
+| **L3 runtime** | `grid-runtime-graph.ts` (severity route), `grid-runtime-fleet.ts` (opt-in dry-loop + telemetry), persist route บน `grid_runtime_runs` | ไม่เรียก LLM; place ยังผ่าน `grid-runtime-safety.ts` เท่านั้น |
+
+รายละเอียดสำคัญ:
+
+1. **Migration D1 remote ครบ** — apply **0004–0007** บน `GOVERNANCE_DB`
+   (ก่อนหน้าค้าง 0004–0006 ด้วย); local มี 0007; remote list = no pending;
+   คอลัมน์ `route_severity` / `route_action` / `work_remaining` / `deferred` มีจริง
+2. **Route classification** — ทุก reconcile ได้ `route`; cron/sync-all ได้ `fleet` +
+   `telemetry`; cockpit `/bots` แสดงแผง Recent runtime routes
+3. **Dry-loop default OFF** — เปิดวัดด้วย `GRID_RECONCILE_DRY_LOOP=true`
+   (cap max 5); playbook: `docs/DRY_LOOP_MEASUREMENT.md`
+4. **L2 diamond** — findings 0 / `quick_pass` บนแหล่งปัจจุบัน;
+   `tests.test_agent_graph` อยู่ใน `gate/verify.ps1`
+5. Docs อัปเดต: `docs/AGENT_STACK.md` (BUILD 7.5), `ROUTING.md`,
+   `docs/GRID_BOT_PHASE3.md`, `docs/DRY_LOOP_MEASUREMENT.md`, `STATE.md`
+
+**Done check:** `powershell -File gate/verify.ps1` → SHIP; L3 node tests
+(graph/fleet/reconcile/safety) ผ่าน; diamond CLI สะอาด
+
+### งานถัดไปแนะนำ (เรียง ROI)
+
+1. **วัด dry-loop บน testnet** — ตั้ง Worker secret ชั่วคราวตาม
+   `docs/DRY_LOOP_MEASUREMENT.md` → Sync all → อ่าน `telemetry`
+   (`avgPassesPerBot`, `backlogStillDeferred`) → ตัดสินเปิดค้างหรือปิด
+2. ถ้า `backlogStillDeferred=true` บ่อย → เพิ่ม `GRID_MAX_REPLENISHMENTS_PER_RUN`
+   ก่อน อย่าเพิ่ม maxRounds
+3. (ถ้าต้องการ) L2 diamond ที่สองแบบมี trigger — เช่น route-auth audit ของ
+   `src/routes/` เมื่อ diff ใหญ่; อย่าติดตั้ง BUILD 7 swarm speculative
+4. (วิจัย) parallel seeds/folds ใน L1 — ไม่แตะ execution
+
+### ยังไม่ทำ / ห้ามทำในรอบถัดไป
+
+- อย่าใส่ LLM ใน reconcile/place path
+- อย่าเปิด dry-loop ถาวรโดยไม่มี telemetry
+- อย่า spawn subagent/swarm เป็น default (`CLAUDE.md` / ROUTING BUILD 7 ยัง deferred)
+- Live orders / third-party capital ยังห้าม
+
+### Deploy / commit note
+
+โค้ด L2/L3 + docs อยู่ใน working tree ของ session นี้ — **ยังไม่ commit จนกว่า user
+จะขอ** (ตามกติกา repo). หลัง commit/deploy อย่าลืมว่า migration remote apply แล้ว
+แต่ Worker bundle ต้อง deploy ใหม่ถ้าต้องการ telemetry/UI บน production
+
+รายละเอียดยาว: `STATE.md` (Verified since previous handoff) +
+`docs/GRID_BOT_PHASE3.md` § Runtime graph / dry-loop
+
+---
+
+## 0b. บันทึกเก่า — สถานะ ณ 2026-07-19 (ยังอ้างอิงได้)
+
+**หมายเหตุ:** รายการ deploy queue ด้านล่างอาจถูก deploy ไปบางส่วนแล้วหลังวันที่นั้น —
+ตรวจ `STATE.md` / git log ก่อนสมมติว่ายังค้าง
+
+Deploy queue ที่เคยค้าง (2026-07-19): orphaned-fill rollback, N+1 serverTime,
+route un-nesting, draft toast, route titles, `/audit` hash chain จริง, Phase 3
+grid runtime loop (human-triggered). Cron ภายนอก + safety plane ถูกเพิ่มหลังวันที่นั้น
+(ดู Phase 3 doc + migration 0006/0007)
 
 **ต้องให้ user ทำเอง (agent ทำแทนไม่ได้ — ห้ามกรอก credential/ทำ auth):**
 - four-eyes approval + Start bot บน production ต้อง login Access เป็น identity
-  ที่สอง (`bankshadow31@gmail.com`) แล้ว approve/start เอง; หลังจากนั้นใช้ปุ่ม
-  "Reconcile fills" ไล่ loop ดู fill → replenishment (runbook เต็มใน `STATE.md`)
-
-**สถานะ auth:** production กลับมาอยู่หลัง Cloudflare Access แล้ว (ทุก route redirect
-ไป Email-OTP) — ช่องโหว่ public-access เดิมดูเหมือนถูกแก้แล้ว. ทดสอบ prod ตรงๆ
-ไม่ได้ ให้ใช้ local `wrangler dev` + local D1 (migrations 0001–0003 apply ไว้แล้ว).
-launch.json มี `fund-command-center` (vite) และ `fund-command-center-worker`
-(wrangler :8787).
-
-รายละเอียดเต็มของสิ่งที่ทำ: `docs/WORKLOG_2026-07-17.md` + `STATE.md` (Last session).
+  ที่สอง แล้ว approve/start เอง; ใช้ปุ่ม Reconcile / Sync all ตาม runbook ใน `STATE.md`
 
 ---
 
@@ -96,10 +163,11 @@ reuse funding/relative (E17/E18 fail เดี่ยวทั้งคู่) �
    เสร็จแล้ว (2026-07-18) — ถัดไป persisted derivatives position valuation เข้า
    daily-close และ exception review/approval persistence (ดู
    `docs/MVP_FUND_OPS_PLAN.md`)
-4. **Grid bot runtime (Phase 3 เสร็จ 2026-07-19):** loop แบบ human-triggered
-   พร้อมแล้ว — ถัดไปถ้าต้องการ ให้ user ตัดสินใจเรื่อง automatic scheduler
-   (cron/Durable Object) และ realized-cycle P/L accounting (ดู
-   `docs/GRID_BOT_PHASE3.md`)
+4. **Grid bot runtime + graph layer (2026-07-23):** Phase 3 loop + safety +
+   route persist (0007) + opt-in dry-loop telemetry พร้อมแล้ว — ถัดไปวัด dry-loop
+   ตาม `docs/DRY_LOOP_MEASUREMENT.md` ก่อนเปิดถาวร; ดู §0 ด้านบน
+5. **Agent stack graph (BUILD 7.5):** scaffold + diamond แรกเสร็จ; BUILD 7 fan-outs
+   ยัง deferred จนเข้า trigger ใน `ROUTING.md`
 
 ### Agent stack (ปรับจาก Avid Fable5+GPT-5.6)
 
@@ -107,12 +175,14 @@ reuse funding/relative (E17/E18 fail เดี่ยวทั้งคู่) �
 - Driver ถูก / Advisor (Fable) เป็นกรัม / **gate เป็นโหวตสุดท้าย**
 - ก่อน merge หรือเคลมว่าทำเสร็จ: `powershell -File gate/verify.ps1`
 - อ่าน/เขียน `STATE.md` ทุก session
+- Graph contracts: `python -m unittest tests.test_agent_graph` ·
+  `python -m agent.diamonds.runtime_safety_review`
 
 ---
 
 ## 5. กติกา (ย่อ)
 
-ประกาศเกณฑ์ก่อนรัน · held-out · ≥3 seeds · synthetic ≠ หลักฐานจริง · ห้าม transfer ข้าม scale/TF · บันทึกผลลบ · RL ต้องทน walk-forward บนข้อมูลจริง · นับเฉพาะ engaged · ห้ามลด ValidationGate · done = ข้อเท็จจริงจาก environment ไม่ใช่ความเห็นโมเดล
+ประกาศเกณฑ์ก่อนรัน · held-out · ≥3 seeds · synthetic ≠ หลักฐานจริง · ห้าม transfer ข้าม scale/TF · บันทึกผลลบ · RL ต้องทน walk-forward บนข้อมูลจริง · นับเฉพาะ engaged · ห้ามลด ValidationGate · done = ข้อเท็จจริงจาก environment ไม่ใช่ความเห็นโมเดล · L2 harness ห้ามแตะ place path · L3 runtime ห้าม LLM
 
 ---
 
@@ -121,6 +191,8 @@ reuse funding/relative (E17/E18 fail เดี่ยวทั้งคู่) �
 ```
 powershell -File gate/verify.ps1
 python -m unittest tests.test_strategy_framework
+python -m unittest tests.test_agent_graph
+python -m agent.diamonds.runtime_safety_review
 python dual_tune_demo.py
 python diagnose_dual_cash_demo.py
 python run_demo.py --fast

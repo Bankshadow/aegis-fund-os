@@ -38,6 +38,28 @@
   summarizes Graph L2/L3 work, remote D1 0004–0007 applied, dry-loop measurement
   next steps, and commit/deploy note (code still uncommitted until user asks).
 
+- Added project skill `.claude/skills/quant-research-pipeline/` (2026-07-25): maps
+  0xTatara quant filtration pipeline (mechanism→validate→costs→paper feedback)
+  onto ExperimentContract / ValidationGate / VALIDATION_LOG; stages 8–10 capped
+  at paper/testnet. Listed as BUILD 7.6 in `docs/AGENT_STACK.md`.
+
+- Added project skill `.claude/skills/quant-portfolio-allocation/` (2026-07-25):
+  maps RuujSs portfolio construction (diversification ratio, cov shrinkage,
+  HRP preference, Black-Litterman tilts, cut-vs-trim) onto
+  `RiskBudgetAllocator` / layer weights / D1 cash default; downstream of research
+  pipeline only. Listed as BUILD 7.7 in `docs/AGENT_STACK.md`.
+
+- Added project skill `.claude/skills/agent-build-loop/` (2026-07-25): maps
+  mikenevermiss AI build loop (prompt→plan→execute→check→fix, compress→execute,
+  human owns plan+check, failure checklist) onto this repo; does not replace
+  model-router/ship-gate. Listed as BUILD 7.8 in `docs/AGENT_STACK.md`.
+
+- Added project skill `.claude/skills/llm-app-pattern-router/` (2026-07-25):
+  filtrates Shubhamsaboo awesome-llm-apps catalog onto this stack; adopt
+  scope-creep keep/split/justify + commit archaeology; reject finance demos /
+  swarm default; always-on = read-only watchdog only. BUILD 7.9 in
+  `docs/AGENT_STACK.md`.
+
 - Ops item 1+2 executed (2026-07-23): applied remote D1 migrations **0004–0007**
   on `GOVERNANCE_DB` (previously pending 0004–0006 as well as 0007); local also
   has 0007. Added dry-loop `telemetry` rollup on fleet/cron responses and
@@ -271,6 +293,55 @@
   `gate/verify.ps1` passed. Direct endpoint verification from this environment
   failed DNS resolution for `api-testnet.bybit.com`; authenticate only after
   confirming DNS/network access from the actual host.
+
+## Direction change: research → education (2026-07-25)
+
+**Decision (user-approved this session): pivot the product surface from "grid bot
+that trades" to "education/analytics tool that teaches", using the same engine.**
+
+Why: E20–E29 is nine consecutive grid-mechanism experiments that do not clear the
+validation gate. Geometry, regime filter (E27), trailing (E28) and exposure cap
+(E29) each failed to give the grid a real edge on daily AOT. Continuing to build
+ops/safety plumbing around a strategy with no demonstrated edge was the actual
+problem — the work was real but nobody was using it. The engine, the walk-forward
+harness and the evidence ledger are genuinely good, and teaching *why* the grid
+loses needs no edge at all. The user is a Thai grid-trading educator, so this
+lands on real users (students) instead of hypothetical ones.
+
+**Shipped this session — Walk-Forward Lab, four education slices (all verified
+live in the app, all committed):**
+1. `/walk-forward` — per-fold OOS table, verdict vs the gate, summary tiles.
+2. `/walk-forward-compare` — E26 → E28 → E29 side by side with the honest
+   narrative for each transition.
+3. Interactive cost model on `/walk-forward` — presets Thai retail / zero / heavy.
+4. `/walk-forward-overfit` — the overfitting lesson (see below).
+
+**Engineering invariant that makes this safe to teach with:** the walk-forward is
+now ONE shared pure function `src/lib/aot-walkforward.ts` used by both the CLI
+research harness (now a thin wrapper) and the in-app server functions, with tests
+pinning E26 (−17.97 / −10.79), E28 (−19.91 / dd 16.84 / engaged 100%) and E29
+(−12.17 / dd 13.52 / −8.28) plus the 6/18 cap-inert-fold invariant. The education
+views therefore cannot drift from the committed research.
+
+**Two teaching claims were MEASURED, and both refuted the intuitive story — copy
+was rewritten to match the evidence, not the other way round:**
+- "The grid loses because of fees" is FALSE here: at zero transaction cost mean
+  alpha is still ≈ −11.2 (marginally worse than net, a selection-artifact wobble).
+  Costs are not the cause; there is no edge to erode.
+- "Pick the geometry that won in-sample" is worth NOTHING here: the in-sample
+  winner is also the out-of-sample winner 3/18 = 16.7%, and chance with six
+  candidates is exactly 16.7%; mean OOS rank 3.56 vs random 3.50. Even the
+  hindsight-best geometry averages −16.61 robust — still deeply negative.
+
+**Research integrity note:** the Overfitting Lab measures OOS for geometry
+candidates that selection REJECTED. Those runs are opt-in (`diagnostics`) and are
+deliberately excluded from `runCount`, since nothing is selected on them and
+inflating the reported multiple-testing count would misstate the research. A test
+pins that diagnostics change neither the numbers nor the run count (324).
+
+**Next:** put it in front of students and let their feedback choose slice 5. Do
+not add more surface speculatively — building unused surface is what this pivot
+was correcting. Live trading remains forbidden; these views are read-only research.
 
 ## Last session
 
