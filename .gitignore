@@ -33,6 +33,8 @@ fund-command-center-local/.nitro/
 fund-command-center-local/.env.local
 fund-command-center-local/*.log
 fund-command-center-local/start-dev.cmd
+# Scratch dirs from local D1 / safety verification runs
+fund-command-center-local/.tmp-*/
 
 # Local package-manager cache
 .pnpm-store/

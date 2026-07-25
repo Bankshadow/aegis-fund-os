@@ -31,3 +31,13 @@ dist-ssr
 *.sln
 *.sw?
 
+
+# Local historical data / working documents (not source)
+data/*
+# ...except the research fixtures, which are evidence: E26-E28 cannot be
+# reproduced from a clone without them. See docs/AOT_VALIDATION_CRITERIA.md.
+# Only the CSVs and their README are tracked; working subfolders stay ignored.
+!data/historical/
+data/historical/*
+!data/historical/*.csv
+!data/historical/*.md

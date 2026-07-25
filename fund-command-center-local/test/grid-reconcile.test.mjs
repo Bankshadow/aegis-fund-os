@@ -81,6 +81,8 @@ test("reconcileOne places the replenishment for a fill and records the sync", as
   const result = await reconcileOneTestnetGrid(repo, botRecord(), "checker@x", depsThatPlace(placed));
   assert.equal(result.summary.filled, 1);
   assert.equal(result.summary.placed, 1);
+  assert.equal(result.route.severity, "ok");
+  assert.equal(result.route.action, "continue");
   assert.equal(placed.length, 1);
   assert.equal(placed[0].side, "SELL");
   // paired sell one line up from the filled buy @99 → 101

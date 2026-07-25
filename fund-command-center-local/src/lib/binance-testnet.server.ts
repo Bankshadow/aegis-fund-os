@@ -290,5 +290,16 @@ export async function getBinanceTestnetGridStatus(symbol: "BTCUSDT"): Promise<Bi
     fetchWithTimeout(`${baseUrl}/api/v3/myTrades?${query}&signature=${signature}`, { headers }),
   ]);
   if (!openResponse.ok || !tradesResponse.ok) throw new Error("Binance Testnet order-status request was rejected.");
-  return { checkedAt: new Date().toISOString(), openOrders: await openResponse.json() as BinanceOpenOrder[], trades: await tradesResponse.json() as BinanceTrade[] };
+  // `checkedAt` is stamped from the EXCHANGE clock (`serverTime`), not ours. The
+  // stale-evidence guard compares it against local `Date.now()`, so stamping it
+  // locally right here made that comparison tautological — measured at 0 ms every
+  // time against a 30 s budget, i.e. a safety control that could never fire.
+  // Anchoring it to the exchange makes the guard measure what it claims to: the
+  // round-trip age of the evidence plus any clock skew between us and Binance
+  // (~0.5 s observed on this link, so the 30 s budget stays comfortably loose).
+  return {
+    checkedAt: new Date(serverTime!).toISOString(),
+    openOrders: await openResponse.json() as BinanceOpenOrder[],
+    trades: await tradesResponse.json() as BinanceTrade[],
+  };
 }

@@ -10,6 +10,8 @@ import { Switch } from "@/components/ui/switch";
 import { testBinanceTestnetConnection } from "@/lib/binance-testnet.functions";
 import { testBybitTestnetConnection } from "@/lib/bybit-testnet.functions";
 import { testHyperliquidConnection } from "@/lib/hyperliquid.functions";
+import { testWebullSandboxConnection } from "@/lib/webull-sandbox.functions";
+import { placeWebullSandboxOrder } from "@/lib/webull-sandbox.functions";
 import {
   CheckCircle2,
   KeyRound,
@@ -74,6 +76,17 @@ const initialAdapters: Adapter[] = [
   },
   {
     id: "ADP-004",
+    name: "Webull",
+    kind: "Broker",
+    environment: "Sandbox",
+    status: "Not tested",
+    mode: "Read-only",
+    scopes: ["Account metadata", "Paper-grid input"],
+    freshness: "Not tested",
+    enabled: true,
+  },
+  {
+    id: "ADP-005",
     name: "Interactive Brokers",
     kind: "Broker",
     environment: "Paper",
@@ -84,7 +97,7 @@ const initialAdapters: Adapter[] = [
     enabled: true,
   },
   {
-    id: "ADP-005",
+    id: "ADP-006",
     name: "Coinbase",
     kind: "Exchange",
     environment: "Sandbox",
@@ -95,7 +108,7 @@ const initialAdapters: Adapter[] = [
     enabled: true,
   },
   {
-    id: "ADP-006",
+    id: "ADP-007",
     name: "Kraken",
     kind: "Exchange",
     environment: "Sandbox",
@@ -106,7 +119,7 @@ const initialAdapters: Adapter[] = [
     enabled: false,
   },
   {
-    id: "ADP-007",
+    id: "ADP-008",
     name: "Fund Administrator",
     kind: "File transfer",
     environment: "Manual CSV",
@@ -159,9 +172,24 @@ function IntegrationsPage() {
   const [bybitResult, setBybitResult] = useState<Awaited<
     ReturnType<typeof testBybitTestnetConnection>
   > | null>(null);
+  const [webullResult, setWebullResult] = useState<Awaited<
+    ReturnType<typeof testWebullSandboxConnection>
+  > | null>(null);
+  const [webullOrderResult, setWebullOrderResult] = useState<Awaited<
+    ReturnType<typeof placeWebullSandboxOrder>
+  > | null>(null);
+  const [webullOrder, setWebullOrder] = useState({
+    accountId: "",
+    symbol: "AAPL",
+    side: "BUY" as "BUY" | "SELL",
+    limitPrice: "1.00",
+    quantity: "1",
+  });
   const testBinanceConnection = useServerFn(testBinanceTestnetConnection);
   const testHyperliquid = useServerFn(testHyperliquidConnection);
   const testBybitConnection = useServerFn(testBybitTestnetConnection);
+  const testWebullConnection = useServerFn(testWebullSandboxConnection);
+  const submitWebullOrder = useServerFn(placeWebullSandboxOrder);
 
   const toggle = (id: string, enabled: boolean) => {
     setAdapters((items) => items.map((a) => (a.id === id ? { ...a, enabled } : a)));
@@ -258,6 +286,39 @@ function IntegrationsPage() {
         }
       } catch {
         toast.error("Local Bybit Testnet connection check was blocked or failed");
+      } finally {
+        setTesting(null);
+      }
+      return;
+    }
+
+    if (adapter.id === "ADP-004") {
+      try {
+        const result = await testWebullConnection();
+        setWebullResult(result);
+        setAdapters((items) =>
+          items.map((item) =>
+            item.id === adapter.id
+              ? {
+                  ...item,
+                  status: (result.status === "connected"
+                    ? "Healthy"
+                    : result.status === "needs_credentials"
+                      ? "Needs credentials"
+                      : "Degraded") as Adapter["status"],
+                  freshness:
+                    result.latencyMs === null ? "Unavailable" : `${result.latencyMs}ms probe`,
+                }
+              : item,
+          ),
+        );
+        if (result.status === "connected")
+          toast.success("Webull sandbox authenticated in read-only mode");
+        else if (result.status === "needs_credentials")
+          toast.warning("Webull sandbox credentials are required server-side");
+        else toast.error(result.message);
+      } catch {
+        toast.error("Webull sandbox connection check was blocked or failed");
       } finally {
         setTesting(null);
       }
@@ -437,6 +498,123 @@ function IntegrationsPage() {
                             {bybitResult.nonZeroAssetCount ?? 0} non-zero assets
                           </Badge>
                         </div>
+                      )}
+                    </div>
+                  )}
+                  {adapter.id === "ADP-004" && webullResult && (
+                    <div
+                      className={`mt-3 rounded-md border p-2.5 text-xs ${webullResult.status === "connected" ? "border-positive/30 bg-positive/5" : "border-warning/30 bg-warning/5"}`}
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="font-medium">Sandbox read-only probe</span>
+                        <span className="font-mono text-[10px] text-muted-foreground">
+                          {webullResult.latencyMs === null ? "—" : `${webullResult.latencyMs}ms`}
+                        </span>
+                      </div>
+                      <p className="mt-1 leading-relaxed text-muted-foreground">
+                        {webullResult.message}
+                      </p>
+                      {webullResult.authenticated && (
+                        <div className="mt-2 flex flex-wrap gap-1.5">
+                          <Badge variant="secondary" className="text-[10px]">
+                            {webullResult.accountCount ?? 0} accounts
+                          </Badge>
+                          {webullResult.accountTypes.map((type) => (
+                            <Badge key={type} variant="secondary" className="text-[10px]">
+                              {type}
+                            </Badge>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  {adapter.id === "ADP-004" && (
+                    <div className="mt-3 rounded-md border border-warning/30 bg-warning/5 p-2.5 text-xs">
+                      <div className="font-medium">Sandbox LIMIT order test</div>
+                      <p className="mt-1 leading-relaxed text-muted-foreground">
+                        Sends at most 1 share / USD 25 to Webull Sandbox only. The server feature
+                        flag must be enabled; production endpoints are rejected.
+                      </p>
+                      <div className="mt-2 grid gap-2 sm:grid-cols-2">
+                        <input
+                          className="rounded border border-border bg-background px-2 py-1.5"
+                          placeholder="Sandbox account ID"
+                          value={webullOrder.accountId}
+                          onChange={(event) =>
+                            setWebullOrder((value) => ({ ...value, accountId: event.target.value }))
+                          }
+                        />
+                        <input
+                          className="rounded border border-border bg-background px-2 py-1.5"
+                          aria-label="Webull symbol"
+                          value={webullOrder.symbol}
+                          onChange={(event) =>
+                            setWebullOrder((value) => ({ ...value, symbol: event.target.value }))
+                          }
+                        />
+                        <input
+                          className="rounded border border-border bg-background px-2 py-1.5"
+                          aria-label="Webull limit price"
+                          inputMode="decimal"
+                          value={webullOrder.limitPrice}
+                          onChange={(event) =>
+                            setWebullOrder((value) => ({
+                              ...value,
+                              limitPrice: event.target.value,
+                            }))
+                          }
+                        />
+                        <input
+                          className="rounded border border-border bg-background px-2 py-1.5"
+                          aria-label="Webull quantity"
+                          inputMode="decimal"
+                          value={webullOrder.quantity}
+                          onChange={(event) =>
+                            setWebullOrder((value) => ({ ...value, quantity: event.target.value }))
+                          }
+                        />
+                      </div>
+                      <div className="mt-2 flex items-center justify-between gap-2">
+                        <select
+                          className="rounded border border-border bg-background px-2 py-1.5"
+                          aria-label="Webull side"
+                          value={webullOrder.side}
+                          onChange={(event) =>
+                            setWebullOrder((value) => ({
+                              ...value,
+                              side: event.target.value as "BUY" | "SELL",
+                            }))
+                          }
+                        >
+                          <option value="BUY">BUY</option>
+                          <option value="SELL">SELL</option>
+                        </select>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          disabled={
+                            !adapter.enabled ||
+                            testing === adapter.id ||
+                            !webullOrder.accountId.trim()
+                          }
+                          onClick={async () => {
+                            const result = await submitWebullOrder({ data: webullOrder });
+                            setWebullOrderResult(result);
+                            if (result.status === "placed")
+                              toast.success("Webull Sandbox test order accepted");
+                            else toast.warning(result.message);
+                          }}
+                        >
+                          Send sandbox test order
+                        </Button>
+                      </div>
+                      {webullOrderResult && (
+                        <p className="mt-2 text-muted-foreground">
+                          {webullOrderResult.message}
+                          {webullOrderResult.orderId
+                            ? ` Order ID: ${webullOrderResult.orderId}`
+                            : ""}
+                        </p>
                       )}
                     </div>
                   )}

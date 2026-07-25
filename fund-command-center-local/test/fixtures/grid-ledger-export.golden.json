@@ -1,0 +1,44 @@
+{
+  "version": 1,
+  "generatedAt": "2026-07-23T00:00:00Z",
+  "platform": "binance-spot-testnet",
+  "accountId": "ACC-TESTNET-1",
+  "portfolioId": "PF-GRID",
+  "reportingCurrency": "USDT",
+  "fills": [
+    {
+      "externalId": "aegis-BOT-abc-EXE-1-0",
+      "exchangeOrderId": "111",
+      "strategyId": "BOT-abc",
+      "platform": "binance-spot-testnet",
+      "accountId": "ACC-TESTNET-1",
+      "portfolioId": "PF-GRID",
+      "instrument": "BTCUSDT",
+      "side": "buy",
+      "quantity": "0.001",
+      "price": "62950.10",
+      "fee": "0.0629",
+      "feeAsset": "USDT",
+      "occurredAt": "2026-07-20T10:05:00Z",
+      "sourceRef": "d1:grid_bot_orders:ORD-1"
+    },
+    {
+      "externalId": "aegis-BOT-abc-EXE-1-1",
+      "exchangeOrderId": "112",
+      "strategyId": "BOT-abc",
+      "platform": "binance-spot-testnet",
+      "accountId": "ACC-TESTNET-1",
+      "portfolioId": "PF-GRID",
+      "instrument": "BTCUSDT",
+      "side": "sell",
+      "quantity": "0.001",
+      "price": "63510.25",
+      "fee": "0.0635",
+      "feeAsset": "USDT",
+      "occurredAt": "2026-07-20T11:30:00Z",
+      "sourceRef": "d1:grid_bot_orders:ORD-2"
+    }
+  ],
+  "rejected": [],
+  "sourceRowCount": 2
+}

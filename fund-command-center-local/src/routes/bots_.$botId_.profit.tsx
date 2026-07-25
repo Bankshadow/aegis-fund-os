@@ -42,9 +42,15 @@ function GridProfitPage() {
     setReconciling(true);
     try {
       const result = await syncBinanceTestnetGridBot({ data: { botId, actorId: "local-operator@aegis" } });
+      const routeHint =
+        result.route?.action === "operator_review"
+          ? " Route: operator review required."
+          : result.route?.action === "retry_next"
+            ? " Route: retry next pass (work remaining)."
+            : "";
       toast.success(
         result.changed
-          ? `Reconciled: ${result.summary.filled} filled, ${result.summary.placed} replenished, ${result.summary.reconciliationRequired} to review.`
+          ? `Reconciled: ${result.summary.filled} filled, ${result.summary.placed} replenished, ${result.summary.reconciliationRequired} to review.${result.summary.deferred > 0 ? ` ${result.summary.deferred} deferred to the next run (placement budget).` : ""}${routeHint}`
           : "No grid change since last poll.",
       );
       await router.invalidate();

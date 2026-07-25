@@ -5,6 +5,15 @@
 
 ## Verified facts
 
+- Webull OpenAPI feasibility research completed (2026-07-20): Webull Thailand
+  advertises OpenAPI for eligible customers trading US stocks and ETFs; the
+  official API documentation scopes the Trading API to the US market.  Grid is
+  not a native order type: it must be an external, event-driven limit-order
+  controller using account/position reads, preview/place/replace/cancel and
+  gRPC order-status events.  Official sandbox/test accounts exist, so any
+  future adapter must begin read-only plus sandbox/paper validation; no live
+  Webull order transport is authorized under the project constitution.
+
 - Recommended research config: Dual 75/25 rule-based + percentile-rank regime (see HANDOFF).
 - E20 RL walk-forward failed (3/6 = 50%) — RL not production-ready on BTC/4h.
 - E23 dual tune: best Line-B attempt so far (mean robust −0.0078, delta +0.0301) — still not > 0 / not promoted.
@@ -14,6 +23,88 @@
 - Agent stack gate green (`gate/verify.ps1` SHIP); `run_demo.py --fast` OK (2026-07-15).
 
 ## Verified since previous handoff
+
+- Added a native, no-n8n runtime watchdog locally (2026-07-24):
+  `.github/workflows/runtime-watchdog.yml` polls only the token-gated,
+  read-only `/api/automation/runtime-status` endpoint every 15 minutes and
+  creates or updates a GitHub Issue only when halted bots or failed runs are
+  reported. It fails closed by skipping until its two GitHub secrets are set;
+  it contains no cron, exchange, broker, order, cancel, transfer, or withdrawal
+  path. Focused tests, all 156 frontend tests, TypeScript, and `gate/verify.ps1`
+  pass. It is not deployed or activated: the Worker status-endpoint code and
+  workflow still need an intentional, scoped commit/push plus paired secrets.
+
+- Handoff written for next session (2026-07-23): `docs/HANDOFF_CURSOR.md` §0
+  summarizes Graph L2/L3 work, remote D1 0004–0007 applied, dry-loop measurement
+  next steps, and commit/deploy note (code still uncommitted until user asks).
+
+- Added project skill `.claude/skills/quant-research-pipeline/` (2026-07-25): maps
+  0xTatara quant filtration pipeline (mechanism→validate→costs→paper feedback)
+  onto ExperimentContract / ValidationGate / VALIDATION_LOG; stages 8–10 capped
+  at paper/testnet. Listed as BUILD 7.6 in `docs/AGENT_STACK.md`.
+
+- Added project skill `.claude/skills/quant-portfolio-allocation/` (2026-07-25):
+  maps RuujSs portfolio construction (diversification ratio, cov shrinkage,
+  HRP preference, Black-Litterman tilts, cut-vs-trim) onto
+  `RiskBudgetAllocator` / layer weights / D1 cash default; downstream of research
+  pipeline only. Listed as BUILD 7.7 in `docs/AGENT_STACK.md`.
+
+- Added project skill `.claude/skills/agent-build-loop/` (2026-07-25): maps
+  mikenevermiss AI build loop (prompt→plan→execute→check→fix, compress→execute,
+  human owns plan+check, failure checklist) onto this repo; does not replace
+  model-router/ship-gate. Listed as BUILD 7.8 in `docs/AGENT_STACK.md`.
+
+- Added project skill `.claude/skills/llm-app-pattern-router/` (2026-07-25):
+  filtrates Shubhamsaboo awesome-llm-apps catalog onto this stack; adopt
+  scope-creep keep/split/justify + commit archaeology; reject finance demos /
+  swarm default; always-on = read-only watchdog only. BUILD 7.9 in
+  `docs/AGENT_STACK.md`.
+
+- Ops item 1+2 executed (2026-07-23): applied remote D1 migrations **0004–0007**
+  on `GOVERNANCE_DB` (previously pending 0004–0006 as well as 0007); local also
+  has 0007. Added dry-loop `telemetry` rollup on fleet/cron responses and
+  `docs/DRY_LOOP_MEASUREMENT.md` for an opt-in measurement window. Dry-loop
+  remains default **off** until telemetry shows deferred drain without
+  `backlogStillDeferred`.
+
+- Sequenced L2/L3 follow-ups (2026-07-23): (1) migration `0007_grid_runtime_route.sql`
+  persists `route_severity` / `route_action` / `work_remaining` / `deferred` on
+  `grid_runtime_runs`; cockpit shows recent routes. (2) Opt-in dry-loop via
+  `GRID_RECONCILE_DRY_LOOP=true` with round caps (default off, hard max 5) in
+  `grid-runtime-fleet.ts` — each pass still uses `reconcileTestnetGridSafely`.
+  (3) First L2 diamond `agent/diamonds/runtime_safety_review.py` fans out three
+  static lenses and reduces with code; `tests.test_agent_graph` asserts a clean
+  report on current sources. Placement authority unchanged.
+
+- Added L2/L3 graph scaffolds without crossing the execution firewall
+  (2026-07-23): `agent/graph_contracts.py` + `agent/graph_ops.py` provide
+  review-finding contracts, code-only reduce, severity routing, and
+  loop-until-dry discovery for the harness; they import no Fund OS / exchange
+  modules. L3 `grid-runtime-graph.ts` classifies reconcile severity and plans
+  dry loops in code only; `route` / `fleet` fields are additive on reconcile
+  results while placement still goes solely through `grid-runtime-safety.ts`.
+  Cron remains one pass per bot (dry-loop not auto-armed). Tests:
+  `tests.test_agent_graph`, `test/grid-runtime-graph.test.mjs`.
+
+- Added a Webull sandbox read-only adapter (2026-07-20). It is hard-pinned to
+  `https://api.sandbox.webull.com` and makes only a signed `GET
+  /openapi/account/list` call when server-only sandbox credentials are
+  configured. The HMAC-SHA1 implementation matches Webull's published vector;
+  the Integrations UI exposes a probe and sanitized account count/types. There
+  is deliberately no Webull POST/order/cancel/transfer/withdrawal code path;
+  paper-grid execution remains local. Frontend tests (100), TypeScript,
+  production build, and `gate/verify.ps1` pass.
+
+- Extended Webull Sandbox with an explicitly gated test-order path (2026-07-20).
+  `POST /openapi/trade/order/place` is signed with the exact compact JSON body,
+  but only when `WEBULL_SANDBOX_ORDER_TEST_ENABLED=true`; production hosts are
+  rejected, orders are forced to US/EQUITY/NORMAL/LIMIT/DAY/CORE/QTY, symbols
+  are allow-listed, and quantity/notional are capped at 1 share/USD25. The UI
+  exposes a small Sandbox LIMIT test form and returns the sanitized result.
+  Four Webull signing/order unit tests, full frontend tests (104), TypeScript,
+  production build and `gate/verify.ps1` pass. Browser E2E against localhost
+  was blocked by the in-app browser network boundary; no live or sandbox order
+  was sent during verification.
 
 - Grid Bot Phase 1 UI/domain upgrade completed locally (2026-07-16): exact
   Decimal.js arithmetic/geometric previews, environment-separated cockpit,
@@ -203,7 +294,333 @@
   failed DNS resolution for `api-testnet.bybit.com`; authenticate only after
   confirming DNS/network access from the actual host.
 
+## Direction change: research → education (2026-07-25)
+
+**Decision (user-approved this session): pivot the product surface from "grid bot
+that trades" to "education/analytics tool that teaches", using the same engine.**
+
+Why: E20–E29 is nine consecutive grid-mechanism experiments that do not clear the
+validation gate. Geometry, regime filter (E27), trailing (E28) and exposure cap
+(E29) each failed to give the grid a real edge on daily AOT. Continuing to build
+ops/safety plumbing around a strategy with no demonstrated edge was the actual
+problem — the work was real but nobody was using it. The engine, the walk-forward
+harness and the evidence ledger are genuinely good, and teaching *why* the grid
+loses needs no edge at all. The user is a Thai grid-trading educator, so this
+lands on real users (students) instead of hypothetical ones.
+
+**Shipped this session — Walk-Forward Lab, four education slices (all verified
+live in the app, all committed):**
+1. `/walk-forward` — per-fold OOS table, verdict vs the gate, summary tiles.
+2. `/walk-forward-compare` — E26 → E28 → E29 side by side with the honest
+   narrative for each transition.
+3. Interactive cost model on `/walk-forward` — presets Thai retail / zero / heavy.
+4. `/walk-forward-overfit` — the overfitting lesson (see below).
+
+**Engineering invariant that makes this safe to teach with:** the walk-forward is
+now ONE shared pure function `src/lib/aot-walkforward.ts` used by both the CLI
+research harness (now a thin wrapper) and the in-app server functions, with tests
+pinning E26 (−17.97 / −10.79), E28 (−19.91 / dd 16.84 / engaged 100%) and E29
+(−12.17 / dd 13.52 / −8.28) plus the 6/18 cap-inert-fold invariant. The education
+views therefore cannot drift from the committed research.
+
+**Two teaching claims were MEASURED, and both refuted the intuitive story — copy
+was rewritten to match the evidence, not the other way round:**
+- "The grid loses because of fees" is FALSE here: at zero transaction cost mean
+  alpha is still ≈ −11.2 (marginally worse than net, a selection-artifact wobble).
+  Costs are not the cause; there is no edge to erode.
+- "Pick the geometry that won in-sample" is worth NOTHING here: the in-sample
+  winner is also the out-of-sample winner 3/18 = 16.7%, and chance with six
+  candidates is exactly 16.7%; mean OOS rank 3.56 vs random 3.50. Even the
+  hindsight-best geometry averages −16.61 robust — still deeply negative.
+
+**Research integrity note:** the Overfitting Lab measures OOS for geometry
+candidates that selection REJECTED. Those runs are opt-in (`diagnostics`) and are
+deliberately excluded from `runCount`, since nothing is selected on them and
+inflating the reported multiple-testing count would misstate the research. A test
+pins that diagnostics change neither the numbers nor the run count (324).
+
+**Next:** put it in front of students and let their feedback choose slice 5. Do
+not add more surface speculatively — building unused surface is what this pivot
+was correcting. Live trading remains forbidden; these views are read-only research.
+
 ## Last session
+
+- **E29: exposure cap on trailing — ⚖️ M1–M3 pass on the mean, but decomposition
+  kills the mechanism claim; gate still FAILs (2026-07-25).** Criteria declared in
+  `AOT_VALIDATION_CRITERIA.md` §6c before running. Hypothesis: E28's trailing lets
+  long inventory accumulate across re-anchors, so cap it at the initial grid's own
+  capacity (Σ quantity over the initial BUY levels — geometry, not a tuned number);
+  a BUY does not fill while inventory sits at the cap, bounding reversal drawdown
+  while the SELL/alpha side is untouched. One variable changed from E28
+  (`exposureCap: GRID_CAPACITY`); implemented on the existing maxInventory-style
+  guard in `aot-backtest.ts`; `--exposure-cap` in the walk-forward harness. **Note
+  I corrected the §6c parameter spec BEFORE running** (pre-run, pre-result): the
+  first draft capped BUY *leg count*, but `reAnchor`→`armGrid` already bounds leg
+  count each arming — the real drawdown source is inventory carried across
+  re-anchors, so the cap was moved to inventory to match the stated hypothesis.
+  **Result: mean robust −19.91 → −12.17 (biggest single improvement in the whole
+  E-series), mean maxDD 16.84% → 13.52%, mean alpha −9.40 → −8.28 — so M1, M2 and
+  M3 all pass as pre-declared.** But fold-by-fold vs E28: only **6/18 folds are
+  identical** (cap never bit → reproduces E28 bit-for-bit, proving the
+  implementation is clean and the one-variable invariant holds). Of the 12 changed
+  folds only **3 are pure mechanism** (f1, f3, f18); the other **9 changed because
+  the in-sample step selected a different geometry once the cap was active — a
+  selection artifact, not the mechanism.** Worse, the mean robust gain is driven by
+  folds that **stopped trading**: f18 robust −73→−28.8 but cycles 5→0 (its "+25.7
+  alpha" is just holding inventory, not grid profit), f14 cycles 20→0, f2 cycles
+  10→0. Where cycles=0 the drawdown reduction is a tautology (not in the market =
+  no drawdown), which is why engaged dropped 100%→78%. The 3 pure-mechanism folds
+  net slightly WORSE (f1, f3) or better only by disengaging (f18). **So per the
+  pre-declared table it logs as ⚖️ (M1+M2+M3 passed on the mean), but the honest
+  reading is: the mean pass is selection artifact + disengagement, not evidence the
+  mechanism works.** Do NOT tune cap size/trigger (E23–E25/E27 lesson). Raw folds
+  in `docs/aot-walkforward-e29.json`; full record in `VALIDATION_LOG.md` § E29.
+  **Strategic weight: E29 is the 9th grid-mechanism experiment (E20–E29) that does
+  not clear the gate. Geometry, regime filter, trailing and exposure cap have all
+  failed to give the grid a real edge on daily AOT. This is now strong cumulative
+  evidence to pivot rather than build grid-mechanism #10** — see the consultation
+  in this session and HANDOFF.
+
+- **Execution Safety Control Plane verified end-to-end against Binance Spot
+  Testnet, and two blocking defects found and fixed (2026-07-24).** The prior two
+  entries described this slice as unit-tested and pending a migration; both claims
+  needed correcting.
+
+  **Migration status was wrong.** `wrangler d1 migrations list GOVERNANCE_DB
+  --remote` reports "No migrations to apply" — all seven files including 0006 and
+  0007 are already applied remotely. The entries below saying migration 0006 is a
+  deployment prerequisite are stale. Note this machine's `wrangler` is logged in as
+  the account owner **with `d1 (write)`**, so future migrations do not need the
+  missing `CLOUDFLARE_D1_API_TOKEN` secret. (`d1 execute --remote` hangs here
+  waiting on an interactive confirm, so the tracking table is the evidence, not a
+  direct `sqlite_master` query.)
+
+  **Defect 1 — the placement budget deadlocked a healthy bot.**
+  `reconcileOneTestnetGrid` threw when the plan exceeded `maxPlacementsPerRun`
+  instead of placing what the budget allowed. The backlog therefore never drained,
+  every later run failed identically, and after 3 runs the circuit breaker halted a
+  bot that never malfunctioned. Found live on BOT-cafaa7ec: 15 replenishments
+  against a cap of 8, halted after three clicks with `runtime.safety_halted`
+  {failures:3, threshold:3}. Now the run places the first `maxPlacements` and
+  reports the rest as `summary.deferred`. The subtlety that keeps this correct:
+  `targetedSources` is still built from **all** planned replenishments, so a
+  deferred fill stays un-terminal and is re-planned next run — committing it would
+  strand the grid permanently. Verified live: run 1 placed 8 / deferred 7, run 2
+  placed the remaining 7, breaker stayed at 0, 15 real Testnet orders appeared
+  (`aegis-r-` prefix), ledger 20 → 35.
+
+  **Defect 2 — a halted Testnet bot was unrecoverable from the cockpit.** The
+  Resume button was gated on `environment !== "BINANCE_TESTNET"` and
+  `clearGridBotSafetyHalt` had no caller. Worse, `command(..., "RUNNING")` routes
+  Testnet through `startBinanceTestnetGridBot`, which refuses outright once an
+  execution ledger exists ("duplicate start blocked"), so there was no path back to
+  RUNNING at all. Added a Clear-safety-halt control (reason required, ≥3 chars,
+  appends `runtime.safety_resumed`) and a Resume that uses
+  `transitionGridBotRuntime` — a pure state transition, no exchange call, since the
+  ladder is already placed.
+
+  **Defect 3 — schema-drift diagnosis and a leaked lease.** Mirroring the 0005
+  incident, code can ship against a database without the 0006/0007 tables; the raw
+  `D1_ERROR: no such table` named nothing actionable. Added
+  `withStorageDiagnosis`: still **fail-closed** (degrading would place orders
+  without a lease, which is the one thing the lease prevents), but with an
+  actionable message, raised **before** the durable run so a pending migration
+  never burns the failure budget and halts a fleet. Found while fixing it that
+  `startRuntimeRun` sat outside the try/finally — if it threw, the already-acquired
+  lease leaked for its full 120s TTL and blocked that bot. It now releases before
+  rethrowing.
+
+  **Live verification of all four safety mechanisms** (local wrangler, real
+  Testnet): replenishment budget drains in batches; circuit breaker halts at 3 and
+  writes a hash-chain event whose `previousHash` matches the prior event;
+  `GRID_TESTNET_KILL_SWITCH=true` blocks before lease/run/exchange, places nothing,
+  writes no run row and does **not** count a failure (operator decision, not a
+  malfunction); 4 concurrent cron POSTs → exactly 1 acquired the lease (459ms) and
+  3 were rejected in ~80ms with no run row and no failure count — important because
+  a 15-minute cron overlapping itself would otherwise halt the fleet in 3 rounds.
+  Stale-evidence rejection remains unit-tested only. Frontend 153/153, TypeScript,
+  build, `gate/verify.ps1` SHIP.
+
+  **Still operator-only:** production Worker still holds the old Binance Testnet
+  credentials (`-2015`). The new key is proven working locally. Update the GitHub
+  secrets `BINANCE_TESTNET_API_KEY`/`_SECRET` and re-run the deploy workflow — no
+  push needed. Watch that `deploy-cloudflare.yml` **skips the secret-sync step
+  silently** when those secrets are empty, so a green run does not by itself prove
+  the Worker was updated.
+
+  **Testnet housekeeping:** five leftover SELL orders from the 2026-07-17 grid
+  (67,179.80 → 69,715.00) were cancelled at the user's explicit request before
+  testing, freeing 0.04381 BTC. They were not in the D1 ledger under those client
+  order ids, so the first reconcile correctly flagged 5 rows
+  `RECONCILIATION_REQUIRED` rather than inventing fills.
+
+- **n8n workflow automation adaptation added locally (2026-07-24; not
+  deployed):** analyzed the supplied n8n course roadmap/cheatsheet and applied
+  Schedule Trigger + authenticated HTTP/Webhook + If quality-gate patterns as
+  a read-only Aegis runtime watchdog. Added
+  `automations/n8n/aegis-runtime-watchdog.json`, disabled by default, and a
+  token-gated `GET /api/automation/runtime-status` endpoint with no execution
+  capability. Documentation is in `docs/N8N_AUTOMATION.md`. The workflow must
+  receive only the status token, never exchange credentials; it must not call
+  `/api/cron/grid-sync`. Endpoint tests, TypeScript and `gate/verify.ps1`
+  passed.
+
+- **Production deployment completed (2026-07-23):** deployed Worker
+  `aegis-fund-os` successfully to
+  `https://aegis-fund-os.bankshadow30.workers.dev`, version
+  `86ad8e8b-eca1-45e7-bbaf-cb25f5ba8910`. Before deploy, uploaded the Worker
+  secret `GRID_TESTNET_KILL_SWITCH=true`; remote D1 migration check reported
+  no pending migrations. Cron was not enabled and no Binance/Testnet order was
+  submitted. Direct PowerShell HTTPS smoke POST could not complete because its
+  TLS connection was closed locally; deployment itself returned success.
+
+- **Production safety redeploy completed (2026-07-23):** corrected the global
+  Testnet kill-switch coverage so it now blocks both initial grid placement
+  paths and runtime reconciliation. Deployed version
+  `f4db846b-8a2a-4723-8151-26ab7e89f0cc` after TypeScript and production build
+  passed. `GRID_TESTNET_KILL_SWITCH=true` remains set; cron remains disabled.
+
+- **Execution Safety Control Plane started (2026-07-23, local; migration not
+  yet applied/deployed):** all production Testnet reconciliation entrypoints
+  (one-bot, batch, external cron and scheduled driver) now use a D1-backed
+  safety wrapper. It takes an atomic per-bot lease before any exchange
+  placement, creates a durable run ledger, caps replenishments per run, honors
+  `GRID_TESTNET_KILL_SWITCH=true`, and counts consecutive failures per bot.
+  At the configured threshold (default 3), it pauses the bot and appends a
+  `runtime.safety_halted` hash-chain event. Added migration
+  `fund-command-center-local/migrations/0006_grid_runtime_safety.sql` and
+  focused safety tests. This remains **Binance Spot Testnet only**; no mainnet
+  or third-party capital path was added. ~~Before enabling cron, apply migration
+  0006 to D1~~ — **superseded 2026-07-24: 0006/0007 are applied on remote D1.**
+
+- **Five-pass safety hardening completed locally (2026-07-23):** reconciliation
+  leases renew before every placement (120s default), stale/future exchange
+  status evidence is rejected, the open-order cap is rechecked immediately
+  before each placement, and automatic circuit-breaker recovery requires a
+  reason plus a `runtime.safety_resumed` audit event. Runtime safety state and
+  recent durable run records are exposed to the Bot Cockpit. Still Testnet
+  only; ~~migration 0006 remains a deployment prerequisite~~ — **superseded
+  2026-07-24: applied on remote D1; see the top of this section.**
+
+- **E28: trailing re-anchor grid — first mechanism that actually works, but it
+  still does not clear the gate (2026-07-23).** Criteria declared in
+  `docs/AOT_VALIDATION_CRITERIA.md` §6b before running, including three
+  mechanism-specific bars (M1 alpha must beat the −10.79 baseline, M2 the four
+  worst folds must actually move, M3 drawdown must stay under buy-and-hold) and a
+  pre-written decision table. Implemented as opt-in `trailing: { mode:
+  "TRAIL_UP" }`: when a bar closes above the top level, open orders are
+  **cancelled** — not held, which was E27's fatal flaw — the whole ladder is
+  lifted by the same ratio keeping width and geometry, and the grid re-arms
+  around the new price. Decided on the close *after* that bar's fills, so it
+  never front-runs. Upward only; trailing down is a different mechanism and was
+  deliberately not tested. Default off; `trailing: null` reproduces prior numbers
+  to the digit. **Result: M1, M2 and M3 all pass — mean alpha −10.79 → −9.40 and
+  engaged 83% → 100% — but C1, C2 and C7 still fail, so it is NOT promoted.**
+  The mechanism verifiably does what it was designed to do: folds 6, 7 and 11,
+  which sat at `cycles = 0` because the grid had sold out, now trade 8/15/15
+  cycles over 48/28/46 re-anchors, improving alpha by +9.83/+13.51/+6.53.
+  **Attribution caveat worth carrying forward:** enabling trailing also changes
+  which geometry the in-sample step selects, and 5 folds ended up on a different
+  config. Folds 3 and 17 have `reAnchors = 0`, so their entire delta is a
+  selection artifact, not the mechanism — fold 3's −68.72 → −81.05 is purely an
+  ARITHMETIC → GEOMETRIC switch. Restricting to the 13 folds whose selection was
+  unchanged isolates the mechanism: alpha −9.28 → −6.09 (+3.19), drawdown
+  15.17% → 16.62%. **Trailing buys alpha with drawdown** — it keeps the book in
+  the market during trends, so it captures more upside and carries more exposure,
+  and because robust score weights drawdown 2x, robust gets *worse* (−17.97 →
+  −19.91) even as alpha improves. Not a contradiction, just what the score
+  measures. **Do not tune the trigger, width or lift distance to chase C1** —
+  that is the E23–E25 pattern exactly. A next step must be a new hypothesis
+  aimed at the *drawdown* side (e.g. capping exposure at re-anchor), declared as
+  E29 before running. Full record in `docs/VALIDATION_LOG.md` § E28; raw folds in
+  `docs/aot-walkforward-e28.json`. Frontend 119/119, TypeScript, build,
+  `gate/verify.ps1` SHIP.
+
+- **E27: percentile-rank regime filter — FAIL, and worse than baseline
+  (2026-07-23).** First mechanism-level experiment permitted by the D1/E26
+  reopening conditions. Hypothesis: E26 showed the grid loses by selling into
+  rallies, so detect trend by percentile rank (the detector E14 validated) and
+  suspend the side that fights it — SELL in TREND_UP, BUY in TREND_DOWN.
+  Implemented as an opt-in `regimeFilter` on `BacktestConfig` plus pure exported
+  `computeRegimeStates`; default off and `regimeFilter: null` reproduces prior
+  results to the digit. State for bar `i` is ranked from momentum complete at
+  bar `i-1`, and the harness supplies 302 warm-up bars before each window so the
+  detector starts ranked rather than blind — warm-up is past data, so it adds
+  history without lookahead (pinned by a test that rewrites the tail and asserts
+  earlier states are unchanged). Parameters were fixed a priori (lookback 20,
+  rankWindow 252, ranks 80/20); there was no tuning pass. Same 18 folds, same
+  costs, same selection rule as E26 — one variable changed. **Result: mean alpha
+  −10.79 → −12.19, engaged 83% → 67%, mean robust unchanged at −17.97.**
+  **Why it failed matters more than that it failed.** (1) The four worst folds
+  were untouched: folds 6, 7 and 11 returned bit-identical numbers despite the
+  filter being active for 57/56/104 TREND_UP bars, because those folds already
+  had `cycles = 0` — the grid had sold out and stopped trading, and a filter
+  cannot help what is not trading. Fold 3 got *worse* (−68.72 → −79.87) because
+  suspending buys in TREND_DOWN forfeited good entries. (2) Suspending a limit
+  order **delays a fill, it does not avoid one**: the order is held rather than
+  cancelled, so when the regime relaxes it executes at its original limit price.
+  The rally was postponed, not captured. Both facts are now pinned as tests.
+  **Consequence: do not tune lookback/rank thresholds to chase this** — the
+  mechanism is wrong in principle, not mis-parameterised, and tuning it would
+  repeat E23–E25 exactly. Preserving upside on a fixed-level grid requires the
+  levels themselves to move (trailing / re-anchoring), which is a different
+  mechanism needing its own pre-declared criteria as E28. Full record in
+  `docs/VALIDATION_LOG.md` § E27; raw folds in `docs/aot-walkforward-e27.json`.
+  Frontend 115/115, TypeScript, build, `gate/verify.ps1` SHIP.
+
+- **E26: AOT grid walk-forward — FAIL (2026-07-22).** Closed the "Not tested"
+  gap that `STATE.md` had been carrying: OOS, walk-forward, sensitivity and
+  multiple-testing are now measured, not aspirational. Criteria were declared and
+  written to `docs/AOT_VALIDATION_CRITERIA.md` **before** the first run and were
+  not edited afterwards. Pulled a 5,273-bar AOT.BK daily fixture (2005-01-04 →
+  2026-07-20) from the Yahoo public chart endpoint; exactly one source bar
+  (2023-08-08, `low` one tick above `close`) was repaired by clamping its low to
+  the close and the repair is documented in the fixture README. Note
+  `analyzeMarketData` does **not** catch that defect class — it counts
+  non-positive prices, not OHLC ordering — so `validateMarketBars` is now run
+  over the whole file up front by the harness. New
+  `fund-command-center-local/scripts/aot-walkforward.mjs`: anchored-rolling
+  IS 504 / OOS 252 / step 252 → 18 non-overlapping OOS folds, geometry selected
+  **from in-sample bars only** (AOT ran 5 → 64 THB, so a range fitted on the whole
+  file is invisible lookahead), Thai retail costs (0.157% + 0.005% + VAT 7% +
+  0.05% slippage), ฿1M split 50/50 inventory/cash, 324 total runs recorded for
+  multiple-testing. **Result: mean robust −17.97, mean alpha −10.79 vs
+  buy-and-hold, parameter surface flat in only 27.2% of perturbations → C1, C2
+  and C7 fail.** C3 passes decisively (mean DD 15.2% vs B&H 28.6%) and C4 passes
+  (engaged 83%). Diagnosis: grid does exactly what it is designed to do — it wins
+  the crash folds (2008 alpha +18.6, 2020 +10.3) and loses the trending-up folds
+  catastrophically (−68.7, −64.0, −36.7). That is structural, not a parameter
+  error, so **geometry tuning is closed** per the E23–E25 lesson; reopening needs
+  a mechanism-level hypothesis aimed at the trend problem (regime filter,
+  trailing-up), same bar as D1. **Engine defect surfaced and NOT yet fixed:**
+  `WORST_CASE` scored *better* than `CONSERVATIVE_OHLC` in several folds
+  (fold 2 by +22.45 pct pts) because the two modes differ only in intra-bar fill
+  ordering, and `OPTIMISTIC_OHLC` was bit-identical to conservative because
+  `ambiguousBars` is 0 on every daily fold — so C5 is a weak test on daily data
+  and the mode labels do not currently bound anything. Raw per-fold output with
+  Run IDs and config hashes in `docs/aot-walkforward-e26.json`.
+
+- **Execution-mode defect fixed the same day (2026-07-22).** Root cause was not
+  the ambiguous-bar policy: the fill comparator sorted *both* sides by
+  `gridIndex`, so reversing it for `WORST_CASE` produced the worst buys but the
+  **best** sells — two opposite assumptions in one mode, which is how "worst"
+  outscored "conservative" on real folds. Now ranked by adversity per side (a buy
+  is worse the higher it pays, a sell worse the lower it accepts);
+  `OPTIMISTIC_OHLC` inverts it and fills buys before sells so an ambiguous bar
+  closes a cycle; on an ambiguous bar `WORST_CASE` fills only the
+  exposure-increasing leg and is never credited a cycle; a real intrabar slice
+  bypasses all assumptions. Effect on E26: WORST_CASE mean robust −13.81 →
+  −15.75 (moves the right way), optimism gap 0.00 → 0.28 pct pts, CONSERVATIVE
+  bit-identical, **verdict still FAIL**.
+  **Do not overclaim the modes.** Testing established that they bracket
+  *per-fill execution quality* only. Portfolio-level outcome is NOT bracketed:
+  each mode leaves a different set of orders open, so later bars diverge and even
+  the cycle count can invert. And `CONSERVATIVE` is not inside the bracket at all
+  — it declines to guess and books no fill on an ambiguous bar, so its equity can
+  land above or below both. The intuitive claim
+  `optimistic >= conservative >= worst` is false; a test asserting it was written,
+  failed against the engine, and was removed as wrong rather than the engine bent
+  to satisfy it. Frontend 111/111, TypeScript, build, `gate/verify.ps1` SHIP.
 
 - Added the reporting-period lock, completing fund-ops roadmap item 4
   (2026-07-20). `FundV2Store.lock_period` seals a month (`YYYY-MM`) or quarter
@@ -870,3 +1287,93 @@
   (2026-07-19). An unauthenticated browser check reaches `/bots` directly;
   the production Worker is public until an Access application or equivalent
   edge control is restored.
+
+- Added deterministic AOT historical simulation/backtest (2026-07-21) in
+  `fund-command-center-local/src/lib/aot-backtest.ts` and wired it into the
+  `/aot-paper-grid` Simulation tab. The engine validates OHLC CSV input,
+  builds arithmetic/geometric grids, applies conservative no-lookahead fills,
+  board lots, cash/inventory constraints, fees, VAT and slippage, tracks
+  equity/drawdown/P&L/cycles and monthly returns, and records ambiguous-bar
+  warnings. This remains paper/read-only; it cannot submit live orders.
+  Added four focused backtest tests; frontend suite now passes 107 tests,
+  TypeScript check and production build pass, and `gate/verify.ps1` exits 0.
+
+- Fixed local AOT route import-protection failure (2026-07-21): moved scheduled
+  reconciliation into the server-only `grid-bot-governance.cron.server.ts`
+  boundary and kept the client-visible governance module limited to
+  `createServerFn` RPC handlers. Production build, TypeScript, focused runtime
+  tests, and `gate/verify.ps1` pass; local `/aot-paper-grid` reload verified
+  without the import overlay.
+
+- Added synthetic OHLCV backtest mode (2026-07-21): the AOT Simulation tab can
+  generate deterministic 120-bar paths for seeds 101/202/303 and run the same
+  conservative backtest engine, with a seed comparison table and an explicit
+  warning that synthetic output is regression evidence only, never market
+  evidence. TypeScript, production build, and focused AOT tests pass.
+
+- Added a public AOT historical fixture (2026-07-21) at
+  `fund-command-center-local/data/historical/AOT.BK_daily_2025-2026.csv` with
+  377 daily bars from the Yahoo Finance public chart endpoint, plus source and
+  usage caveats in the adjacent README. CSV parser validation reports zero
+  warnings; this remains a paper-research fixture, not an execution feed.
+
+- Added backtest charting and data-density filtering (2026-07-21): the AOT
+  Simulation tab now renders Equity, Cash and Drawdown lines with a selectable
+  30/90/180/all-bar window; the table uses the same filtered slice. TypeScript
+  and production build pass.
+
+- Deployed the chart/filter update (2026-07-21): Cloudflare Worker
+  `aegis-fund-os`, version `e5c606fb-7982-41c7-b591-012b60ff02e8`. Live smoke
+  request to `/aot-paper-grid` returned HTTP 200 and the AOT page title.
+
+- Professionalized the backtest report (2026-07-21): added report identity and
+  date range, strategy/config assumptions, execution-quality metrics, open-risk
+  indicators, ambiguous-bar warning, and annual performance review alongside
+  the existing chart, filtered equity table and monthly view. TypeScript and
+  production build pass; not deployed yet.
+
+- Audited and hardened AOT backtest accounting/reporting (2026-07-21): starting
+  equity now includes initial inventory at the first close; drawdown is
+  non-negative and peak-relative; duration/total-return fields, P/L
+  reconciliation difference, explicit reconciliation warning, forced-close
+  visibility, trade-quality metrics, capital deployment, underwater/recovery
+  measures and confidence status are exposed to the report. Added focused
+  reconciliation assertions; 108 frontend tests, TypeScript, build and gate
+  checks pass. Reconciliation now uses a lot-weighted inventory cost ledger and
+  passes the ฿0.01 tolerance in the focused fixture; any future mismatch is
+  surfaced as a warning rather than adjusted away.
+
+- Annual report rows now calculate period-specific fees and buy-and-hold/alpha;
+  the UI exposes peak capital utilization and ending inventory exposure. OOS,
+  walk-forward and parameter sensitivity remain explicitly Not tested.
+
+- Implemented Phase 19/20 foundation (2026-07-21): every AOT run now carries a
+  unique Run ID, configuration hash, dataset/source/version, engine version,
+  timezone, currency, calendar and timing metadata. Added a pre-result data
+  quality report for duplicates, missing OHLC, invalid prices, negative volume
+  and abnormal gaps, plus JSON configuration export and Run ID copy controls.
+  Full stress, capacity, promotion-gate and advanced multiple-testing analyses
+  remain explicitly unimplemented rather than reported as passed.
+
+- Added rule-based deterministic insight cards with metric evidence for drawdown,
+  sample size, inventory dependence and missing OOS validation. They are not
+  LLM-generated and remain scoped to paper research.
+
+- Implemented Phase 33/34 execution foundation (2026-07-21): added selectable
+  Conservative OHLC, Intrabar exact, Optimistic comparison and Worst-case modes;
+  optional lower-timeframe CSV is used only for execution, never signal
+  calculation. Intrabar sequence follows timestamp order, gap fills use the
+  observed open when price improves, and run metadata records fallback when
+  intrabar data is unavailable. Queue-probability and volume-constrained
+  partial-fill calibration remain not tested.
+
+- Converted the backtest trace to an explicit event-driven audit stream: market
+  event → strategy decision → order submitted/queued → fill → fee → lot update
+  → portfolio valuation. The ordered event log is persisted on each BacktestRun
+  and exposed in the report for debugging and reconciliation. 108 tests,
+  TypeScript, build and gate verification pass.
+
+- Deployed event-driven AOT backtest/report update (2026-07-21): Cloudflare
+  Worker `aegis-fund-os`, version `d4864f7a-d99a-4c23-ae1f-930e91d7f1d2`.
+  Production smoke request to `/aot-paper-grid` returned HTTP 200 and included
+  the AOT page content.

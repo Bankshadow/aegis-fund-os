@@ -5,17 +5,18 @@
   "type": "module",
   "scripts": {
     "dev": "vite dev",
-    "build": "vite build",
-    "build:dev": "vite build --mode development",
+    "build": "node scripts/precompute-walkforward.mjs && vite build",
+    "build:dev": "node scripts/precompute-walkforward.mjs && vite build --mode development",
     "test": "node --test test/*.test.mjs",
     "test:binance": "node --test test/binance-signing.test.mjs",
     "test:daily-close": "node --test test/daily-close.test.mjs",
     "preview": "vite preview",
     "cf:whoami": "wrangler whoami",
-    "cf:dry-run": "vite build && wrangler --cwd .output/server deploy --config wrangler.json --dry-run",
-    "deploy": "vite build && wrangler --cwd .output/server deploy --config wrangler.json",
+    "cf:dry-run": "npm run build && wrangler --cwd .output/server deploy --config wrangler.json --dry-run",
+    "deploy": "npm run build && wrangler --cwd .output/server deploy --config wrangler.json",
     "lint": "eslint .",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "precompute": "node scripts/precompute-walkforward.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
