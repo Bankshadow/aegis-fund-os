@@ -16,7 +16,8 @@
     "deploy": "npm run build && wrangler --cwd .output/server deploy --config wrangler.json",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "precompute": "node scripts/precompute-walkforward.mjs"
+    "precompute": "node scripts/precompute-walkforward.mjs",
+    "experiment": "node scripts/experiment.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

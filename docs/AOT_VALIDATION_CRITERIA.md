@@ -10,6 +10,34 @@
 
 ---
 
+## 0-RUNNER. วิธีรันการทดลองถัดไป (ตั้งแต่ E30 เป็นต้นไป)
+
+**อย่าไล่อ่านตัวเลขจาก stdout แล้วเทียบเกณฑ์ด้วยมืออีก** — E26–E29 ทำแบบนั้นทุกครั้ง
+และจุดที่จับได้ว่าค่าเฉลี่ยของ E29 หลอก (เป็น selection artifact + fold ที่หยุดเทรด)
+มาจากสคริปต์ ad-hoc ที่บังเอิญเขียนขึ้น ถ้าครั้งหน้าไม่มีใครเขียน ก็รายงานผลบวกปลอมได้
+
+ให้ประกาศเกณฑ์เป็น **ไฟล์ข้อมูล** ใน `fund-command-center-local/experiments/<ID>.json`
+**ก่อนรัน** แล้วรันด้วย runner ซึ่งจะตรวจ decomposition ให้อัตโนมัติ:
+
+```
+cd fund-command-center-local
+node scripts/experiment.mjs experiments/E30.json [--out report.json]
+```
+
+runner จะ:
+- ปฏิเสธ spec ที่ไม่มี `mechanismCriteria` (ไม่มีเกณฑ์ = ไม่ใช่การทดลอง)
+- ตรวจเกณฑ์ C1–C7 จาก harness (ไม่ลดเกณฑ์)
+- **แยก fold ออกเป็น 3 กลุ่ม**: `inert` (กลไกไม่ทำงาน ตรง baseline เป๊ะ) ·
+  `mechanism` (เลือก geometry เดิม → ที่เปลี่ยนคือกลไกจริง) · `reselected`
+  (เลือก geometry คนละตัว → เป็น selection artifact ไม่ใช่กลไก)
+- เตือนเมื่อผลรวมที่ดีขึ้นมาจากการ**หยุดเทรด** (cycles=0 → ลดความเสี่ยงแบบ tautology)
+
+ดู `experiments/E29.json` เป็นตัวอย่าง — และมันเป็นเคสถดถอยของ runner เองด้วย
+(`test/experiment-runner.test.mjs`) เพราะ E29 ผ่านเกณฑ์ M1–M3 บนค่าเฉลี่ยทั้งสามข้อ
+แต่ decomposition แสดงว่า **+7.69 จาก +7.74 ที่ดีขึ้นมาจาก fold ที่หยุดเทรด**
+
+---
+
 ## 0. ทำไมต้องมีเอกสารนี้
 
 `src/lib/aot-backtest.ts` ถูกพัฒนามาไกลมาก (execution mode 4 แบบ, event-driven

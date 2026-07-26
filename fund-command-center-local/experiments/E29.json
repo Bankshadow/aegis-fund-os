@@ -1,0 +1,31 @@
+{
+  "id": "E29",
+  "title": "Exposure cap on the trailing grid — does capping long inventory fix E28's drawdown?",
+  "declaredAt": "2026-07-25",
+  "criteriaDoc": "docs/AOT_VALIDATION_CRITERIA.md §6c",
+  "baseline": { "trailing": true },
+  "variant": { "exposureCap": true },
+  "mechanismCriteria": [
+    {
+      "id": "M1",
+      "metric": "meanDrawdown",
+      "op": "<",
+      "value": 16.84,
+      "why": "Drawdown must actually fall below E28, or the cap did not touch the source of the problem."
+    },
+    {
+      "id": "M2",
+      "metric": "meanRobust",
+      "op": ">",
+      "value": -19.91,
+      "why": "The entire point of E29. If robust does not improve, the cap failed on its own terms."
+    },
+    {
+      "id": "M3",
+      "metric": "meanAlpha",
+      "op": ">",
+      "value": -10.79,
+      "why": "Guard against a cap so tight it just gives back E28's gains rather than improving on them."
+    }
+  ]
+}
