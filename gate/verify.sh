@@ -8,6 +8,12 @@ cd "$ROOT"
 echo "=== GATE: strategy framework unit tests ==="
 python -m unittest tests.test_strategy_framework -v
 
+echo "=== GATE: agent graph contracts (L2, no execution) ==="
+python -m unittest tests.test_agent_graph -v
+
+echo "=== GATE: reflect cannot write laws, criteria or the gate ==="
+python -m unittest tests.test_reflect -v
+
 echo "=== GATE: fund ops unit tests (if present) ==="
 python -m unittest tests.test_fund_ops tests.test_fund_mvp_weeks_2_to_8 -v 2>/dev/null || \
   python -m unittest discover -s tests -p 'test_fund*.py' -v

@@ -8,6 +8,14 @@ Write-Host "=== GATE: strategy framework unit tests ==="
 python -m unittest tests.test_strategy_framework -v
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
+Write-Host "=== GATE: agent graph contracts (L2, no execution) ==="
+python -m unittest tests.test_agent_graph -v
+if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+Write-Host "=== GATE: reflect cannot write laws, criteria or the gate ==="
+python -m unittest tests.test_reflect -v
+if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
 Write-Host "=== GATE: fund ops unit tests ==="
 python -m unittest discover -s tests -p "test_fund*.py" -v
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
