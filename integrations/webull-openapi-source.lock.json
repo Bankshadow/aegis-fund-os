@@ -1,0 +1,24 @@
+{
+  "source": "https://github.com/nutdnuy/webull-openapi-AI-Plugin",
+  "revision": "398b02ea733286c08b37c34510992476c9becaf1",
+  "retrieved_at": "2026-07-26",
+  "license": "MIT",
+  "plugin_version": "0.2.0",
+  "catalog": {
+    "endpoint_count": 36,
+    "read": 21,
+    "write": 11,
+    "streaming": 4
+  },
+  "installed_skills": [
+    "webull-auth",
+    "webull-market-data",
+    "webull-account",
+    "webull-events"
+  ],
+  "excluded_skills": [
+    "webull-orders",
+    "webull-watchlists"
+  ],
+  "automation_policy": "reference-only; a repository service may use only a separately implemented UAT read-only adapter"
+}

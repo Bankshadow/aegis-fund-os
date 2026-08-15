@@ -1,0 +1,158 @@
+{
+  "policy": "Every host reachable from source must be declared here. Enforced by gate/egress_scan.py, which runs inside gate/verify.ps1.",
+  "doctrine_source": "docs/ARCHESTRA_ADOPTION.md - allowlist enforced outside the guarded thing, never a convention or a model's judgement",
+  "reviewed": "2026-08-09",
+  "fields": {
+    "purpose": "why code may reach this host",
+    "access": "read | sandbox-write | asset | reference | fixture",
+    "untrusted_content": "true when the response is attacker-influenced text (news, HTML, third-party feeds); the untrusted-content leg of the lethal trifecta",
+    "live_trading": "must be false everywhere; the constitution forbids live orders"
+  },
+  "hosts": {
+    "testnet.binance.vision": {
+      "purpose": "Binance Spot Testnet: market data, account reads, paper grid placement",
+      "access": "sandbox-write",
+      "untrusted_content": false,
+      "live_trading": false
+    },
+    "api.binance.com": {
+      "purpose": "Public spot klines for research fixtures; unauthenticated, read-only",
+      "access": "read",
+      "untrusted_content": false,
+      "live_trading": false
+    },
+    "fapi.binance.com": {
+      "purpose": "Public USD-M funding, L/S ratio, OI hist, and futures klines for research panels (E31/E32/E39); unauthenticated, read-only",
+      "access": "read",
+      "untrusted_content": false,
+      "live_trading": false
+    },
+    "api-testnet.bybit.com": {
+      "purpose": "Bybit Testnet unified wallet summary; read-only adapter",
+      "access": "read",
+      "untrusted_content": false,
+      "live_trading": false
+    },
+    "api.hyperliquid-testnet.xyz": {
+      "purpose": "Hyperliquid Testnet public Info API; no wallet signing path",
+      "access": "read",
+      "untrusted_content": false,
+      "live_trading": false
+    },
+    "api.sandbox.webull.com": {
+      "purpose": "Webull Sandbox account list and explicitly gated LIMIT test order",
+      "access": "sandbox-write",
+      "untrusted_content": false,
+      "live_trading": false
+    },
+    "scanner.tradingview.com": {
+      "purpose": "Point-in-time universe snapshots and field metainfo; unauthenticated, read-only",
+      "access": "read",
+      "untrusted_content": false,
+      "live_trading": false
+    },
+    "www.coindesk.com": {
+      "purpose": "News risk board RSS",
+      "access": "read",
+      "untrusted_content": true,
+      "live_trading": false
+    },
+    "cointelegraph.com": {
+      "purpose": "News risk board RSS",
+      "access": "read",
+      "untrusted_content": true,
+      "live_trading": false
+    },
+    "decrypt.co": {
+      "purpose": "News risk board RSS",
+      "access": "read",
+      "untrusted_content": true,
+      "live_trading": false
+    },
+    "www.theblock.co": {
+      "purpose": "News risk board RSS",
+      "access": "read",
+      "untrusted_content": true,
+      "live_trading": false
+    },
+    "cryptoslate.com": {
+      "purpose": "News risk board RSS",
+      "access": "read",
+      "untrusted_content": true,
+      "live_trading": false
+    },
+    "bitcoinmagazine.com": {
+      "purpose": "News risk board RSS",
+      "access": "read",
+      "untrusted_content": true,
+      "live_trading": false
+    },
+    "status.coinbase.com": {
+      "purpose": "Coinbase Statuspage history feed for venue risk",
+      "access": "read",
+      "untrusted_content": true,
+      "live_trading": false
+    },
+    "status.kraken.com": {
+      "purpose": "Kraken Statuspage history feed for venue risk",
+      "access": "read",
+      "untrusted_content": true,
+      "live_trading": false
+    },
+    "api.llama.fi": {
+      "purpose": "DefiLlama public API: chain TVL, fees, and historical DEX-volume charts for Osmo toolbelt / E40 research; GET only, unauthenticated",
+      "access": "read",
+      "untrusted_content": true,
+      "live_trading": false
+    },
+    "api.coingecko.com": {
+      "purpose": "CoinGecko public trending search, used as a narrative proxy in the same research pull; GET only, unauthenticated",
+      "access": "read",
+      "untrusted_content": true,
+      "live_trading": false
+    },
+    "aegis-fund-os.bankshadow30.workers.dev": {
+      "purpose": "Our own deployed Worker; target of the read-only runtime watchdog",
+      "access": "read",
+      "untrusted_content": false,
+      "live_trading": false
+    },
+    "pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev": {
+      "purpose": "Own R2 bucket serving static dashboard assets",
+      "access": "asset",
+      "untrusted_content": false,
+      "live_trading": false
+    },
+    "fonts.googleapis.com": {
+      "purpose": "Web font stylesheet for the dashboard",
+      "access": "asset",
+      "untrusted_content": false,
+      "live_trading": false
+    },
+    "fonts.gstatic.com": {
+      "purpose": "Web font files for the dashboard",
+      "access": "asset",
+      "untrusted_content": false,
+      "live_trading": false
+    },
+    "github.com": {
+      "purpose": "Source references in docstrings and comments; no runtime call",
+      "access": "reference",
+      "untrusted_content": false,
+      "live_trading": false
+    },
+    "aegis-fund-os.example.workers.dev": {
+      "purpose": "Test fixture origin in actor-identity.test.mjs; never resolved",
+      "access": "fixture",
+      "untrusted_content": false,
+      "live_trading": false
+    },
+    "query1.finance.yahoo.com": {
+      "purpose": "Yahoo public chart endpoint: SOL-USD / LINK-USD daily OHLCV for the E44 S003 reproduction; GET only, unauthenticated",
+      "access": "read",
+      "untrusted_content": false,
+      "live_trading": false
+    }
+  },
+  "not_reached_by_code": {}
+}

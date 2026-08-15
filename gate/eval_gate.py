@@ -14,6 +14,9 @@ import sys
 from collections.abc import Callable
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import egress_scan  # noqa: E402 — same-directory gate helper
+
 ROOT = Path(__file__).resolve().parents[1]
 
 
@@ -70,6 +73,49 @@ def _():
     text = _read("docs/HANDOFF_CURSOR.md")
     assert "RL" in text
     assert "ห้าม" in text or "ไม่แนะนำ" in text
+
+
+@case("egress_allowlist_complete")
+def _():
+    missing = egress_scan.undeclared()
+    assert not missing, (
+        "undeclared host(s): "
+        + "; ".join(f"{h} at {sites[0]}" for h, sites in missing.items()))
+
+
+@case("no_live_trading_host_declared")
+def _():
+    live = egress_scan.live_trading_hosts()
+    assert not live, f"live-trading host(s) declared: {live}"
+
+
+#: Files that read attacker-influenced text: RSS bodies, third-party HTML,
+#: vendor status feeds. The lethal trifecta needs an instructable model in this
+#: path; deterministic keyword rules cannot be instructed by their input. The
+#: news board was built LLM-free for cost, and that choice is also what keeps
+#: the Worker — which holds Testnet credentials and a placement path — out of
+#: the trifecta. This case exists so the protection cannot be removed by
+#: someone "improving" the scoring later.
+UNTRUSTED_CONTENT_PATH = (
+    "fund-command-center-local/src/lib/news-risk.ts",
+    "fund-command-center-local/src/lib/news-risk.functions.ts",
+)
+
+MODEL_MARKERS = ("anthropic", "openai", "generativelanguage", "claude-",
+                 "gpt-", "gemini-", "generatetext", "chatcompletion")
+
+
+def model_markers_in(text: str) -> list:
+    """Model-provider markers present in `text`, lowercased match."""
+    lowered = text.lower()
+    return [marker for marker in MODEL_MARKERS if marker in lowered]
+
+
+@case("untrusted_content_path_has_no_model")
+def _():
+    for rel in UNTRUSTED_CONTENT_PATH:
+        hit = model_markers_in(_read(rel))
+        assert not hit, f"{rel} reaches a model ({hit}); untrusted input must stay LLM-free"
 
 
 def main() -> int:

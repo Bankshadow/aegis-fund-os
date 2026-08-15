@@ -13,6 +13,7 @@ venv/
 
 # Generated reports, stores, and logs
 *.log
+automations/universe-snapshot/logs/
 *.sqlite
 *.sqlite3
 *.db

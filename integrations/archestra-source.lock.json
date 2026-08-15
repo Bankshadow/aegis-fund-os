@@ -1,0 +1,41 @@
+{
+  "source": "https://github.com/archestra-ai/archestra",
+  "revision": "fc88f7c0c415b67a344a0017581eb329ce787ae6",
+  "revision_date": "2026-08-08",
+  "retrieved_at": "2026-08-09",
+  "license": "AGPL-3.0-only by default; proprietary LicenseRef-Archestra-Enterprise for ee/ dirs and .ee.* files; no permissive carve-out",
+  "code_adopted": false,
+  "code_adoption_blocked_by": "AGPL-3.0 section 13 (network use is distribution) combined with our public unauthenticated Worker at aegis-fund-os.bankshadow30.workers.dev; linking any of it would oblige source disclosure for the whole combined work",
+  "doctrine_adopted": [
+    "deterministic allowlists enforced outside the guarded thing, not model judgement",
+    "lethal trifecta as an explicit threat model (private data + untrusted content + external communication)",
+    "restating a prohibition as data so the gate refuses it at declaration time"
+  ],
+  "rejected": [
+    "all source code (licence)",
+    "LLM gateway / multi-provider proxy (ROUTING.md + gate-checked consult cap already cover one seat)",
+    "MCP gateway and registry with OAuth on-behalf-of (no fleet to broker for)",
+    "agent runtime with scheduled/webhook triggers (would add a forbidden execution path)",
+    "SSO / RBAC (single operator; Access deliberately removed 2026-07-16)",
+    "RAG knowledge base (Cognee already holds event memory)",
+    "dual-LLM pattern (correct only if a model must read untrusted text; today none does)",
+    "OpenTelemetry / Prometheus / Helm / Terraform / Kubernetes (one Worker)"
+  ],
+  "implementation": [
+    "gate/egress_scan.py",
+    "integrations/egress-allowlist.json",
+    "gate/eval_gate.py cases: egress_allowlist_complete, no_live_trading_host_declared, untrusted_content_path_has_no_model"
+  ],
+  "tests": "tests/test_egress_policy.py",
+  "boundary_doc": "docs/ARCHESTRA_ADOPTION.md",
+  "audit_findings": {
+    "hosts_declared": 21,
+    "untrusted_content_hosts": 9,
+    "scan_holes_found_and_fixed": [
+      "scheme-less host constants (WEBULL_SANDBOX_HOST) were invisible to a URL-only pattern",
+      ".pnpm-store mirrored our own sources, duplicating every finding at an unfixable path"
+    ],
+    "worker_trifecta": "all three capabilities present, but no model in the untrusted-content path; news scoring is deterministic keyword rules and is now gate-pinned as LLM-free",
+    "agent_trifecta": "genuinely present for Claude Code in this repo; mitigated by the harness permission classifier, project laws and human review, not by code"
+  }
+}
