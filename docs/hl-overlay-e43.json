@@ -1,0 +1,359 @@
+{
+  "criteria": "docs/E43_CRITERIA.md",
+  "primary": {
+    "label": "BTC",
+    "n_bars": 591,
+    "t0_iso": "2024-12-23",
+    "t1_iso": "2026-08-05",
+    "p1": {
+      "spearman": -0.040394333101551716,
+      "permutation_percentile": 0.195,
+      "n": 478
+    },
+    "n_windows": 4,
+    "windows": [
+      {
+        "start": 90,
+        "end": 180,
+        "B0_buy_hold": {
+          "return": 0.19998826706938222,
+          "maxDD": 0.1277254287404439,
+          "robust": -0.055462590411505586,
+          "trades": 1,
+          "exposure": 1.0
+        },
+        "T1_trend": {
+          "return": 0.0,
+          "maxDD": 0.0,
+          "robust": 0.0,
+          "trades": 0,
+          "exposure": 0.0
+        },
+        "H_gate": {
+          "return": 0.0,
+          "maxDD": 0.0,
+          "robust": 0.0,
+          "trades": 0,
+          "exposure": 0.0
+        },
+        "H_size": {
+          "return": 0.0,
+          "maxDD": 0.0,
+          "robust": 0.0,
+          "trades": 0,
+          "exposure": 0.0
+        },
+        "H_only": {
+          "return": 0.05347006794277087,
+          "maxDD": 0.06490068592467879,
+          "robust": -0.07633130390658671,
+          "trades": 5,
+          "exposure": 0.40086695130784306
+        },
+        "C_vol": {
+          "return": 0.0,
+          "maxDD": 0.0,
+          "robust": 0.0,
+          "trades": 0,
+          "exposure": 0.0
+        }
+      },
+      {
+        "start": 180,
+        "end": 270,
+        "B0_buy_hold": {
+          "return": 0.146430851309161,
+          "maxDD": 0.12213539877847386,
+          "robust": -0.09783994624778672,
+          "trades": 1,
+          "exposure": 1.0
+        },
+        "T1_trend": {
+          "return": -0.004446263796627714,
+          "maxDD": 0.12213539877847367,
+          "robust": -0.24871706135357505,
+          "trades": 1,
+          "exposure": 0.7666666666666667
+        },
+        "H_gate": {
+          "return": 0.038664689747823555,
+          "maxDD": 0.12213539877847357,
+          "robust": -0.20560610780912358,
+          "trades": 1,
+          "exposure": 0.5333333333333333
+        },
+        "H_size": {
+          "return": 0.0029373732365827188,
+          "maxDD": 0.07864379697772277,
+          "robust": -0.1543502207188628,
+          "trades": 4,
+          "exposure": 0.45055190567790915
+        },
+        "H_only": {
+          "return": 0.08216595645953118,
+          "maxDD": 0.07864379697772295,
+          "robust": -0.07512163749591472,
+          "trades": 5,
+          "exposure": 0.5757946254863909
+        },
+        "C_vol": {
+          "return": -0.004446263796627714,
+          "maxDD": 0.12213539877847367,
+          "robust": -0.24871706135357505,
+          "trades": 1,
+          "exposure": 0.7666666666666667
+        }
+      },
+      {
+        "start": 270,
+        "end": 360,
+        "B0_buy_hold": {
+          "return": -0.25416029662279715,
+          "maxDD": 0.3202251526449771,
+          "robust": -0.8946106019127513,
+          "trades": 1,
+          "exposure": 1.0
+        },
+        "T1_trend": {
+          "return": -0.26489677151849667,
+          "maxDD": 0.3181234446111754,
+          "robust": -0.9011436607408475,
+          "trades": 2,
+          "exposure": 0.7
+        },
+        "H_gate": {
+          "return": -0.053521185112682,
+          "maxDD": 0.1462142906534923,
+          "robust": -0.3459497664196666,
+          "trades": 2,
+          "exposure": 0.4666666666666667
+        },
+        "H_size": {
+          "return": -0.09115951213077578,
+          "maxDD": 0.1296577877473706,
+          "robust": -0.350475087625517,
+          "trades": 4,
+          "exposure": 0.4144748590707008
+        },
+        "H_only": {
+          "return": -0.04934879294052641,
+          "maxDD": 0.13417627381214936,
+          "robust": -0.31770134056482513,
+          "trades": 5,
+          "exposure": 0.6478347747213672
+        },
+        "C_vol": {
+          "return": -0.261613621923789,
+          "maxDD": 0.3150780182686875,
+          "robust": -0.891769658461164,
+          "trades": 4,
+          "exposure": 0.6590605453522023
+        }
+      },
+      {
+        "start": 360,
+        "end": 450,
+        "B0_buy_hold": {
+          "return": -0.13572892033236694,
+          "maxDD": 0.3511221764056318,
+          "robust": -0.8379732731436306,
+          "trades": 1,
+          "exposure": 1.0
+        },
+        "T1_trend": {
+          "return": 0.0,
+          "maxDD": 0.0,
+          "robust": 0.0,
+          "trades": 0,
+          "exposure": 0.0
+        },
+        "H_gate": {
+          "return": 0.0,
+          "maxDD": 0.0,
+          "robust": 0.0,
+          "trades": 0,
+          "exposure": 0.0
+        },
+        "H_size": {
+          "return": 0.0,
+          "maxDD": 0.0,
+          "robust": 0.0,
+          "trades": 0,
+          "exposure": 0.0
+        },
+        "H_only": {
+          "return": -0.17342959256195,
+          "maxDD": 0.2931709018884358,
+          "robust": -0.7597713963388216,
+          "trades": 5,
+          "exposure": 0.5508293956844892
+        },
+        "C_vol": {
+          "return": 0.0,
+          "maxDD": 0.0,
+          "robust": 0.0,
+          "trades": 0,
+          "exposure": 0.0
+        }
+      }
+    ],
+    "summary": {
+      "B0_buy_hold": {
+        "mean_robust": -0.47147160292891854,
+        "mean_return": -0.010867524644155219,
+        "mean_dd": 0.23030203914238168,
+        "mean_exposure": 1.0
+      },
+      "T1_trend": {
+        "mean_robust": -0.28746518052360565,
+        "mean_return": -0.0673357588287811,
+        "mean_dd": 0.11006471084741228,
+        "mean_exposure": 0.3666666666666667
+      },
+      "H_gate": {
+        "mean_robust": -0.13788896855719757,
+        "mean_return": -0.0037141238412146116,
+        "mean_dd": 0.06708742235799148,
+        "mean_exposure": 0.25
+      },
+      "H_size": {
+        "mean_robust": -0.12620632708609494,
+        "mean_return": -0.022055534723548265,
+        "mean_dd": 0.05207539618127334,
+        "mean_exposure": 0.2162566911871525
+      },
+      "H_only": {
+        "mean_robust": -0.30723141957653705,
+        "mean_return": -0.021785590275043593,
+        "mean_dd": 0.1427229146507467,
+        "mean_exposure": 0.5438314368000225
+      },
+      "C_vol": {
+        "mean_robust": -0.28512167995368476,
+        "mean_return": -0.06651497143010418,
+        "mean_dd": 0.10930335426179029,
+        "mean_exposure": 0.3564318030047172
+      }
+    },
+    "held_out_time": {
+      "B0_buy_hold": {
+        "return": -0.1934725862564094,
+        "maxDD": 0.286891374742777,
+        "robust": -0.7672553357419634,
+        "trades": 1
+      },
+      "T1_trend": {
+        "return": 0.0,
+        "maxDD": 0.0,
+        "robust": 0.0,
+        "trades": 0
+      },
+      "H_gate": {
+        "return": 0.0,
+        "maxDD": 0.0,
+        "robust": 0.0,
+        "trades": 0
+      },
+      "H_size": {
+        "return": 0.0,
+        "maxDD": 0.0,
+        "robust": 0.0,
+        "trades": 0
+      },
+      "H_only": {
+        "return": -0.11133791465883713,
+        "maxDD": 0.14857663508513533,
+        "robust": -0.4084911848291078,
+        "trades": 5
+      },
+      "C_vol": {
+        "return": 0.0,
+        "maxDD": 0.0,
+        "robust": 0.0,
+        "trades": 0
+      }
+    },
+    "h_size_trades_full": 6
+  },
+  "eth_held_out": null,
+  "gates": {
+    "P1": {
+      "pass": null,
+      "detail": {
+        "spearman": -0.040394333101551716,
+        "permutation_percentile": 0.195,
+        "n": 478,
+        "warn_negative": true
+      }
+    },
+    "G1": {
+      "pass": false,
+      "mean_h_size": -0.12620632708609494,
+      "mean_t1": -0.28746518052360565,
+      "win_frac": 0.5,
+      "n_windows": 4
+    },
+    "G2": {
+      "pass": false,
+      "mean_h_size": -0.12620632708609494
+    },
+    "G3": {
+      "pass": true,
+      "mean_h_size": -0.12620632708609494,
+      "mean_c_vol": -0.28512167995368476,
+      "mean_h_only": -0.30723141957653705
+    },
+    "G4": {
+      "pass": false,
+      "n_windows": 4,
+      "trades": 6
+    },
+    "G5a": {
+      "pass": false,
+      "held": {
+        "B0_buy_hold": {
+          "return": -0.1934725862564094,
+          "maxDD": 0.286891374742777,
+          "robust": -0.7672553357419634,
+          "trades": 1
+        },
+        "T1_trend": {
+          "return": 0.0,
+          "maxDD": 0.0,
+          "robust": 0.0,
+          "trades": 0
+        },
+        "H_gate": {
+          "return": 0.0,
+          "maxDD": 0.0,
+          "robust": 0.0,
+          "trades": 0
+        },
+        "H_size": {
+          "return": 0.0,
+          "maxDD": 0.0,
+          "robust": 0.0,
+          "trades": 0
+        },
+        "H_only": {
+          "return": -0.11133791465883713,
+          "maxDD": 0.14857663508513533,
+          "robust": -0.4084911848291078,
+          "trades": 5
+        },
+        "C_vol": {
+          "return": 0.0,
+          "maxDD": 0.0,
+          "robust": 0.0,
+          "trades": 0
+        }
+      }
+    },
+    "G5b": {
+      "pass": null,
+      "note": "ETH untouched until G1-G4 pass"
+    }
+  },
+  "verdict_g1_g4": false,
+  "held_out_asset_touched": false
+}

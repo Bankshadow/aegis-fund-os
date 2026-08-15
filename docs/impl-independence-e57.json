@@ -1,0 +1,101 @@
+{
+ "experiment": "E57",
+ "criteria": "docs/E57_CRITERIA.md",
+ "engine": "backtrader 1.9.78.123 (GPL-3.0, isolated venv outside the repo; nothing vendored)",
+ "runner": "scratchpad/e57_backtrader.py - deliberately NOT in the repo",
+ "fee_side": 0.0005,
+ "reference": {
+  "tp_first": 72.81,
+  "sl_first": 43.76
+ },
+ "atr": {
+  "SOL-USD": {
+   "max_rel_diff_all_bars": 0.21127716136864508,
+   "max_rel_diff_from_warmup": 1.4126534718680968e-07,
+   "last_bar_over_0.5pct": 75,
+   "warmup": 201
+  },
+  "LINK-USD": {
+   "max_rel_diff_all_bars": 0.058066618981746476,
+   "max_rel_diff_from_warmup": 3.920684046765342e-08,
+   "last_bar_over_0.5pct": 37,
+   "warmup": 201
+  }
+ },
+ "arms": {
+  "tp_priority": {
+   "n": 339,
+   "ours_n": 339,
+   "portR_our_fee_formula": 71.81477837840511,
+   "portR_real_fee": 71.79227837840511,
+   "ours_portR": 72.81477837977705,
+   "rel_gap_vs_ref": 0.013733475863323862,
+   "entry_date_match": 1.0,
+   "exit_reason_agreement": 0.9970501474926253,
+   "reasons": {
+    "TP3": 95,
+    "SL": 208,
+    "BE_SL": 34,
+    "EOD": 2
+   },
+   "per_symbol": {
+    "SOL-USD": {
+     "bt": 34.101498322446375,
+     "ours": 34.1014983229179
+    },
+    "LINK-USD": {
+     "bt": 37.71328005595874,
+     "ours": 38.713280056859155
+    }
+   },
+   "same_bar_be_stops": 0
+  },
+  "sl_priority": {
+   "n": 339,
+   "ours_n": 342,
+   "portR_our_fee_formula": 71.81477837840511,
+   "portR_real_fee": 71.79227837840511,
+   "ours_portR": 43.75692620210953,
+   "rel_gap_vs_ref": 0.6412208217437106,
+   "entry_date_match": 1.0,
+   "exit_reason_agreement": 0.967551622418879,
+   "reasons": {
+    "TP3": 95,
+    "SL": 208,
+    "BE_SL": 34,
+    "EOD": 2
+   },
+   "per_symbol": {
+    "SOL-USD": {
+     "bt": 34.101498322446375,
+     "ours": 25.089720541119092
+    },
+    "LINK-USD": {
+     "bt": 37.71328005595874,
+     "ours": 18.66720566099044
+    }
+   },
+   "same_bar_be_stops": 0
+  }
+ },
+ "disagreeing_trades": [
+  {
+   "symbol": "LINK-USD",
+   "entry_date": "2020-12-25",
+   "side": -1,
+   "bt": {
+    "exit_date": "2020-12-27",
+    "price": 12.15992,
+    "reason": "SL",
+    "netR": -1.0188
+   },
+   "ours": {
+    "exit_date": "2020-12-28",
+    "price": 11.54669,
+    "reason": "BE_SL",
+    "netR": -0.0188
+   },
+   "cause": "the 2020-12-27 bar tags TP2 and the original stop. Our engine arms BE and suppresses the whole stop check for that bar; backtrader had already matched the original stop before next() could move it."
+  }
+ ]
+}

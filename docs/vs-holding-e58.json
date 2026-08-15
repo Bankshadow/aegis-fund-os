@@ -1,0 +1,153 @@
+{
+ "experiment": "E58",
+ "criteria": "docs/E58_CRITERIA.md",
+ "block": 20,
+ "resamples": 500,
+ "bars": {
+  "S2": 0.9,
+  "S2b": 0.6
+ },
+ "windows": {
+  "W_OOS": {
+   "days": 1472,
+   "from": "2022-08-01",
+   "to": "2026-08-13",
+   "bh": {
+    "total": 0.4896885055483442,
+    "maxDD": 0.7406430422190231,
+    "robust": -0.991597578889702
+   },
+   "arms": {
+    "corner": {
+     "matched_risk": 0.052227476941951304,
+     "total": 1.0740855384800767,
+     "maxDD": 0.7406430422190229,
+     "robust": -0.40720054595796906,
+     "bootstrap": {
+      "robust_win": 0.6,
+      "wealth_win": 0.57,
+      "dd_worse_share": 0.238,
+      "s003_final_median": 1.9649828479890739,
+      "bh_final_median": 1.6036069319172146,
+      "s003_dd_median": 0.6607751920221165,
+      "bh_dd_median": 0.7971174632328434
+     },
+     "plain_1pct": {
+      "total": 0.304766707989923,
+      "maxDD": 0.21363262846651274,
+      "robust": -0.12249854894310247
+     }
+    },
+    "spec": {
+     "matched_risk": 0.06272954527749691,
+     "total": 7.566953341672619,
+     "maxDD": 0.7406430422190232,
+     "robust": 6.085667257234572,
+     "bootstrap": {
+      "robust_win": 0.814,
+      "wealth_win": 0.812,
+      "dd_worse_share": 0.158,
+      "s003_final_median": 8.39633375476238,
+      "bh_final_median": 1.6036069319172146,
+      "s003_dd_median": 0.5974200302916339,
+      "bh_dd_median": 0.7971174632328434
+     },
+     "plain_1pct": {
+      "total": 0.6508162704840179,
+      "maxDD": 0.18016863755162565,
+      "robust": 0.2904789953807666
+     }
+    }
+   }
+  },
+  "W_COMMON": {
+   "days": 2315,
+   "from": "2020-04-10",
+   "to": "2026-08-13",
+   "bh": {
+    "total": 40.42124619006195,
+    "maxDD": 0.9578711979789362,
+    "robust": 38.50550379410408
+   },
+   "arms": {
+    "corner": {
+     "matched_risk": 0.08543080435225492,
+     "total": -0.12986251795566173,
+     "maxDD": 0.9578711979789362,
+     "robust": -2.045604913913534,
+     "bootstrap": {
+      "robust_win": 0.108,
+      "wealth_win": 0.104,
+      "dd_worse_share": 0.706,
+      "s003_final_median": 0.7810147700020729,
+      "bh_final_median": 65.77837953731337,
+      "s003_dd_median": 0.9254702209578376,
+      "bh_dd_median": 0.8637633948946322
+     },
+     "plain_1pct": {
+      "total": 0.325360107196885,
+      "maxDD": 0.21363262846651246,
+      "robust": -0.1019051497361399
+     }
+    },
+    "spec": {
+     "matched_risk": 0.12719581284217585,
+     "total": 12.275059516370924,
+     "maxDD": 0.9578711979789359,
+     "robust": 10.359317120413051,
+     "bootstrap": {
+      "robust_win": 0.358,
+      "wealth_win": 0.36,
+      "dd_worse_share": 0.764,
+      "s003_final_median": 12.21140618278734,
+      "bh_final_median": 65.77837953731337,
+      "s003_dd_median": 0.9417956888506974,
+      "bh_dd_median": 0.8637633948946322
+     },
+     "plain_1pct": {
+      "total": 0.9418274696668549,
+      "maxDD": 0.1801686375516257,
+      "robust": 0.5814901945636035
+     }
+    }
+   }
+  }
+ },
+ "S6_single_assets": {
+  "SOL-USD": {
+   "total": 0.8234379604450393,
+   "maxDD": 0.7923693495450257,
+   "robust": -0.7613007386450121,
+   "bootstrap": {
+    "robust_win": 0.538,
+    "wealth_win": 0.51,
+    "dd_worse_share": 0.152,
+    "s003_final_median": 1.9649828479890739,
+    "bh_final_median": 1.846150714068583,
+    "s003_dd_median": 0.6607751920221165,
+    "bh_dd_median": 0.8546856366968394
+   }
+  },
+  "LINK-USD": {
+   "total": 0.15593905065166092,
+   "maxDD": 0.7545159167410462,
+   "robust": -1.3530927828304316,
+   "bootstrap": {
+    "robust_win": 0.656,
+    "wealth_win": 0.636,
+    "dd_worse_share": 0.212,
+    "s003_final_median": 1.9649828479890739,
+    "bh_final_median": 1.1594305452986609,
+    "s003_dd_median": 0.6607751920221165,
+    "bh_dd_median": 0.8008100362984039
+   }
+  }
+ },
+ "checks": {
+  "S1": true,
+  "S2": false,
+  "S2b": false,
+  "S3": false
+ },
+ "verdict": "NOT WORTH IT"
+}

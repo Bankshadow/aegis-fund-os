@@ -1,0 +1,216 @@
+{
+ "experiment": "E56",
+ "criteria": "docs/E56_CRITERIA.md",
+ "grid": {
+  "tp_first|coded|0.0005": {
+   "intrabar": "tp_first",
+   "be_rule": "coded",
+   "fee": 0.0005,
+   "n": 339,
+   "IS": 19.11877720954973,
+   "OOS": 53.69600117022732,
+   "full": 72.81477837977705
+  },
+  "tp_first|coded|0.0010": {
+   "intrabar": "tp_first",
+   "be_rule": "coded",
+   "fee": 0.001,
+   "n": 339,
+   "IS": 17.237554419099453,
+   "OOS": 50.39200234045464,
+   "full": 67.62955675955409
+  },
+  "tp_first|coded|0.0015": {
+   "intrabar": "tp_first",
+   "be_rule": "coded",
+   "fee": 0.0015,
+   "n": 339,
+   "IS": 15.356331628649176,
+   "OOS": 47.08800351068195,
+   "full": 62.44433513933113
+  },
+  "tp_first|coded|0.0025": {
+   "intrabar": "tp_first",
+   "be_rule": "coded",
+   "fee": 0.0025,
+   "n": 339,
+   "IS": 11.593886047748626,
+   "OOS": 40.480005851136575,
+   "full": 52.0738918988852
+  },
+  "tp_first|literal|0.0005": {
+   "intrabar": "tp_first",
+   "be_rule": "literal",
+   "fee": 0.0005,
+   "n": 342,
+   "IS": 10.106999427750928,
+   "OOS": 42.649926774358605,
+   "full": 52.75692620210953
+  },
+  "tp_first|literal|0.0010": {
+   "intrabar": "tp_first",
+   "be_rule": "literal",
+   "fee": 0.001,
+   "n": 342,
+   "IS": 8.213998855501845,
+   "OOS": 39.299853548717216,
+   "full": 47.51385240421906
+  },
+  "tp_first|literal|0.0015": {
+   "intrabar": "tp_first",
+   "be_rule": "literal",
+   "fee": 0.0015,
+   "n": 342,
+   "IS": 6.320998283252766,
+   "OOS": 35.949780323075814,
+   "full": 42.270778606328584
+  },
+  "tp_first|literal|0.0025": {
+   "intrabar": "tp_first",
+   "be_rule": "literal",
+   "fee": 0.0025,
+   "n": 342,
+   "IS": 2.5349971387546084,
+   "OOS": 29.24963387179302,
+   "full": 31.784631010547628
+  },
+  "sl_first|coded|0.0005": {
+   "intrabar": "sl_first",
+   "be_rule": "coded",
+   "fee": 0.0005,
+   "n": 342,
+   "IS": 7.106999427750925,
+   "OOS": 36.649926774358605,
+   "full": 43.75692620210953
+  },
+  "sl_first|coded|0.0010": {
+   "intrabar": "sl_first",
+   "be_rule": "coded",
+   "fee": 0.001,
+   "n": 342,
+   "IS": 5.213998855501845,
+   "OOS": 33.299853548717216,
+   "full": 38.51385240421906
+  },
+  "sl_first|coded|0.0015": {
+   "intrabar": "sl_first",
+   "be_rule": "coded",
+   "fee": 0.0015,
+   "n": 342,
+   "IS": 3.3209982832527642,
+   "OOS": 29.94978032307581,
+   "full": 33.27077860632858
+  },
+  "sl_first|coded|0.0025": {
+   "intrabar": "sl_first",
+   "be_rule": "coded",
+   "fee": 0.0025,
+   "n": 342,
+   "IS": -0.46500286124539336,
+   "OOS": 23.24963387179302,
+   "full": 22.784631010547624
+  },
+  "sl_first|literal|0.0005": {
+   "intrabar": "sl_first",
+   "be_rule": "literal",
+   "fee": 0.0005,
+   "n": 342,
+   "IS": 7.106999427750925,
+   "OOS": 36.649926774358605,
+   "full": 43.75692620210953
+  },
+  "sl_first|literal|0.0010": {
+   "intrabar": "sl_first",
+   "be_rule": "literal",
+   "fee": 0.001,
+   "n": 342,
+   "IS": 5.213998855501845,
+   "OOS": 33.299853548717216,
+   "full": 38.51385240421906
+  },
+  "sl_first|literal|0.0015": {
+   "intrabar": "sl_first",
+   "be_rule": "literal",
+   "fee": 0.0015,
+   "n": 342,
+   "IS": 3.3209982832527642,
+   "OOS": 29.94978032307581,
+   "full": 33.27077860632858
+  },
+  "sl_first|literal|0.0025": {
+   "intrabar": "sl_first",
+   "be_rule": "literal",
+   "fee": 0.0025,
+   "n": 342,
+   "IS": -0.46500286124539336,
+   "OOS": 23.24963387179302,
+   "full": 22.784631010547624
+  }
+ },
+ "corner": {
+  "intrabar": "sl_first",
+  "be_rule": "literal",
+  "fee": 0.0005,
+  "n": 342,
+  "IS": 7.106999427750925,
+  "OOS": 36.649926774358605,
+  "full": 43.75692620210953
+ },
+ "spec_cell": 72.81477837977705,
+ "kept_share": 0.6009346890254658,
+ "decomposition": {
+  "only_sl_first": -29.05785217766752,
+  "only_literal_be": -20.05785217766752,
+  "only_fee_015": -10.370443240445923,
+  "joint": -39.543999773448476,
+  "additive": -59.48614759578096,
+  "interaction": 19.942147822332487
+ },
+ "survival": {
+  "cagr": 0.06891660149307577,
+  "maxDD": 0.21344848169812855,
+  "final": 13059.71731765068,
+  "bh_cagr": 0.104,
+  "bh_dd": 0.741
+ },
+ "unseen": {
+  "trades": 212,
+  "portR": 24.06434972309301,
+  "spec_portR": 41.12220190076053,
+  "cutoff": "2023-08-12"
+ },
+ "per_asset": {
+  "SOL-USD": {
+   "n": 131,
+   "portR": 25.089720541119092,
+   "spec_portR": 34.1014983229179
+  },
+  "LINK-USD": {
+   "n": 211,
+   "portR": 18.667205660990444,
+   "spec_portR": 38.713280056859155
+  }
+ },
+ "breakeven_fee_side": {
+  "tp_first/coded": 0.0075215,
+  "tp_first/literal": 0.005530500000000001,
+  "sl_first/coded": 0.0046725,
+  "sl_first/literal": 0.0046725
+ },
+ "worst_cell_at_005": "sl_first|coded|0.0005",
+ "corner_is_worst": true,
+ "be_axis_nested_in_intrabar": true,
+ "tied_worst_cells": [
+  "sl_first|coded|0.0005",
+  "sl_first|literal|0.0005"
+ ],
+ "checks": {
+  "Z1": true,
+  "Z2": true,
+  "Z3": true,
+  "Z4": 0.0,
+  "Z9": true
+ },
+ "verdict": "EDGE REAL BUT THIN",
+ "run_count": 16
+}
