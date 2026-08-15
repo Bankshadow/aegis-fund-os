@@ -1,0 +1,73 @@
+name: Aegis runtime watchdog
+
+# Read-only incident automation. This workflow never calls the reconciliation
+# endpoint and carries no exchange, broker, transfer, or withdrawal credential.
+# AEGIS_AUTOMATION_STATUS_URL must target /api/automation/runtime-status.
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: aegis-runtime-watchdog
+  cancel-in-progress: false
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    env:
+      AEGIS_AUTOMATION_STATUS_URL: ${{ secrets.AEGIS_AUTOMATION_STATUS_URL }}
+      AEGIS_AUTOMATION_STATUS_TOKEN: ${{ secrets.AEGIS_AUTOMATION_STATUS_TOKEN }}
+    steps:
+      - name: Skip until the read-only endpoint is configured
+        if: ${{ env.AEGIS_AUTOMATION_STATUS_URL == '' || env.AEGIS_AUTOMATION_STATUS_TOKEN == '' }}
+        run: echo "::warning::runtime watchdog skipped until AEGIS_AUTOMATION_STATUS_URL and AEGIS_AUTOMATION_STATUS_TOKEN are configured."
+
+      - name: Read runtime safety status
+        if: ${{ env.AEGIS_AUTOMATION_STATUS_URL != '' && env.AEGIS_AUTOMATION_STATUS_TOKEN != '' }}
+        id: status
+        run: |
+          set -euo pipefail
+          curl --fail-with-body --silent --show-error --max-time 15 \
+            -H "X-Aegis-Automation-Token: $AEGIS_AUTOMATION_STATUS_TOKEN" \
+            "$AEGIS_AUTOMATION_STATUS_URL" > status.json
+          jq -e '.schema == "aegis.automation-status.v1"' status.json > /dev/null
+          echo "attention=$(jq '(.safety.haltedBots + .safety.failedRuns) > 0' status.json)" >> "$GITHUB_OUTPUT"
+          echo "summary<<EOF" >> "$GITHUB_OUTPUT"
+          jq -r '"mode=\(.mode) | running=\(.bots.running) | halted=\(.safety.haltedBots) | failed=\(.safety.failedRuns)"' status.json >> "$GITHUB_OUTPUT"
+          echo "EOF" >> "$GITHUB_OUTPUT"
+
+      - name: Create or update an operator incident
+        if: ${{ steps.status.outputs.attention == 'true' }}
+        uses: actions/github-script@v8
+        env:
+          AEGIS_RUNTIME_SUMMARY: ${{ steps.status.outputs.summary }}
+        with:
+          script: |
+            const title = 'Aegis runtime requires operator attention';
+            const label = 'aegis-runtime-alert';
+            const body = [
+              'The read-only watchdog detected a runtime safety condition.',
+              '',
+              `Latest status: ${process.env.AEGIS_RUNTIME_SUMMARY}`,
+              '',
+              'Review the Aegis Bot Cockpit and D1 runtime runs. This workflow cannot start, stop, sync, place, cancel, transfer, or withdraw anything.',
+            ].join('\n');
+            const issues = await github.rest.issues.listForRepo({
+              owner: context.repo.owner, repo: context.repo.repo, state: 'open', labels: label, per_page: 1,
+            });
+            if (issues.data.length) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner, repo: context.repo.repo, issue_number: issues.data[0].number, body,
+              });
+            } else {
+              const created = await github.rest.issues.create({
+                owner: context.repo.owner, repo: context.repo.repo, title, body, labels: [label],
+              });
+              core.notice(`Created incident #${created.data.number}`);
+            }

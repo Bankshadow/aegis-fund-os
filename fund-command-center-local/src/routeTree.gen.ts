@@ -18,8 +18,12 @@ import { Route as RiskRouteImport } from './routes/risk'
 import { Route as ReportsRouteImport } from './routes/reports'
 import { Route as ReconciliationRouteImport } from './routes/reconciliation'
 import { Route as PortfolioRouteImport } from './routes/portfolio'
+import { Route as NewsMarketRouteImport } from './routes/news-market'
+import { Route as NewsExchangesRouteImport } from './routes/news-exchanges'
+import { Route as NewsAssetsRouteImport } from './routes/news-assets'
 import { Route as LedgerRouteImport } from './routes/ledger'
 import { Route as IntegrationsRouteImport } from './routes/integrations'
+import { Route as ComparedToWhatRouteImport } from './routes/compared-to-what'
 import { Route as BotsRouteImport } from './routes/bots'
 import { Route as AuditRouteImport } from './routes/audit'
 import { Route as ApprovalsRouteImport } from './routes/approvals'
@@ -78,6 +82,21 @@ const PortfolioRoute = PortfolioRouteImport.update({
   path: '/portfolio',
   getParentRoute: () => rootRouteImport,
 } as any)
+const NewsMarketRoute = NewsMarketRouteImport.update({
+  id: '/news-market',
+  path: '/news-market',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NewsExchangesRoute = NewsExchangesRouteImport.update({
+  id: '/news-exchanges',
+  path: '/news-exchanges',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NewsAssetsRoute = NewsAssetsRouteImport.update({
+  id: '/news-assets',
+  path: '/news-assets',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LedgerRoute = LedgerRouteImport.update({
   id: '/ledger',
   path: '/ledger',
@@ -86,6 +105,11 @@ const LedgerRoute = LedgerRouteImport.update({
 const IntegrationsRoute = IntegrationsRouteImport.update({
   id: '/integrations',
   path: '/integrations',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ComparedToWhatRoute = ComparedToWhatRouteImport.update({
+  id: '/compared-to-what',
+  path: '/compared-to-what',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BotsRoute = BotsRouteImport.update({
@@ -157,8 +181,12 @@ export interface FileRoutesByFullPath {
   '/approvals': typeof ApprovalsRoute
   '/audit': typeof AuditRoute
   '/bots': typeof BotsRoute
+  '/compared-to-what': typeof ComparedToWhatRoute
   '/integrations': typeof IntegrationsRoute
   '/ledger': typeof LedgerRoute
+  '/news-assets': typeof NewsAssetsRoute
+  '/news-exchanges': typeof NewsExchangesRoute
+  '/news-market': typeof NewsMarketRoute
   '/portfolio': typeof PortfolioRoute
   '/reconciliation': typeof ReconciliationRoute
   '/reports': typeof ReportsRoute
@@ -182,8 +210,12 @@ export interface FileRoutesByTo {
   '/approvals': typeof ApprovalsRoute
   '/audit': typeof AuditRoute
   '/bots': typeof BotsRoute
+  '/compared-to-what': typeof ComparedToWhatRoute
   '/integrations': typeof IntegrationsRoute
   '/ledger': typeof LedgerRoute
+  '/news-assets': typeof NewsAssetsRoute
+  '/news-exchanges': typeof NewsExchangesRoute
+  '/news-market': typeof NewsMarketRoute
   '/portfolio': typeof PortfolioRoute
   '/reconciliation': typeof ReconciliationRoute
   '/reports': typeof ReportsRoute
@@ -208,8 +240,12 @@ export interface FileRoutesById {
   '/approvals': typeof ApprovalsRoute
   '/audit': typeof AuditRoute
   '/bots': typeof BotsRoute
+  '/compared-to-what': typeof ComparedToWhatRoute
   '/integrations': typeof IntegrationsRoute
   '/ledger': typeof LedgerRoute
+  '/news-assets': typeof NewsAssetsRoute
+  '/news-exchanges': typeof NewsExchangesRoute
+  '/news-market': typeof NewsMarketRoute
   '/portfolio': typeof PortfolioRoute
   '/reconciliation': typeof ReconciliationRoute
   '/reports': typeof ReportsRoute
@@ -235,8 +271,12 @@ export interface FileRouteTypes {
     | '/approvals'
     | '/audit'
     | '/bots'
+    | '/compared-to-what'
     | '/integrations'
     | '/ledger'
+    | '/news-assets'
+    | '/news-exchanges'
+    | '/news-market'
     | '/portfolio'
     | '/reconciliation'
     | '/reports'
@@ -260,8 +300,12 @@ export interface FileRouteTypes {
     | '/approvals'
     | '/audit'
     | '/bots'
+    | '/compared-to-what'
     | '/integrations'
     | '/ledger'
+    | '/news-assets'
+    | '/news-exchanges'
+    | '/news-market'
     | '/portfolio'
     | '/reconciliation'
     | '/reports'
@@ -285,8 +329,12 @@ export interface FileRouteTypes {
     | '/approvals'
     | '/audit'
     | '/bots'
+    | '/compared-to-what'
     | '/integrations'
     | '/ledger'
+    | '/news-assets'
+    | '/news-exchanges'
+    | '/news-market'
     | '/portfolio'
     | '/reconciliation'
     | '/reports'
@@ -311,8 +359,12 @@ export interface RootRouteChildren {
   ApprovalsRoute: typeof ApprovalsRoute
   AuditRoute: typeof AuditRoute
   BotsRoute: typeof BotsRoute
+  ComparedToWhatRoute: typeof ComparedToWhatRoute
   IntegrationsRoute: typeof IntegrationsRoute
   LedgerRoute: typeof LedgerRoute
+  NewsAssetsRoute: typeof NewsAssetsRoute
+  NewsExchangesRoute: typeof NewsExchangesRoute
+  NewsMarketRoute: typeof NewsMarketRoute
   PortfolioRoute: typeof PortfolioRoute
   ReconciliationRoute: typeof ReconciliationRoute
   ReportsRoute: typeof ReportsRoute
@@ -394,6 +446,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PortfolioRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/news-market': {
+      id: '/news-market'
+      path: '/news-market'
+      fullPath: '/news-market'
+      preLoaderRoute: typeof NewsMarketRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/news-exchanges': {
+      id: '/news-exchanges'
+      path: '/news-exchanges'
+      fullPath: '/news-exchanges'
+      preLoaderRoute: typeof NewsExchangesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/news-assets': {
+      id: '/news-assets'
+      path: '/news-assets'
+      fullPath: '/news-assets'
+      preLoaderRoute: typeof NewsAssetsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/ledger': {
       id: '/ledger'
       path: '/ledger'
@@ -406,6 +479,13 @@ declare module '@tanstack/react-router' {
       path: '/integrations'
       fullPath: '/integrations'
       preLoaderRoute: typeof IntegrationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/compared-to-what': {
+      id: '/compared-to-what'
+      path: '/compared-to-what'
+      fullPath: '/compared-to-what'
+      preLoaderRoute: typeof ComparedToWhatRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/bots': {
@@ -503,8 +583,12 @@ const rootRouteChildren: RootRouteChildren = {
   ApprovalsRoute: ApprovalsRoute,
   AuditRoute: AuditRoute,
   BotsRoute: BotsRoute,
+  ComparedToWhatRoute: ComparedToWhatRoute,
   IntegrationsRoute: IntegrationsRoute,
   LedgerRoute: LedgerRoute,
+  NewsAssetsRoute: NewsAssetsRoute,
+  NewsExchangesRoute: NewsExchangesRoute,
+  NewsMarketRoute: NewsMarketRoute,
   PortfolioRoute: PortfolioRoute,
   ReconciliationRoute: ReconciliationRoute,
   ReportsRoute: ReportsRoute,

@@ -33,6 +33,7 @@ import {
 import { AlertTriangle, CheckCircle2, Clock, Download, ShieldCheck } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { ColdShowerBanner, MeasuredHonestlyBoard } from "@/components/measured-honestly";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -91,7 +92,9 @@ function Overview() {
       />
 
       <div className="p-6 space-y-6">
-        {/* KPI grid */}
+        <ColdShowerBanner />
+
+        {/* KPI grid — return metrics sit next to drawdown (risk lives next to return) */}
         <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-5">
           <MetricCard
             label="NAV"
@@ -112,14 +115,17 @@ function Overview() {
             sub="Across venues"
           />
           <MetricCard
-            label="Drawdown"
-            value={fmtPct(KPIS.drawdown)}
-            sub={`Max ${fmtPct(KPIS.maxDrawdown)}`}
+            label="YTD return"
+            value={fmtPct(KPIS.ytdReturn)}
+            sub={`MTD ${fmtPct(KPIS.mtdReturn)} · D ${fmtPct(KPIS.dailyReturn)}`}
+            tone="positive"
+          />
+          <MetricCard
+            label="Max drawdown"
+            value={fmtPct(KPIS.maxDrawdown)}
+            sub={`Current ${fmtPct(KPIS.drawdown)} · shown beside return on purpose`}
             tone="negative"
           />
-          <MetricCard label="Daily" value={fmtPct(KPIS.dailyReturn)} tone="positive" />
-          <MetricCard label="MTD" value={fmtPct(KPIS.mtdReturn)} tone="positive" />
-          <MetricCard label="YTD" value={fmtPct(KPIS.ytdReturn)} tone="positive" />
           <MetricCard
             label="Gross Exp."
             value={fmtPct(KPIS.grossExposure, 1)}
@@ -128,6 +134,8 @@ function Overview() {
           />
           <MetricCard label="Net Exp." value={fmtPct(KPIS.netExposure, 1)} sub="of NAV" />
         </div>
+
+        <MeasuredHonestlyBoard />
 
         {/* NAV chart + allocation */}
         <div className="grid gap-6 xl:grid-cols-3">

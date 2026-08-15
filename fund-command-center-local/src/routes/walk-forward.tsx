@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { PageHeader, Panel } from "@/components/app-shell";
 import { EducationShell } from "@/components/education-shell";
+import { ColdShowerBanner, ReturnDrawdownPair } from "@/components/measured-honestly";
 import { WalkForwardGlossary } from "@/components/walk-forward-glossary";
 import { Button } from "@/components/ui/button";
 import { getWalkForwardView, type CostPresetId, type WalkForwardVariant } from "@/lib/walk-forward.functions";
@@ -83,6 +84,8 @@ function WalkForwardLab() {
         subtitle="ทดสอบกลยุทธ์ grid กับหุ้น AOT รายวัน ปี 2005–2026 แบ่งเป็น 18 ช่วง แต่ละช่วงใช้ข้อมูล 2 ปีแรกตั้งค่า แล้ววัดผลจริงในปีถัดไปที่ยังไม่เคยเห็น (จำลองการเทรดจริงที่ทำนายอนาคตไม่ได้) · engine เดียวกับงานวิจัย E26–E29"
       />
       <div className="space-y-6 p-6">
+        <ColdShowerBanner />
+
         <WalkForwardGlossary
           figures={{
             robust: summary.meanRobust,
@@ -92,6 +95,36 @@ function WalkForwardLab() {
             alpha: summary.meanAlpha,
           }}
         />
+
+        <Panel
+          title="Return | Max DD · measured side by side"
+          subtitle="ตัวเลขแดงไม่ถูกซ่อน — risk อยู่ข้าง return เสมอ (แบบเดียวกับบอร์ด research บน Overview)"
+        >
+          <div className="flex flex-wrap gap-6">
+            <div>
+              <div className="mb-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                Grid (OOS mean)
+              </div>
+              <ReturnDrawdownPair
+                returnPct={summary.meanReturn}
+                returnLabel="mean return"
+                maxDdPct={summary.meanDrawdown}
+                vsBenchmarkPct={summary.meanAlpha}
+                benchmarkLabel="buy-and-hold alpha"
+              />
+            </div>
+            <div>
+              <div className="mb-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                Buy-and-hold (same folds)
+              </div>
+              <ReturnDrawdownPair
+                returnPct={summary.meanBuyAndHold}
+                returnLabel="mean return"
+                maxDdPct={summary.meanBuyAndHoldDrawdown}
+              />
+            </div>
+          </div>
+        </Panel>
 
         <Panel title="เลือกกลไกที่จะทดสอบ" subtitle="แต่ละตัวเพิ่มกลไกทีละอย่างจาก baseline — ดูว่ามันแก้หรือไม่แก้ปัญหา">
           <div className="flex flex-wrap gap-2">

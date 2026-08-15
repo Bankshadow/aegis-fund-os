@@ -63,6 +63,22 @@ export default {
         });
       }
     }
+    if (new URL(request.url).pathname === "/api/automation/runtime-status") {
+      try {
+        const { handleAutomationStatusRequest } = await import("./lib/automation-status-endpoint");
+        const runtimeEnv = (env as object | undefined) ?? (globalThis as { __env__?: unknown }).__env__;
+        return await handleAutomationStatusRequest(
+          request,
+          runtimeEnv as Parameters<typeof handleAutomationStatusRequest>[1],
+        );
+      } catch (error) {
+        console.error("automation status endpoint failed:", error);
+        return new Response(JSON.stringify({ error: "automation status failed" }), {
+          status: 500,
+          headers: { "content-type": "application/json" },
+        });
+      }
+    }
     try {
       const handler = await getServerEntry();
       const response = await handler.fetch(request, env, ctx);
@@ -76,4 +92,3 @@ export default {
     }
   },
 };
-

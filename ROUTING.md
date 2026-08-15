@@ -64,6 +64,14 @@ Verdict file > chat praise.
 
 Do not install speculatively.
 
+## Graph contracts (BUILD 7.5) — scaffold only
+
+Harness diamonds live in `agent/graph_contracts.py` + `agent/graph_ops.py`.
+They validate findings, reduce with code, and route review severity. They do
+**not** spawn subagents and do **not** touch L3 placement. Use them when a
+task needs an explicit fan-out → reduce → synthesize shape; keep BUILD 7
+swarms deferred until the triggers above fire.
+
 ## Watch weekly
 
 - **Cheap-tier share** of ticks (target: majority of traffic on Sonnet/Sol/Luna)

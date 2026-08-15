@@ -23,6 +23,8 @@ import {
   Lock,
   Search,
   Bot,
+  Newspaper,
+  Flame,
   RadioTower,
   PlugZap,
   CheckCheck,
@@ -33,6 +35,15 @@ const groups = [
   {
     heading: "Command Center",
     items: [{ icon: LayoutDashboard, label: "Overview", to: "/" }],
+  },
+  {
+    heading: "Daily Monitor",
+    items: [
+      { icon: LineChart, label: "Portfolio & NAV", to: "/portfolio" },
+      { icon: Newspaper, label: "Exchange News Risk", to: "/news-exchanges" },
+      { icon: Newspaper, label: "Held Asset News", to: "/news-assets" },
+      { icon: Flame, label: "Market Pulse", to: "/news-market" },
+    ],
   },
   {
     heading: "Trading & Research",

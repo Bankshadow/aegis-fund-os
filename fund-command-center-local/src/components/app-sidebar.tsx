@@ -11,6 +11,8 @@ import {
   ChartNoAxesCombined,
   Settings,
   CircleDot,
+  Newspaper,
+  Flame,
   Bot,
   RadioTower,
   PlugZap,
@@ -37,14 +39,23 @@ const NAV_GROUPS = [
     label: "Command Center",
     items: [{ title: "Overview", url: "/", icon: LayoutDashboard }],
   },
+  // The three boards the operator opens every morning, kept together and above
+  // everything else: the book, then who holds it, then what it is made of.
+  {
+    label: "Daily Monitor",
+    items: [
+      { title: "Portfolio & NAV", url: "/portfolio", icon: LineChart },
+      { title: "Exchange News Risk", url: "/news-exchanges", icon: Newspaper },
+      { title: "Held Asset News", url: "/news-assets", icon: Newspaper },
+      { title: "Market Pulse", url: "/news-market", icon: Flame },
+    ],
+  },
   {
     label: "Trading & Research",
     items: [
       { title: "Bots & Orders", url: "/bots", icon: Bot },
       { title: "AOT Paper Grid", url: "/aot-paper-grid", icon: ChartNoAxesCombined },
       { title: "Walk-Forward Lab", url: "/walk-forward", icon: ChartNoAxesCombined },
-      { title: "Mechanism Compare", url: "/walk-forward-compare", icon: ChartNoAxesCombined },
-      { title: "Overfitting Lab", url: "/walk-forward-overfit", icon: ChartNoAxesCombined },
       { title: "Signals", url: "/signals", icon: RadioTower },
     ],
   },
@@ -54,7 +65,6 @@ const NAV_GROUPS = [
       { title: "Accounts & Custody", url: "/accounts", icon: Wallet },
       { title: "General Ledger", url: "/ledger", icon: BookOpen },
       { title: "Reconciliation", url: "/reconciliation", icon: GitCompare },
-      { title: "Portfolio & NAV", url: "/portfolio", icon: LineChart },
       { title: "Risk Center", url: "/risk", icon: ShieldAlert },
     ],
   },

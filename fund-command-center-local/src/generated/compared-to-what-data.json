@@ -1,0 +1,136 @@
+{
+ "generatedAt": "2026-08-11T12:26:27.030Z",
+ "source": {
+  "screen": "docs/stvb-e33-diag.json",
+  "counting": "docs/rvol-ep9m-diag.json",
+  "levels": "docs/golden-pocket-e35.json"
+ },
+ "screen": {
+  "horizons": [
+   {
+    "days": 30,
+    "keptMean": 0.041476763063056386,
+    "droppedMean": 0.06583265407059419,
+    "nKept": 2511,
+    "nDropped": 3005,
+    "screenWasRight": false
+   },
+   {
+    "days": 90,
+    "keptMean": 0.16297954041936474,
+    "droppedMean": 0.26492829058749223,
+    "nKept": 2496,
+    "nDropped": 3002,
+    "screenWasRight": false
+   },
+   {
+    "days": 180,
+    "keptMean": 0.4040716393684943,
+    "droppedMean": 0.6983489892784716,
+    "nKept": 2475,
+    "nDropped": 2998,
+    "screenWasRight": false
+   }
+  ]
+ },
+ "counting": {
+  "rows": [
+   {
+    "days": 1,
+    "clusteredMean": 0.0026538546551719963,
+    "clusteredPercentile": 0.6748,
+    "episodeMean": -0.002843271820567687,
+    "episodePercentile": 0.166,
+    "baseMean": 0.0014543155061587183,
+    "episodeWinRate": 0.43333333333333335,
+    "baseWinRate": 0.5111450381679389
+   },
+   {
+    "days": 5,
+    "clusteredMean": 0.01316687409262654,
+    "clusteredPercentile": 0.8433,
+    "episodeMean": 0.005229166731776504,
+    "episodePercentile": 0.4183,
+    "baseMean": 0.00726310772226472,
+    "episodeWinRate": 0.5166666666666667,
+    "baseWinRate": 0.5313359828798533
+   },
+   {
+    "days": 10,
+    "clusteredMean": 0.029639391038921672,
+    "clusteredPercentile": 0.9601,
+    "episodeMean": 0.008972255689184349,
+    "episodePercentile": 0.3501,
+    "baseMean": 0.014854547520073464,
+    "episodeWinRate": 0.48333333333333334,
+    "baseWinRate": 0.5404164115125536
+   },
+   {
+    "days": 20,
+    "clusteredMean": 0.05593643252676596,
+    "clusteredPercentile": 0.9698,
+    "episodeMean": 0.02125598316806556,
+    "episodePercentile": 0.3382,
+    "baseMean": 0.03097886176093761,
+    "episodeWinRate": 0.43333333333333335,
+    "baseWinRate": 0.5347051597051597
+   }
+  ],
+  "rawSignals": 178,
+  "episodes": 60,
+  "totalDays": 3276
+ },
+ "levels": {
+  "zones": [
+   {
+    "id": "Z1_0382",
+    "n": 108,
+    "mean": -0.007657157518238246,
+    "percentile": 0.2384,
+    "isClaim": false,
+    "isControl": false
+   },
+   {
+    "id": "Z2_0500",
+    "n": 102,
+    "mean": -0.003688330759117378,
+    "percentile": 0.3674,
+    "isClaim": false,
+    "isControl": false
+   },
+   {
+    "id": "Z3_golden",
+    "n": 87,
+    "mean": -0.01111838235240595,
+    "percentile": 0.1947,
+    "isClaim": true,
+    "isControl": false
+   },
+   {
+    "id": "Z4_0786",
+    "n": 74,
+    "mean": -0.013013963445465696,
+    "percentile": 0.1627,
+    "isClaim": false,
+    "isControl": false
+   },
+   {
+    "id": "Z5_random",
+    "n": 85,
+    "mean": 0.006205251048789573,
+    "percentile": 0.6919,
+    "isClaim": false,
+    "isControl": true
+   }
+  ],
+  "lookback": 10,
+  "horizon": 10,
+  "measurements": 45,
+  "crossedThreshold": 0,
+  "minPercentile": 0.1093,
+  "maxPercentile": 0.7487,
+  "fibSpread": 0.009325632686348317,
+  "parameterNoise": 0.008879002066130879,
+  "verdict": "FAIL"
+ }
+}

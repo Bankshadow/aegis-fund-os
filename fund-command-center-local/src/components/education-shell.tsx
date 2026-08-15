@@ -12,9 +12,14 @@ import { Link } from "@tanstack/react-router";
  * unambiguous "this is teaching material, nothing is live" line.
  */
 const LINKS = [
-  { to: "/walk-forward", label: "ผลราย fold", search: { variant: "baseline" as const, cost: "thai" as const } },
+  {
+    to: "/walk-forward",
+    label: "ผลราย fold",
+    search: { variant: "baseline" as const, cost: "thai" as const },
+  },
   { to: "/walk-forward-compare", label: "เปรียบเทียบกลไก" },
   { to: "/walk-forward-overfit", label: "บทเรียน overfitting" },
+  { to: "/compared-to-what", label: "เทียบกับอะไร นับกี่ครั้ง" },
 ];
 
 export function EducationShell({ children }: { children: ReactNode }) {
@@ -24,7 +29,9 @@ export function EducationShell({ children }: { children: ReactNode }) {
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-3">
           <div className="min-w-0">
             <div className="text-sm font-semibold tracking-tight">Walk-Forward Lab</div>
-            <div className="text-[11px] text-muted-foreground">เครื่องมือเรียนรู้ — ไม่มีการเทรดจริง ไม่ใช่คำแนะนำการลงทุน</div>
+            <div className="text-[11px] text-muted-foreground">
+              เครื่องมือเรียนรู้ — ไม่มีการเทรดจริง ไม่ใช่คำแนะนำการลงทุน
+            </div>
           </div>
           <nav className="flex flex-wrap gap-1">
             {LINKS.map((link) => (
@@ -45,7 +52,8 @@ export function EducationShell({ children }: { children: ReactNode }) {
       </header>
       <main className="mx-auto max-w-6xl min-w-0 overflow-x-hidden">{children}</main>
       <footer className="border-t border-border/70 px-4 py-3 text-[11px] text-muted-foreground">
-        สื่อการเรียนรู้เท่านั้น · ผลย้อนหลังไม่รับประกันอนาคต · ไม่มีการส่งคำสั่งซื้อขายจริงจากหน้านี้
+        สื่อการเรียนรู้เท่านั้น · ผลย้อนหลังไม่รับประกันอนาคต ·
+        ไม่มีการส่งคำสั่งซื้อขายจริงจากหน้านี้
       </footer>
     </div>
   );
