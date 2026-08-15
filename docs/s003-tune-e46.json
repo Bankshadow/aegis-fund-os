@@ -1,0 +1,275 @@
+{
+ "experiment": "E46",
+ "criteria": "docs/E46_CRITERIA.md",
+ "split": {
+  "is_from": "2017-11-09",
+  "split": "2022-08-01",
+  "oos_to": "2026-08-13"
+ },
+ "arms": {
+  "base": {
+   "full": {
+    "trades": 339,
+    "portR": 72.81477837977702,
+    "minFold": -12.511680755760896,
+    "folds": 17,
+    "positive_folds": 14
+   },
+   "IS": {
+    "trades": 159,
+    "portR": 19.11877720954973,
+    "minFold": -5.489450184784723,
+    "folds": 9,
+    "positive_folds": 7
+   },
+   "OOS": {
+    "trades": 180,
+    "portR": 53.6960011702273,
+    "minFold": -12.511680755760896,
+    "folds": 8,
+    "positive_folds": 7
+   }
+  },
+  "A_sl_buffer_0.10": {
+   "full": {
+    "trades": 400,
+    "portR": 83.73946688656969,
+    "minFold": -8.738343381435042,
+    "folds": 17,
+    "positive_folds": 14
+   },
+   "IS": {
+    "trades": 181,
+    "portR": 24.502023141451435,
+    "minFold": -7.219432585096212,
+    "folds": 9,
+    "positive_folds": 7
+   },
+   "OOS": {
+    "trades": 219,
+    "portR": 59.23744374511828,
+    "minFold": -8.738343381435042,
+    "folds": 8,
+    "positive_folds": 7
+   }
+  },
+  "A_sl_buffer_0.50": {
+   "full": {
+    "trades": 241,
+    "portR": 37.59833290913349,
+    "minFold": -16.306520565054544,
+    "folds": 17,
+    "positive_folds": 13
+   },
+   "IS": {
+    "trades": 114,
+    "portR": 27.00550992830925,
+    "minFold": -0.07539425918686349,
+    "folds": 9,
+    "positive_folds": 8
+   },
+   "OOS": {
+    "trades": 127,
+    "portR": 10.592822980824252,
+    "minFold": -16.306520565054544,
+    "folds": 8,
+    "positive_folds": 5
+   }
+  },
+  "B_max_risk_2.0": {
+   "full": {
+    "trades": 349,
+    "portR": 86.47999204263283,
+    "minFold": -7.508962641877823,
+    "folds": 17,
+    "positive_folds": 14
+   },
+   "IS": {
+    "trades": 156,
+    "portR": 23.13624602452165,
+    "minFold": -5.489450184784723,
+    "folds": 9,
+    "positive_folds": 7
+   },
+   "OOS": {
+    "trades": 193,
+    "portR": 63.34374601811121,
+    "minFold": -7.508962641877823,
+    "folds": 8,
+    "positive_folds": 7
+   }
+  },
+  "B_max_risk_4.0": {
+   "full": {
+    "trades": 339,
+    "portR": 72.81477837977702,
+    "minFold": -12.511680755760896,
+    "folds": 17,
+    "positive_folds": 14
+   },
+   "IS": {
+    "trades": 159,
+    "portR": 19.11877720954973,
+    "minFold": -5.489450184784723,
+    "folds": 9,
+    "positive_folds": 7
+   },
+   "OOS": {
+    "trades": 180,
+    "portR": 53.6960011702273,
+    "minFold": -12.511680755760896,
+    "folds": 8,
+    "positive_folds": 7
+   }
+  },
+  "C_be_none": {
+   "full": {
+    "trades": 310,
+    "portR": 71.30360314703846,
+    "minFold": -14.511680755760896,
+    "folds": 17,
+    "positive_folds": 14
+   },
+   "IS": {
+    "trades": 145,
+    "portR": 17.289256541227193,
+    "minFold": -5.47347596909751,
+    "folds": 9,
+    "positive_folds": 7
+   },
+   "OOS": {
+    "trades": 165,
+    "portR": 54.01434660581129,
+    "minFold": -14.511680755760896,
+    "folds": 8,
+    "positive_folds": 7
+   }
+  },
+  "C_be_after_tp1": {
+   "full": {
+    "trades": 385,
+    "portR": 60.046307401281155,
+    "minFold": -8.610790082498704,
+    "folds": 17,
+    "positive_folds": 13
+   },
+   "IS": {
+    "trades": 183,
+    "portR": 8.794037956684472,
+    "minFold": -7.158233469271412,
+    "folds": 9,
+    "positive_folds": 6
+   },
+   "OOS": {
+    "trades": 202,
+    "portR": 51.252269444596706,
+    "minFold": -8.610790082498704,
+    "folds": 8,
+    "positive_folds": 7
+   }
+  },
+  "D_tp3_2R": {
+   "full": {
+    "trades": 419,
+    "portR": 50.38729526457151,
+    "minFold": -13.5701221799936,
+    "folds": 17,
+    "positive_folds": 12
+   },
+   "IS": {
+    "trades": 192,
+    "portR": 6.669772745646416,
+    "minFold": -13.5701221799936,
+    "folds": 9,
+    "positive_folds": 5
+   },
+   "OOS": {
+    "trades": 227,
+    "portR": 43.7175225189251,
+    "minFold": -11.652722950254997,
+    "folds": 8,
+    "positive_folds": 7
+   }
+  },
+  "D_tp3_4R": {
+   "full": {
+    "trades": 272,
+    "portR": 69.11072405722688,
+    "minFold": -12.439195188512278,
+    "folds": 17,
+    "positive_folds": 13
+   },
+   "IS": {
+    "trades": 130,
+    "portR": 22.506974453401117,
+    "minFold": -11.423584999536915,
+    "folds": 9,
+    "positive_folds": 6
+   },
+   "OOS": {
+    "trades": 142,
+    "portR": 46.60374960382577,
+    "minFold": -12.439195188512278,
+    "folds": 8,
+    "positive_folds": 7
+   }
+  },
+  "E_min_stop_0.25": {
+   "full": {
+    "trades": 339,
+    "portR": 72.79714591544601,
+    "minFold": -12.514920435897116,
+    "folds": 17,
+    "positive_folds": 14
+   },
+   "IS": {
+    "trades": 159,
+    "portR": 19.112333161745582,
+    "minFold": -5.489450184784723,
+    "folds": 9,
+    "positive_folds": 7
+   },
+   "OOS": {
+    "trades": 180,
+    "portR": 53.68481275370042,
+    "minFold": -12.514920435897116,
+    "folds": 8,
+    "positive_folds": 7
+   }
+  },
+  "E_min_stop_1.0": {
+   "full": {
+    "trades": 300,
+    "portR": 37.65189403753322,
+    "minFold": -14.374696236721954,
+    "folds": 17,
+    "positive_folds": 14
+   },
+   "IS": {
+    "trades": 133,
+    "portR": 3.744487199430849,
+    "minFold": -12.337886621908718,
+    "folds": 9,
+    "positive_folds": 7
+   },
+   "OOS": {
+    "trades": 167,
+    "portR": 33.90740683810237,
+    "minFold": -14.374696236721954,
+    "folds": 8,
+    "positive_folds": 7
+   }
+  }
+ },
+ "picked_on_IS": "A_sl_buffer_0.50",
+ "checks": {
+  "T1": false,
+  "T2": false,
+  "T3": false,
+  "T5": true
+ },
+ "T4_beats_base_oos": "3/10",
+ "median_oos_portR": 52.46854109914857,
+ "verdict": "NO_HIT",
+ "run_count": 22
+}

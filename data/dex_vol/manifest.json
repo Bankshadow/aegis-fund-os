@@ -1,0 +1,40 @@
+{
+  "chains": {
+    "Ethereum": {
+      "path": "data/dex_vol/ethereum_dex_vol_daily.json",
+      "n": 2841,
+      "first": [
+        1541116800,
+        1688
+      ],
+      "last": [
+        1786492800,
+        765740895.25
+      ]
+    },
+    "Solana": {
+      "path": "data/dex_vol/solana_dex_vol_daily.json",
+      "n": 1773,
+      "first": [
+        1633132800,
+        3
+      ],
+      "last": [
+        1786492800,
+        1474040970.45
+      ]
+    },
+    "BSC": {
+      "path": "data/dex_vol/bsc_dex_vol_daily.json",
+      "n": 2154,
+      "first": [
+        1600473600,
+        129
+      ],
+      "last": [
+        1786492800,
+        891044630.07
+      ]
+    }
+  }
+}

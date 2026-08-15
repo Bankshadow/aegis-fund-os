@@ -1,0 +1,955 @@
+{
+  "asof": "2026-08-12T07:10:58.508369+00:00",
+  "sources": {
+    "defillama_chains": [
+      {
+        "name": "Ethereum",
+        "tvl": 41359293992.67714
+      },
+      {
+        "name": "BSC",
+        "tvl": 4994888253.681629
+      },
+      {
+        "name": "Solana",
+        "tvl": 4844614677.424917
+      },
+      {
+        "name": "Tron",
+        "tvl": 4808194852.33224
+      },
+      {
+        "name": "Base",
+        "tvl": 4626439613.140305
+      },
+      {
+        "name": "Bitcoin",
+        "tvl": 3473084656.364724
+      },
+      {
+        "name": "Provenance",
+        "tvl": 1668530783.2502549
+      },
+      {
+        "name": "Hyperliquid L1",
+        "tvl": 1211438227.6469839
+      },
+      {
+        "name": "Arbitrum",
+        "tvl": 1191249603.34988
+      },
+      {
+        "name": "Monad",
+        "tvl": 882321947.8739468
+      },
+      {
+        "name": "Polygon",
+        "tvl": 802652719.6041818
+      },
+      {
+        "name": "Plasma",
+        "tvl": 626860126.7752166
+      },
+      {
+        "name": "Robinhood Chain",
+        "tvl": 495381802.7468144
+      },
+      {
+        "name": "Avalanche",
+        "tvl": 415281031.8259689
+      },
+      {
+        "name": "Sui",
+        "tvl": 411262066.37181175
+      }
+    ],
+    "defillama_fees_24h": [
+      {
+        "name": "Tether",
+        "fees24h": 15946863,
+        "category": "Stablecoin Issuer",
+        "symbol": null
+      },
+      {
+        "name": "Circle USDC",
+        "fees24h": 6372933,
+        "category": "Stablecoin Issuer",
+        "symbol": null
+      },
+      {
+        "name": "PumpSwap",
+        "fees24h": 2609270,
+        "category": "Dexs",
+        "symbol": null
+      },
+      {
+        "name": "pump.fun",
+        "fees24h": 1433975,
+        "category": "Launchpad",
+        "symbol": null
+      },
+      {
+        "name": "Axiom",
+        "fees24h": 1358068,
+        "category": "Trading App",
+        "symbol": null
+      },
+      {
+        "name": "Canton",
+        "fees24h": 1225377,
+        "category": "Chain",
+        "symbol": null
+      },
+      {
+        "name": "Lido",
+        "fees24h": 1189095,
+        "category": "Liquid Staking",
+        "symbol": null
+      },
+      {
+        "name": "Hyperliquid Perps",
+        "fees24h": 1107271,
+        "category": "Derivatives",
+        "symbol": null
+      },
+      {
+        "name": "Uniswap V4",
+        "fees24h": 1064598,
+        "category": "Dexs",
+        "symbol": null
+      },
+      {
+        "name": "Tron",
+        "fees24h": 1032945,
+        "category": "Chain",
+        "symbol": null
+      },
+      {
+        "name": "Uniswap V3",
+        "fees24h": 1011692,
+        "category": "Dexs",
+        "symbol": null
+      },
+      {
+        "name": "Aave V3",
+        "fees24h": 1004340,
+        "category": "Lending",
+        "symbol": null
+      },
+      {
+        "name": "Sky Lending",
+        "fees24h": 912170,
+        "category": "CDP",
+        "symbol": null
+      },
+      {
+        "name": "Polymarket International",
+        "fees24h": 881614,
+        "category": "Prediction Market",
+        "symbol": null
+      },
+      {
+        "name": "Fragment",
+        "fees24h": 829709,
+        "category": "NFT Marketplace",
+        "symbol": null
+      }
+    ],
+    "defillama_dex_vol_24h": [
+      {
+        "name": "Uniswap V4",
+        "vol24h": 674616538,
+        "chains": [
+          "Ethereum",
+          "OP Mainnet",
+          "Base"
+        ]
+      },
+      {
+        "name": "PumpSwap",
+        "vol24h": 585324357,
+        "chains": [
+          "Solana"
+        ]
+      },
+      {
+        "name": "Uniswap V3",
+        "vol24h": 572991248,
+        "chains": [
+          "Ethereum",
+          "Arbitrum",
+          "OP Mainnet"
+        ]
+      },
+      {
+        "name": "PancakeSwap AMM V3",
+        "vol24h": 481613837,
+        "chains": [
+          "BSC",
+          "Ethereum",
+          "Polygon zkEVM"
+        ]
+      },
+      {
+        "name": "Aerodrome Slipstream",
+        "vol24h": 321777015,
+        "chains": [
+          "Base"
+        ]
+      },
+      {
+        "name": "Kalshi",
+        "vol24h": 291225000,
+        "chains": [
+          "Off Chain"
+        ]
+      },
+      {
+        "name": "BisonFi",
+        "vol24h": 151362964,
+        "chains": [
+          "Solana"
+        ]
+      },
+      {
+        "name": "PancakeSwap Infinity",
+        "vol24h": 146367272,
+        "chains": [
+          "BSC",
+          "Base"
+        ]
+      },
+      {
+        "name": "Metric V2",
+        "vol24h": 135823539,
+        "chains": [
+          "Ethereum",
+          "Arbitrum",
+          "BSC"
+        ]
+      },
+      {
+        "name": "Orca DEX",
+        "vol24h": 108357078,
+        "chains": [
+          "Solana",
+          "Eclipse"
+        ]
+      },
+      {
+        "name": "Fluid DEX",
+        "vol24h": 98348834,
+        "chains": [
+          "Ethereum",
+          "Arbitrum",
+          "Polygon"
+        ]
+      },
+      {
+        "name": "Raydium AMM",
+        "vol24h": 93519776,
+        "chains": [
+          "Solana"
+        ]
+      }
+    ],
+    "defillama_eth_tvl_30d_chg": {
+      "last": 41266971063,
+      "prev30": 39351014360,
+      "chg_pct": 4.868887712707992
+    },
+    "tokenterminal_proxy_revenue_24h": [
+      {
+        "name": "Tether",
+        "rev24h": 15946863,
+        "symbol": null
+      },
+      {
+        "name": "Circle USDC",
+        "rev24h": 6372933,
+        "symbol": null
+      },
+      {
+        "name": "Canton",
+        "rev24h": 1225377,
+        "symbol": null
+      },
+      {
+        "name": "pump.fun",
+        "rev24h": 1097061,
+        "symbol": null
+      },
+      {
+        "name": "Tron",
+        "rev24h": 1032945,
+        "symbol": null
+      },
+      {
+        "name": "Axiom",
+        "rev24h": 829477,
+        "symbol": null
+      },
+      {
+        "name": "Hyperliquid Perps",
+        "rev24h": 794787,
+        "symbol": null
+      },
+      {
+        "name": "Collector Crypt",
+        "rev24h": 654974,
+        "symbol": null
+      },
+      {
+        "name": "GMGN",
+        "rev24h": 584331,
+        "symbol": null
+      },
+      {
+        "name": "PumpSwap",
+        "rev24h": 494510,
+        "symbol": null
+      },
+      {
+        "name": "Grayscale",
+        "rev24h": 474890,
+        "symbol": null
+      },
+      {
+        "name": "Sky Lending",
+        "rev24h": 449990,
+        "symbol": null
+      }
+    ],
+    "coinglass_proxy_binance": {
+      "premium": {
+        "symbol": "BTCUSDT",
+        "markPrice": "63748.24031159",
+        "indexPrice": "63778.18239130",
+        "estimatedSettlePrice": "63689.78802899",
+        "lastFundingRate": "0.00009019",
+        "interestRate": "0.00010000",
+        "nextFundingTime": 1786521600000,
+        "time": 1786518658000
+      },
+      "oi": {
+        "symbol": "BTCUSDT",
+        "openInterest": "108889.946",
+        "time": 1786518653538
+      },
+      "global_ls": [
+        {
+          "symbol": "BTCUSDT",
+          "longAccount": "0.5342",
+          "longShortRatio": "1.1468",
+          "shortAccount": "0.4658",
+          "timestamp": 1785974400000
+        },
+        {
+          "symbol": "BTCUSDT",
+          "longAccount": "0.5484",
+          "longShortRatio": "1.2143",
+          "shortAccount": "0.4516",
+          "timestamp": 1786060800000
+        },
+        {
+          "symbol": "BTCUSDT",
+          "longAccount": "0.5244",
+          "longShortRatio": "1.1026",
+          "shortAccount": "0.4756",
+          "timestamp": 1786147200000
+        },
+        {
+          "symbol": "BTCUSDT",
+          "longAccount": "0.5340",
+          "longShortRatio": "1.1459",
+          "shortAccount": "0.4660",
+          "timestamp": 1786233600000
+        },
+        {
+          "symbol": "BTCUSDT",
+          "longAccount": "0.5378",
+          "longShortRatio": "1.1636",
+          "shortAccount": "0.4622",
+          "timestamp": 1786320000000
+        },
+        {
+          "symbol": "BTCUSDT",
+          "longAccount": "0.6160",
+          "longShortRatio": "1.6042",
+          "shortAccount": "0.3840",
+          "timestamp": 1786406400000
+        },
+        {
+          "symbol": "BTCUSDT",
+          "longAccount": "0.6434",
+          "longShortRatio": "1.8043",
+          "shortAccount": "0.3566",
+          "timestamp": 1786492800000
+        }
+      ],
+      "top_ls_acct": [
+        {
+          "symbol": "BTCUSDT",
+          "longAccount": "0.5472",
+          "longShortRatio": "1.2085",
+          "shortAccount": "0.4528",
+          "timestamp": 1785974400000
+        },
+        {
+          "symbol": "BTCUSDT",
+          "longAccount": "0.5671",
+          "longShortRatio": "1.3100",
+          "shortAccount": "0.4329",
+          "timestamp": 1786060800000
+        },
+        {
+          "symbol": "BTCUSDT",
+          "longAccount": "0.5393",
+          "longShortRatio": "1.1706",
+          "shortAccount": "0.4607",
+          "timestamp": 1786147200000
+        },
+        {
+          "symbol": "BTCUSDT",
+          "longAccount": "0.5521",
+          "longShortRatio": "1.2326",
+          "shortAccount": "0.4479",
+          "timestamp": 1786233600000
+        },
+        {
+          "symbol": "BTCUSDT",
+          "longAccount": "0.5558",
+          "longShortRatio": "1.2512",
+          "shortAccount": "0.4442",
+          "timestamp": 1786320000000
+        },
+        {
+          "symbol": "BTCUSDT",
+          "longAccount": "0.6341",
+          "longShortRatio": "1.7330",
+          "shortAccount": "0.3659",
+          "timestamp": 1786406400000
+        },
+        {
+          "symbol": "BTCUSDT",
+          "longAccount": "0.6563",
+          "longShortRatio": "1.9095",
+          "shortAccount": "0.3437",
+          "timestamp": 1786492800000
+        }
+      ],
+      "top_ls_pos": [
+        {
+          "symbol": "BTCUSDT",
+          "longAccount": "0.6006",
+          "longShortRatio": "1.5036",
+          "shortAccount": "0.3994",
+          "timestamp": 1785974400000
+        },
+        {
+          "symbol": "BTCUSDT",
+          "longAccount": "0.6109",
+          "longShortRatio": "1.5698",
+          "shortAccount": "0.3891",
+          "timestamp": 1786060800000
+        },
+        {
+          "symbol": "BTCUSDT",
+          "longAccount": "0.6061",
+          "longShortRatio": "1.5390",
+          "shortAccount": "0.3939",
+          "timestamp": 1786147200000
+        },
+        {
+          "symbol": "BTCUSDT",
+          "longAccount": "0.6087",
+          "longShortRatio": "1.5558",
+          "shortAccount": "0.3913",
+          "timestamp": 1786233600000
+        },
+        {
+          "symbol": "BTCUSDT",
+          "longAccount": "0.6063",
+          "longShortRatio": "1.5401",
+          "shortAccount": "0.3937",
+          "timestamp": 1786320000000
+        },
+        {
+          "symbol": "BTCUSDT",
+          "longAccount": "0.6254",
+          "longShortRatio": "1.6695",
+          "shortAccount": "0.3746",
+          "timestamp": 1786406400000
+        },
+        {
+          "symbol": "BTCUSDT",
+          "longAccount": "0.6242",
+          "longShortRatio": "1.6609",
+          "shortAccount": "0.3758",
+          "timestamp": 1786492800000
+        }
+      ],
+      "funding_recent": [
+        {
+          "symbol": "BTCUSDT",
+          "fundingTime": 1785916800004,
+          "fundingRate": "0.00001015",
+          "markPrice": "64141.00000000",
+          "rateType": "Regular"
+        },
+        {
+          "symbol": "BTCUSDT",
+          "fundingTime": 1785945600000,
+          "fundingRate": "0.00002676",
+          "markPrice": "64353.50000000",
+          "rateType": "Regular"
+        },
+        {
+          "symbol": "BTCUSDT",
+          "fundingTime": 1785974400002,
+          "fundingRate": "0.00006595",
+          "markPrice": "64633.90000000",
+          "rateType": "Regular"
+        },
+        {
+          "symbol": "BTCUSDT",
+          "fundingTime": 1786003200000,
+          "fundingRate": "0.00002632",
+          "markPrice": "64789.40000000",
+          "rateType": "Regular"
+        },
+        {
+          "symbol": "BTCUSDT",
+          "fundingTime": 1786032000000,
+          "fundingRate": "0.00005939",
+          "markPrice": "64604.20000000",
+          "rateType": "Regular"
+        },
+        {
+          "symbol": "BTCUSDT",
+          "fundingTime": 1786060800000,
+          "fundingRate": "0.00000799",
+          "markPrice": "64300.00000000",
+          "rateType": "Regular"
+        },
+        {
+          "symbol": "BTCUSDT",
+          "fundingTime": 1786089600000,
+          "fundingRate": "0.00004574",
+          "markPrice": "64290.58485507",
+          "rateType": "Regular"
+        },
+        {
+          "symbol": "BTCUSDT",
+          "fundingTime": 1786118400000,
+          "fundingRate": "0.00006308",
+          "markPrice": "64885.50000000",
+          "rateType": "Regular"
+        },
+        {
+          "symbol": "BTCUSDT",
+          "fundingTime": 1786147200001,
+          "fundingRate": "0.00005557",
+          "markPrice": "64885.44786232",
+          "rateType": "Regular"
+        },
+        {
+          "symbol": "BTCUSDT",
+          "fundingTime": 1786176000000,
+          "fundingRate": "0.00005417",
+          "markPrice": "64936.30000000",
+          "rateType": "Regular"
+        },
+        {
+          "symbol": "BTCUSDT",
+          "fundingTime": 1786204800002,
+          "fundingRate": "0.00005801",
+          "markPrice": "65049.72578986",
+          "rateType": "Regular"
+        },
+        {
+          "symbol": "BTCUSDT",
+          "fundingTime": 1786233600000,
+          "fundingRate": "0.00004423",
+          "markPrice": "64928.89433333",
+          "rateType": "Regular"
+        },
+        {
+          "symbol": "BTCUSDT",
+          "fundingTime": 1786262400005,
+          "fundingRate": "0.00006667",
+          "markPrice": "64793.70000000",
+          "rateType": "Regular"
+        },
+        {
+          "symbol": "BTCUSDT",
+          "fundingTime": 1786291200000,
+          "fundingRate": "0.00007054",
+          "markPrice": "65207.70000000",
+          "rateType": "Regular"
+        },
+        {
+          "symbol": "BTCUSDT",
+          "fundingTime": 1786320000001,
+          "fundingRate": "0.00007497",
+          "markPrice": "64869.50227536",
+          "rateType": "Regular"
+        },
+        {
+          "symbol": "BTCUSDT",
+          "fundingTime": 1786348800005,
+          "fundingRate": "0.00007908",
+          "markPrice": "65183.48407971",
+          "rateType": "Regular"
+        },
+        {
+          "symbol": "BTCUSDT",
+          "fundingTime": 1786377600000,
+          "fundingRate": "0.00005057",
+          "markPrice": "64272.42528261",
+          "rateType": "Regular"
+        },
+        {
+          "symbol": "BTCUSDT",
+          "fundingTime": 1786406400000,
+          "fundingRate": "0.00002301",
+          "markPrice": "63939.20000000",
+          "rateType": "Regular"
+        },
+        {
+          "symbol": "BTCUSDT",
+          "fundingTime": 1786435200006,
+          "fundingRate": "0.00001962",
+          "markPrice": "64033.28871739",
+          "rateType": "Regular"
+        },
+        {
+          "symbol": "BTCUSDT",
+          "fundingTime": 1786464000000,
+          "fundingRate": "0.00008282",
+          "markPrice": "63585.55679710",
+          "rateType": "Regular"
+        },
+        {
+          "symbol": "BTCUSDT",
+          "fundingTime": 1786492800001,
+          "fundingRate": "0.00010000",
+          "markPrice": "63572.00000000",
+          "rateType": "Regular"
+        }
+      ],
+      "oi_hist": [
+        {
+          "symbol": "BTCUSDT",
+          "sumOpenInterest": "104348.71000000",
+          "sumOpenInterestValue": "6674049577.76100000",
+          "CMCCirculatingSupply": "20062581.00000000",
+          "timestamp": 1785369600000
+        },
+        {
+          "symbol": "BTCUSDT",
+          "sumOpenInterest": "106595.93600000",
+          "sumOpenInterestValue": "6902141264.72856600",
+          "CMCCirculatingSupply": "20063006.00000000",
+          "timestamp": 1785456000000
+        },
+        {
+          "symbol": "BTCUSDT",
+          "sumOpenInterest": "109523.58900000",
+          "sumOpenInterestValue": "6884630899.82220000",
+          "CMCCirculatingSupply": "20063506.00000000",
+          "timestamp": 1785542400000
+        },
+        {
+          "symbol": "BTCUSDT",
+          "sumOpenInterest": "108516.03000000",
+          "sumOpenInterestValue": "6813971110.56900000",
+          "CMCCirculatingSupply": "20063981.00000000",
+          "timestamp": 1785628800000
+        },
+        {
+          "symbol": "BTCUSDT",
+          "sumOpenInterest": "109126.55900000",
+          "sumOpenInterestValue": "6934992824.45000000",
+          "CMCCirculatingSupply": "20064465.00000000",
+          "timestamp": 1785715200000
+        },
+        {
+          "symbol": "BTCUSDT",
+          "sumOpenInterest": "108556.03000000",
+          "sumOpenInterestValue": "6893003948.11600000",
+          "CMCCirculatingSupply": "20064946.00000000",
+          "timestamp": 1785801600000
+        },
+        {
+          "symbol": "BTCUSDT",
+          "sumOpenInterest": "108225.65200000",
+          "sumOpenInterestValue": "6934623587.29120000",
+          "CMCCirculatingSupply": "20065409.00000000",
+          "timestamp": 1785888000000
+        },
+        {
+          "symbol": "BTCUSDT",
+          "sumOpenInterest": "107104.83200000",
+          "sumOpenInterestValue": "6922603001.00480000",
+          "CMCCirculatingSupply": "20065865.00000000",
+          "timestamp": 1785974400000
+        },
+        {
+          "symbol": "BTCUSDT",
+          "sumOpenInterest": "105767.52700000",
+          "sumOpenInterestValue": "6800841409.34730000",
+          "CMCCirculatingSupply": "20066309.00000000",
+          "timestamp": 1786060800000
+        },
+        {
+          "symbol": "BTCUSDT",
+          "sumOpenInterest": "106954.61300000",
+          "sumOpenInterestValue": "6939798035.19870300",
+          "CMCCirculatingSupply": "20066703.00000000",
+          "timestamp": 1786147200000
+        },
+        {
+          "symbol": "BTCUSDT",
+          "sumOpenInterest": "107208.90600000",
+          "sumOpenInterestValue": "6960955962.32949350",
+          "CMCCirculatingSupply": "20067196.00000000",
+          "timestamp": 1786233600000
+        },
+        {
+          "symbol": "BTCUSDT",
+          "sumOpenInterest": "107032.43400000",
+          "sumOpenInterestValue": "6943198658.02243400",
+          "CMCCirculatingSupply": "20067646.00000000",
+          "timestamp": 1786320000000
+        },
+        {
+          "symbol": "BTCUSDT",
+          "sumOpenInterest": "106280.26600000",
+          "sumOpenInterestValue": "6795475183.82720000",
+          "CMCCirculatingSupply": "20068087.00000000",
+          "timestamp": 1786406400000
+        },
+        {
+          "symbol": "BTCUSDT",
+          "sumOpenInterest": "109259.58100000",
+          "sumOpenInterestValue": "6945839157.37390000",
+          "CMCCirculatingSupply": "20068534.00000000",
+          "timestamp": 1786492800000
+        }
+      ],
+      "taker_ls": [
+        {
+          "buySellRatio": "1.0676",
+          "sellVol": "70186.9340",
+          "buyVol": "74933.3110",
+          "timestamp": 1785888000000
+        },
+        {
+          "buySellRatio": "0.9965",
+          "sellVol": "49739.5220",
+          "buyVol": "49565.2620",
+          "timestamp": 1785974400000
+        },
+        {
+          "buySellRatio": "1.0895",
+          "sellVol": "59530.8390",
+          "buyVol": "64857.5410",
+          "timestamp": 1786060800000
+        },
+        {
+          "buySellRatio": "1.0963",
+          "sellVol": "12611.9200",
+          "buyVol": "13826.3770",
+          "timestamp": 1786147200000
+        },
+        {
+          "buySellRatio": "1.0528",
+          "sellVol": "23308.7080",
+          "buyVol": "24539.7540",
+          "timestamp": 1786233600000
+        },
+        {
+          "buySellRatio": "0.9458",
+          "sellVol": "66207.0020",
+          "buyVol": "62618.7260",
+          "timestamp": 1786320000000
+        },
+        {
+          "buySellRatio": "0.9071",
+          "sellVol": "55594.1170",
+          "buyVol": "50429.5290",
+          "timestamp": 1786406400000
+        }
+      ]
+    },
+    "birdeye_proxy_solana_dex": [
+      {
+        "name": "PumpSwap",
+        "vol24h": 585324357
+      },
+      {
+        "name": "PancakeSwap AMM V3",
+        "vol24h": 481613837
+      },
+      {
+        "name": "BisonFi",
+        "vol24h": 151362964
+      },
+      {
+        "name": "Orca DEX",
+        "vol24h": 108357078
+      },
+      {
+        "name": "Raydium AMM",
+        "vol24h": 93519776
+      },
+      {
+        "name": "Meteora DLMM",
+        "vol24h": 92579287
+      },
+      {
+        "name": "HumidiFi",
+        "vol24h": 90061531
+      },
+      {
+        "name": "pump.fun",
+        "vol24h": 79161476
+      },
+      {
+        "name": "GMGN",
+        "vol24h": 69041718
+      },
+      {
+        "name": "Axiom",
+        "vol24h": 66903714
+      }
+    ],
+    "dune": {
+      "status": "no_api_key",
+      "note": "SQL proof layer blocked without Dune API key."
+    },
+    "nansen": {
+      "status": "paywalled",
+      "role": "smart-money labels \u2014 confirmation filter, not standalone entry"
+    },
+    "arkham": {
+      "status": "paywalled_or_login",
+      "role": "entity fund flows \u2014 who is moving size"
+    },
+    "bubblemaps": {
+      "status": "interactive_ui",
+      "role": "holder clustering \u2014 kill insider-concentrated tokens before size"
+    },
+    "blockaid": {
+      "status": "execution_guard",
+      "role": "simulate before any onchain tx \u2014 security gate, not alpha"
+    },
+    "tradingview": {
+      "status": "charting",
+      "role": "structure confirmation after mechanism filter"
+    },
+    "narrative_proxy_coingecko_trending": [
+      {
+        "name": "Thinking Cat",
+        "symbol": "HMM",
+        "rank": 867
+      },
+      {
+        "name": "Pi Network",
+        "symbol": "PI",
+        "rank": 65
+      },
+      {
+        "name": "Holoworld",
+        "symbol": "HOLO",
+        "rank": 187
+      },
+      {
+        "name": "Pudgy Penguins",
+        "symbol": "PENGU",
+        "rank": 106
+      },
+      {
+        "name": "Pons",
+        "symbol": "PONS",
+        "rank": 567
+      },
+      {
+        "name": "Cysic",
+        "symbol": "CYS",
+        "rank": 155
+      },
+      {
+        "name": "XRP",
+        "symbol": "XRP",
+        "rank": 6
+      },
+      {
+        "name": "StonkBroker",
+        "symbol": "STONKBROKER",
+        "rank": 392
+      },
+      {
+        "name": "Terra Luna Classic",
+        "symbol": "LUNC",
+        "rank": 132
+      },
+      {
+        "name": "Tutorial",
+        "symbol": "TUT",
+        "rank": 357
+      }
+    ],
+    "selected_chain_tvl": [
+      {
+        "name": "Ethereum",
+        "tvl": 41359293992.67714
+      },
+      {
+        "name": "BSC",
+        "tvl": 4994888253.681629
+      },
+      {
+        "name": "Solana",
+        "tvl": 4844614677.424917
+      },
+      {
+        "name": "Base",
+        "tvl": 4626439613.140305
+      },
+      {
+        "name": "Hyperliquid L1",
+        "tvl": 1211438227.6469839
+      },
+      {
+        "name": "Arbitrum",
+        "tvl": 1191249603.34988
+      },
+      {
+        "name": "Polygon",
+        "tvl": 802652719.6041818
+      },
+      {
+        "name": "Sui",
+        "tvl": 411262066.37181175
+      },
+      {
+        "name": "Blast",
+        "tvl": 29662221.2960339
+      },
+      {
+        "name": "Linea",
+        "tvl": 27330889.1187972
+      },
+      {
+        "name": "Scroll",
+        "tvl": 10119560.52867975
+      },
+      {
+        "name": "Optimism",
+        "tvl": 0
+      }
+    ]
+  }
+}

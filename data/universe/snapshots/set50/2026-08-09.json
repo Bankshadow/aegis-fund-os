@@ -1,0 +1,885 @@
+{
+ "schema": 1,
+ "profile": "set50",
+ "market": "thailand",
+ "as_of": "2026-08-09",
+ "fetched_at": "2026-08-09T13:25:41.811348+00:00",
+ "source": "https://scanner.tradingview.com/thailand/scan",
+ "columns": [
+  "name",
+  "description",
+  "close",
+  "volume",
+  "market_cap_basic",
+  "sector",
+  "industry",
+  "type",
+  "typespecs",
+  "currency"
+ ],
+ "filters": [],
+ "symbolset": [
+  "SYML:SET;SET50"
+ ],
+ "sort": {
+  "by": "market_cap_basic",
+  "order": "desc"
+ },
+ "note": "SET50 constituents \u2014 the liquid Thai large-cap universe. AOT is a member.",
+ "empty_columns": [],
+ "total_count": 50,
+ "row_count": 50,
+ "truncated": false,
+ "rows": [
+  {
+   "symbol": "SET:DELTA",
+   "values": [
+    "DELTA",
+    "Delta Electronics (Thailand) Public Co. Ltd.",
+    262,
+    13032122,
+    3268139898438,
+    "Electronic Technology",
+    "Electronic Production Equipment",
+    "stock",
+    [
+     "common"
+    ],
+    "THB"
+   ]
+  },
+  {
+   "symbol": "SET:ADVANC",
+   "values": [
+    "ADVANC",
+    "Advanced Info Service Public Co., Ltd.",
+    374,
+    10150458,
+    1112354434082,
+    "Communications",
+    "Wireless Telecommunications",
+    "stock",
+    [
+     "common"
+    ],
+    "THB"
+   ]
+  },
+  {
+   "symbol": "SET:PTT",
+   "values": [
+    "PTT",
+    "PTT Public Co., Ltd.",
+    38.75,
+    129535652,
+    1106816098633,
+    "Energy Minerals",
+    "Integrated Oil",
+    "stock",
+    [
+     "common"
+    ],
+    "THB"
+   ]
+  },
+  {
+   "symbol": "SET:GULF",
+   "values": [
+    "GULF",
+    "Gulf Development Public Company Limited",
+    66.75,
+    50786894,
+    997234179199,
+    "Industrial Services",
+    "Engineering & Construction",
+    "stock",
+    [
+     "common"
+    ],
+    "THB"
+   ]
+  },
+  {
+   "symbol": "SET:AOT",
+   "values": [
+    "AOT",
+    "Airports of Thailand Public Co Ltd",
+    63,
+    10888535,
+    899999112305,
+    "Transportation",
+    "Other Transportation",
+    "stock",
+    [
+     "common"
+    ],
+    "THB"
+   ]
+  },
+  {
+   "symbol": "SET:KTB",
+   "values": [
+    "KTB",
+    "Krung Thai Bank Public Co., Ltd.",
+    45,
+    78068815,
+    629857724609,
+    "Finance",
+    "Major Banks",
+    "stock",
+    [
+     "common"
+    ],
+    "THB"
+   ]
+  },
+  {
+   "symbol": "SET:KBANK",
+   "values": [
+    "KBANK",
+    "Kasikornbank Public Co. Ltd.",
+    250,
+    11160278,
+    592331848145,
+    "Finance",
+    "Regional Banks",
+    "stock",
+    [
+     "common"
+    ],
+    "THB"
+   ]
+  },
+  {
+   "symbol": "SET:PTTEP",
+   "values": [
+    "PTTEP",
+    "PTT Exploration & Production Plc",
+    149,
+    11345157,
+    591527817383,
+    "Energy Minerals",
+    "Integrated Oil",
+    "stock",
+    [
+     "common"
+    ],
+    "THB"
+   ]
+  },
+  {
+   "symbol": "SET:SCB",
+   "values": [
+    "SCB",
+    "SCB X Public Company Limited",
+    153.5,
+    11182949,
+    516850951782,
+    "Finance",
+    "Regional Banks",
+    "stock",
+    [
+     "common"
+    ],
+    "THB"
+   ]
+  },
+  {
+   "symbol": "SET:TRUE",
+   "values": [
+    "TRUE",
+    "True Corporation Public Company Limited",
+    13.4,
+    173419104,
+    462998147757,
+    "Communications",
+    "Wireless Telecommunications",
+    "stock",
+    [
+     "common"
+    ],
+    "THB"
+   ]
+  },
+  {
+   "symbol": "SET:CPALL",
+   "values": [
+    "CPALL",
+    "CP ALL Public Company Limited",
+    49,
+    17054846,
+    440171928711,
+    "Retail Trade",
+    "Food Retail",
+    "stock",
+    [
+     "common"
+    ],
+    "THB"
+   ]
+  },
+  {
+   "symbol": "SET:BBL",
+   "values": [
+    "BBL",
+    "Bangkok Bank Public Company Limited",
+    194.5,
+    9322045,
+    371269943176,
+    "Finance",
+    "Regional Banks",
+    "stock",
+    [
+     "common"
+    ],
+    "THB"
+   ]
+  },
+  {
+   "symbol": "SET:BDMS",
+   "values": [
+    "BDMS",
+    "Bangkok Dusit Medical Services Public Co. Ltd.",
+    20.1,
+    67627910,
+    319429245320,
+    "Health Services",
+    "Hospital/Nursing Management",
+    "stock",
+    [
+     "common"
+    ],
+    "THB"
+   ]
+  },
+  {
+   "symbol": "SET:SCC",
+   "values": [
+    "SCC",
+    "Siam Cement Public Co. Ltd.",
+    259,
+    1451337,
+    310800000000,
+    "Non-Energy Minerals",
+    "Construction Materials",
+    "stock",
+    [
+     "common"
+    ],
+    "THB"
+   ]
+  },
+  {
+   "symbol": "SET:CPN",
+   "values": [
+    "CPN",
+    "Central Pattana Public Co. Ltd.",
+    68.25,
+    4540587,
+    305135519165,
+    "Finance",
+    "Real Estate Development",
+    "stock",
+    [
+     "common"
+    ],
+    "THB"
+   ]
+  },
+  {
+   "symbol": "SET:TTB",
+   "values": [
+    "TTB",
+    "TMBThanachart Bank Public Company Limited",
+    3.1,
+    201330243,
+    294137751107,
+    "Finance",
+    "Major Banks",
+    "stock",
+    [
+     "common"
+    ],
+    "THB"
+   ]
+  },
+  {
+   "symbol": "SET:PTTGC",
+   "values": [
+    "PTTGC",
+    "PTT Global Chemical Public Company Limited",
+    37.25,
+    50237660,
+    167954629761,
+    "Energy Minerals",
+    "Oil Refining/Marketing",
+    "stock",
+    [
+     "common"
+    ],
+    "THB"
+   ]
+  },
+  {
+   "symbol": "SET:CPF",
+   "values": [
+    "CPF",
+    "Charoen Pokphand Foods Public Co. Ltd.",
+    21.6,
+    24153791,
+    163578121248,
+    "Process Industries",
+    "Agricultural Commodities/Milling",
+    "stock",
+    [
+     "common"
+    ],
+    "THB"
+   ]
+  },
+  {
+   "symbol": "SET:THAI",
+   "values": [
+    "THAI",
+    "Thai Airways International Public Co. Ltd.",
+    5.75,
+    242341568,
+    162743934570,
+    "Transportation",
+    "Airlines",
+    "stock",
+    [
+     "common"
+    ],
+    "THB"
+   ]
+  },
+  {
+   "symbol": "SET:CRC",
+   "values": [
+    "CRC",
+    "Central Retail Corporation Public Company Limited",
+    26.25,
+    6492422,
+    158313750000,
+    "Retail Trade",
+    "Department Stores",
+    "stock",
+    [
+     "common"
+    ],
+    "THB"
+   ]
+  },
+  {
+   "symbol": "SET:BH",
+   "values": [
+    "BH",
+    "Bumrungrad Hospital Public Co., Ltd.",
+    192.5,
+    2796915,
+    153037500717,
+    "Health Services",
+    "Hospital/Nursing Management",
+    "stock",
+    [
+     "common"
+    ],
+    "THB"
+   ]
+  },
+  {
+   "symbol": "SET:OR",
+   "values": [
+    "OR",
+    "PTT Oil and Retail Business Public Co Limited",
+    12.5,
+    26486420,
+    150000000000,
+    "Distribution Services",
+    "Wholesale Distributors",
+    "stock",
+    [
+     "common"
+    ],
+    "THB"
+   ]
+  },
+  {
+   "symbol": "SET:TOP",
+   "values": [
+    "TOP",
+    "Thai Oil Public Co. Ltd.",
+    64.25,
+    18527815,
+    143523927612,
+    "Energy Minerals",
+    "Oil Refining/Marketing",
+    "stock",
+    [
+     "common"
+    ],
+    "THB"
+   ]
+  },
+  {
+   "symbol": "SET:GPSC",
+   "values": [
+    "GPSC",
+    "Global Power Synergy Public Company Ltd",
+    49.75,
+    13563031,
+    140281542236,
+    "Utilities",
+    "Electric Utilities",
+    "stock",
+    [
+     "common"
+    ],
+    "THB"
+   ]
+  },
+  {
+   "symbol": "SET:TLI",
+   "values": [
+    "TLI",
+    "Thai Life Insurance Public Co. Ltd.",
+    11.7,
+    6490570,
+    133964997815.99998,
+    "Finance",
+    "Life/Health Insurance",
+    "stock",
+    [
+     "common"
+    ],
+    "THB"
+   ]
+  },
+  {
+   "symbol": "SET:SCGP",
+   "values": [
+    "SCGP",
+    "SCG Packaging Public Co Ltd",
+    31,
+    5207001,
+    133080517578,
+    "Process Industries",
+    "Containers/Packaging",
+    "stock",
+    [
+     "common"
+    ],
+    "THB"
+   ]
+  },
+  {
+   "symbol": "SET:MINT",
+   "values": [
+    "MINT",
+    "Minor International Public Co., Ltd.",
+    23.4,
+    16052041,
+    132677460824.99998,
+    "Consumer Services",
+    "Hotels/Resorts/Cruise lines",
+    "stock",
+    [
+     "common"
+    ],
+    "THB"
+   ]
+  },
+  {
+   "symbol": "SET:IVL",
+   "values": [
+    "IVL",
+    "Indorama Ventures Public Co. Ltd.",
+    22.1,
+    39096939,
+    124081595989,
+    "Process Industries",
+    "Chemicals: Specialty",
+    "stock",
+    [
+     "common"
+    ],
+    "THB"
+   ]
+  },
+  {
+   "symbol": "SET:BEM",
+   "values": [
+    "BEM",
+    "Bangkok Expressway and Metro Public Company Limited",
+    7.05,
+    35392552,
+    107759252915,
+    "Transportation",
+    "Other Transportation",
+    "stock",
+    [
+     "common"
+    ],
+    "THB"
+   ]
+  },
+  {
+   "symbol": "SET:TISCO",
+   "values": [
+    "TISCO",
+    "TISCO Financial Group Public Co. Ltd.",
+    129,
+    2794043,
+    103284558066,
+    "Finance",
+    "Regional Banks",
+    "stock",
+    [
+     "common"
+    ],
+    "THB"
+   ]
+  },
+  {
+   "symbol": "SET:KKP",
+   "values": [
+    "KKP",
+    "Kiatnakin Phatra Bank Public Co. Ltd.",
+    112.5,
+    9569227,
+    100735187531,
+    "Finance",
+    "Regional Banks",
+    "stock",
+    [
+     "common"
+    ],
+    "THB"
+   ]
+  },
+  {
+   "symbol": "SET:KTC",
+   "values": [
+    "KTC",
+    "KrungThai Card Public Co. Ltd.",
+    39,
+    15950021,
+    100555025391,
+    "Finance",
+    "Finance/Rental/Leasing",
+    "stock",
+    [
+     "common"
+    ],
+    "THB"
+   ]
+  },
+  {
+   "symbol": "SET:AWC",
+   "values": [
+    "AWC",
+    "Asset World Corporation Public Company Limited",
+    2.98,
+    27564895,
+    95439104478,
+    "Finance",
+    "Real Estate Development",
+    "stock",
+    [
+     "common"
+    ],
+    "THB"
+   ]
+  },
+  {
+   "symbol": "SET:HMPRO",
+   "values": [
+    "HMPRO",
+    "Home Product Center Public Co., Ltd.",
+    6.65,
+    37846450,
+    87455469565,
+    "Retail Trade",
+    "Home Improvement Chains",
+    "stock",
+    [
+     "common"
+    ],
+    "THB"
+   ]
+  },
+  {
+   "symbol": "SET:RATCH",
+   "values": [
+    "RATCH",
+    "Ratch Group Public Co. Ltd.",
+    39.25,
+    7372859,
+    85368750000,
+    "Utilities",
+    "Electric Utilities",
+    "stock",
+    [
+     "common"
+    ],
+    "THB"
+   ]
+  },
+  {
+   "symbol": "SET:CCET",
+   "values": [
+    "CCET",
+    "Cal-Comp Electronics (Thailand) Public Co., Ltd.",
+    8.15,
+    15449132,
+    85166357879,
+    "Electronic Technology",
+    "Computer Peripherals",
+    "stock",
+    [
+     "common"
+    ],
+    "THB"
+   ]
+  },
+  {
+   "symbol": "SET:TCAP",
+   "values": [
+    "TCAP",
+    "Thanachart Capital Public Co., Ltd.",
+    87.5,
+    4797321,
+    81565838134,
+    "Finance",
+    "Major Banks",
+    "stock",
+    [
+     "common"
+    ],
+    "THB"
+   ]
+  },
+  {
+   "symbol": "SET:MTC",
+   "values": [
+    "MTC",
+    "Muangthai Capital Public Co. Ltd.",
+    35,
+    4340981,
+    74200000000,
+    "Finance",
+    "Finance/Rental/Leasing",
+    "stock",
+    [
+     "common"
+    ],
+    "THB"
+   ]
+  },
+  {
+   "symbol": "SET:WHA",
+   "values": [
+    "WHA",
+    "WHA Corporation Public Company Limited",
+    4.94,
+    143970834,
+    73837360738,
+    "Finance",
+    "Real Estate Development",
+    "stock",
+    [
+     "common"
+    ],
+    "THB"
+   ]
+  },
+  {
+   "symbol": "SET:COM7",
+   "values": [
+    "COM7",
+    "Com7 Public Co. Ltd.",
+    30.25,
+    3611386,
+    72227886597,
+    "Retail Trade",
+    "Electronics/Appliance Stores",
+    "stock",
+    [
+     "common"
+    ],
+    "THB"
+   ]
+  },
+  {
+   "symbol": "SET:EGCO",
+   "values": [
+    "EGCO",
+    "Electricity Generating Public Co., Ltd.",
+    132,
+    1292136,
+    69493383545,
+    "Utilities",
+    "Electric Utilities",
+    "stock",
+    [
+     "common"
+    ],
+    "THB"
+   ]
+  },
+  {
+   "symbol": "SET:BCP",
+   "values": [
+    "BCP",
+    "Bangchak Corporation Public Company Ltd",
+    45.5,
+    16721223,
+    66140648438,
+    "Retail Trade",
+    "Specialty Stores",
+    "stock",
+    [
+     "common"
+    ],
+    "THB"
+   ]
+  },
+  {
+   "symbol": "SET:BJC",
+   "values": [
+    "BJC",
+    "Berli Jucker Public Co. Ltd.",
+    15.9,
+    7610573,
+    63709353672,
+    "Process Industries",
+    "Containers/Packaging",
+    "stock",
+    [
+     "common"
+    ],
+    "THB"
+   ]
+  },
+  {
+   "symbol": "SET:BANPU",
+   "values": [
+    "BANPU",
+    "Banpu Public Co. Ltd.",
+    15,
+    18222158,
+    60744331055,
+    "Energy Minerals",
+    "Coal",
+    "stock",
+    [
+     "common"
+    ],
+    "THB"
+   ]
+  },
+  {
+   "symbol": "SET:MRDIYT",
+   "values": [
+    "MRDIYT",
+    "MR.D.I.Y. Holding (Thailand) Public Company Limited",
+    9.85,
+    1544119,
+    59268409400,
+    "Retail Trade",
+    "Discount Stores",
+    "stock",
+    [
+     "common"
+    ],
+    "THB"
+   ]
+  },
+  {
+   "symbol": "SET:TIDLOR",
+   "values": [
+    "TIDLOR",
+    "Tidlor Holdings Public Company Limited",
+    19.7,
+    12366968,
+    56711564770,
+    "Finance",
+    "Finance/Rental/Leasing",
+    "stock",
+    [
+     "common"
+    ],
+    "THB"
+   ]
+  },
+  {
+   "symbol": "SET:TFG",
+   "values": [
+    "TFG",
+    "Thaifoods Group Public Co. Ltd.",
+    9.55,
+    7141376,
+    56696304038,
+    "Process Industries",
+    "Agricultural Commodities/Milling",
+    "stock",
+    [
+     "common"
+    ],
+    "THB"
+   ]
+  },
+  {
+   "symbol": "SET:OSP",
+   "values": [
+    "OSP",
+    "Osotspa Public Co. Ltd.",
+    17.8,
+    8605103,
+    53466747708,
+    "Consumer Non-Durables",
+    "Beverages: Non-Alcoholic",
+    "stock",
+    [
+     "common"
+    ],
+    "THB"
+   ]
+  },
+  {
+   "symbol": "SET:TU",
+   "values": [
+    "TU",
+    "Thai Union Group Public Company Limited",
+    13.3,
+    11633752,
+    48612747572,
+    "Consumer Non-Durables",
+    "Food: Meat/Fish/Dairy",
+    "stock",
+    [
+     "common"
+    ],
+    "THB"
+   ]
+  },
+  {
+   "symbol": "SET:LH",
+   "values": [
+    "LH",
+    "Land & Houses Public Co., Ltd.",
+    3.78,
+    17920592,
+    45169914385,
+    "Finance",
+    "Real Estate Development",
+    "stock",
+    [
+     "common"
+    ],
+    "THB"
+   ]
+  }
+ ]
+}

@@ -1,0 +1,6404 @@
+{
+ "schema": 1,
+ "profile": "binance-spot-usdt",
+ "market": "crypto",
+ "as_of": "2026-08-09",
+ "fetched_at": "2026-08-09T13:00:11.459287+00:00",
+ "source": "https://scanner.tradingview.com/crypto/scan",
+ "columns": [
+  "base_currency",
+  "base_currency_desc",
+  "currency",
+  "exchange",
+  "type",
+  "close",
+  "24h_vol|5",
+  "market_cap_calc"
+ ],
+ "filters": [
+  {
+   "left": "exchange",
+   "operation": "in_range",
+   "right": [
+    "BINANCE"
+   ]
+  },
+  {
+   "left": "currency",
+   "operation": "equal",
+   "right": "USDT"
+  },
+  {
+   "left": "type",
+   "operation": "equal",
+   "right": "spot"
+  }
+ ],
+ "sort": {
+  "by": "24h_vol|5",
+  "order": "desc"
+ },
+ "note": "Binance spot USDT pairs ranked by 24h quote volume at fetch time.",
+ "total_count": 489,
+ "row_count": 489,
+ "truncated": false,
+ "rows": [
+  {
+   "symbol": "BINANCE:USDCUSDT",
+   "values": [
+    "USDC",
+    "USDC",
+    "USDT",
+    "BINANCE",
+    "spot",
+    1.00065,
+    740219591.814456,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:BTCUSDT",
+   "values": [
+    "BTC",
+    "Bitcoin",
+    "USDT",
+    "BINANCE",
+    "spot",
+    64960.11,
+    360508617.88587743,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:TUTUSDT",
+   "values": [
+    "TUT",
+    "Tutorial",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.16121,
+    241238635.40359154,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:ETHUSDT",
+   "values": [
+    "ETH",
+    "Ethereum",
+    "USDT",
+    "BINANCE",
+    "spot",
+    1917.52,
+    125965954.6086107,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:USD1USDT",
+   "values": [
+    "USD1",
+    "World Liberty Financial USD",
+    "USDT",
+    "BINANCE",
+    "spot",
+    1.00034,
+    95903105.48525892,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:SOLUSDT",
+   "values": [
+    "SOL",
+    "Solana",
+    "USDT",
+    "BINANCE",
+    "spot",
+    76.37,
+    78904457.59779973,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:BNBUSDT",
+   "values": [
+    "BNB",
+    "BNB",
+    "USDT",
+    "BINANCE",
+    "spot",
+    604.34,
+    64694767.31895169,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:BICOUSDT",
+   "values": [
+    "BICO",
+    "Biconomy",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.0453,
+    52343565.836030215,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:BABYUSDT",
+   "values": [
+    "BABY",
+    "Babylon",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.01292,
+    50819912.40155512,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:XRPUSDT",
+   "values": [
+    "XRP",
+    "XRP",
+    "USDT",
+    "BINANCE",
+    "spot",
+    1.0369,
+    30391633.710557006,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:ZECUSDT",
+   "values": [
+    "ZEC",
+    "Zcash",
+    "USDT",
+    "BINANCE",
+    "spot",
+    522.34,
+    28428349.254762914,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:MMTUSDT",
+   "values": [
+    "MMT",
+    "Momentum",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.223,
+    26008673.93229325,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:BMTUSDT",
+   "values": [
+    "BMT",
+    "Bubblemaps",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.0242,
+    22479089.28978962,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:ACEUSDT",
+   "values": [
+    "ACE",
+    "Fusionist",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.1236,
+    20836108.220080465,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:TSTUSDT",
+   "values": [
+    "TST",
+    "Test",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.01627,
+    19968197.242369495,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:SPCXBUSDT",
+   "values": [
+    "SPCXB",
+    "SpaceX Tokenized bStocks",
+    "USDT",
+    "BINANCE",
+    "spot",
+    135.83,
+    18369492.636676684,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:DOGEUSDT",
+   "values": [
+    "DOGE",
+    "Dogecoin",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.07016,
+    18109020.681524992,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:SAGAUSDT",
+   "values": [
+    "SAGA",
+    "Saga",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.01591,
+    16149212.548597112,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:BANKUSDT",
+   "values": [
+    "BANK",
+    "Lorenzo Protocol",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.0466,
+    14514967.300211005,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:MUBARAKUSDT",
+   "values": [
+    "MUBARAK",
+    "Mubarak",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.01847,
+    13571739.891667577,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:FDUSDUSDT",
+   "values": [
+    "FDUSD",
+    "First Digital USD",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.9981,
+    12989659.618892,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:TAOUSDT",
+   "values": [
+    "TAO",
+    "Bittensor",
+    "USDT",
+    "BINANCE",
+    "spot",
+    206.5,
+    12634631.467957534,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:PUMPUSDT",
+   "values": [
+    "PUMP",
+    "Pump.fun",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.0026,
+    12537785.776989445,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:TRXUSDT",
+   "values": [
+    "TRX",
+    "TRON",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.3297,
+    12134640.291907927,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:ADAUSDT",
+   "values": [
+    "ADA",
+    "Cardano",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.1964,
+    11819022.754748868,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:1000CATUSDT",
+   "values": [
+    "1000CAT",
+    "1000 CAT",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.00182,
+    11707316.964718414,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:SUIUSDT",
+   "values": [
+    "SUI",
+    "Sui",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.6912,
+    11644473.975579262,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:KAITOUSDT",
+   "values": [
+    "KAITO",
+    "KAITO",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.6977,
+    10950730.649577865,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:NEARUSDT",
+   "values": [
+    "NEAR",
+    "NEAR Protocol",
+    "USDT",
+    "BINANCE",
+    "spot",
+    1.617,
+    10742094.960686395,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:HEIUSDT",
+   "values": [
+    "HEI",
+    "Heima",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.1747,
+    10001765.84768748,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:RLUSDUSDT",
+   "values": [
+    "RLUSD",
+    "Ripple USD",
+    "USDT",
+    "BINANCE",
+    "spot",
+    1.0009,
+    10000124.432663431,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:EURIUSDT",
+   "values": [
+    "EURI",
+    "Eurite",
+    "USDT",
+    "BINANCE",
+    "spot",
+    1.1559,
+    9872156.68232314,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:IOTXUSDT",
+   "values": [
+    "IOTX",
+    "IoTeX",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.00292,
+    9630138.980199477,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:GIGGLEUSDT",
+   "values": [
+    "GIGGLE",
+    "Giggle Fund",
+    "USDT",
+    "BINANCE",
+    "spot",
+    34.49,
+    9130253.708521018,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:DEXEUSDT",
+   "values": [
+    "DEXE",
+    "DeXe",
+    "USDT",
+    "BINANCE",
+    "spot",
+    2.192,
+    8309373.169218793,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:REUSDT",
+   "values": [
+    "RE",
+    "Re",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.4073,
+    7707231.021240985,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:UNIUSDT",
+   "values": [
+    "UNI",
+    "Uniswap",
+    "USDT",
+    "BINANCE",
+    "spot",
+    3.994,
+    6945078.218529567,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:BROCCOLI714USDT",
+   "values": [
+    "BROCCOLI",
+    "CZ'S Dog",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.01932,
+    6809899.051521873,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:COOKIEUSDT",
+   "values": [
+    "COOKIE",
+    "Cookie DAO",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.0133,
+    6738918.017733014,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:UUSDT",
+   "values": [
+    "U",
+    "United Stables",
+    "USDT",
+    "BINANCE",
+    "spot",
+    1.0002,
+    6359083.935794244,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:WLDUSDT",
+   "values": [
+    "WLD",
+    "Worldcoin",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.3093,
+    6077951.180672562,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:CATIUSDT",
+   "values": [
+    "CATI",
+    "Catizen",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.05026,
+    6046194.313124273,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:EPICUSDT",
+   "values": [
+    "EPIC",
+    "Epic Chain",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.9589,
+    5996673.229712599,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:ICPUSDT",
+   "values": [
+    "ICP",
+    "Internet Computer",
+    "USDT",
+    "BINANCE",
+    "spot",
+    2.191,
+    5768269.25451058,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:PEPEUSDT",
+   "values": [
+    "PEPE",
+    "Pepe",
+    "USDT",
+    "BINANCE",
+    "spot",
+    2.88e-06,
+    5758812.289803331,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:ZBTUSDT",
+   "values": [
+    "ZBT",
+    "ZEROBASE",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.1061,
+    5439757.729219355,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:LTCUSDT",
+   "values": [
+    "LTC",
+    "Litecoin",
+    "USDT",
+    "BINANCE",
+    "spot",
+    46.19,
+    5328019.725140692,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:ENAUSDT",
+   "values": [
+    "ENA",
+    "Ethena",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.0873,
+    5301309.350535003,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:PIXELUSDT",
+   "values": [
+    "PIXEL",
+    "Pixels",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.0046,
+    5132677.7871291945,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:HMSTRUSDT",
+   "values": [
+    "HMSTR",
+    "Hamster Kombat",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.0002133,
+    5074709.199696314,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:AAVEUSDT",
+   "values": [
+    "AAVE",
+    "Aave",
+    "USDT",
+    "BINANCE",
+    "spot",
+    91.08,
+    5072906.71018508,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:LINKUSDT",
+   "values": [
+    "LINK",
+    "Chainlink",
+    "USDT",
+    "BINANCE",
+    "spot",
+    8.288,
+    4997303.226936194,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:XAUTUSDT",
+   "values": [
+    "XAUT",
+    "Tether Gold",
+    "USDT",
+    "BINANCE",
+    "spot",
+    4337.75,
+    4648634.745924128,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:DYMUSDT",
+   "values": [
+    "DYM",
+    "Dymension",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.01554,
+    4595414.799627191,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:ONDOUSDT",
+   "values": [
+    "ONDO",
+    "Ondo",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.3494,
+    4355932.912459722,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:JSTUSDT",
+   "values": [
+    "JST",
+    "JUST",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.104,
+    4215350.973070051,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:DODOUSDT",
+   "values": [
+    "DODO",
+    "DODO",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.0206,
+    4183586.6825735937,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:AVAXUSDT",
+   "values": [
+    "AVAX",
+    "Avalanche",
+    "USDT",
+    "BINANCE",
+    "spot",
+    6.467,
+    4146643.159051462,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:PAXGUSDT",
+   "values": [
+    "PAXG",
+    "PAX Gold",
+    "USDT",
+    "BINANCE",
+    "spot",
+    4353.98,
+    3957502.191112669,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:ZAMAUSDT",
+   "values": [
+    "ZAMA",
+    "Zama",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.04609,
+    3879835.770342222,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:PENGUUSDT",
+   "values": [
+    "PENGU",
+    "Pudgy Penguins",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.006335,
+    3859352.068120027,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:HOMEUSDT",
+   "values": [
+    "HOME",
+    "Defi App",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.00917,
+    3723311.392963656,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:ALLOUSDT",
+   "values": [
+    "ALLO",
+    "Allora",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.3153,
+    3719074.210191904,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:ESPUSDT",
+   "values": [
+    "ESP",
+    "Espresso",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.07104,
+    3592006.082454632,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:GLMRUSDT",
+   "values": [
+    "GLMR",
+    "Moonbeam",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.00902,
+    3513043.4266027496,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:SYNUSDT",
+   "values": [
+    "SYN",
+    "Synapse",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.10835,
+    3277091.1967348475,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:FETUSDT",
+   "values": [
+    "FET",
+    "Artificial Superintelligence Alliance",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.1364,
+    3203476.812237815,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:THEUSDT",
+   "values": [
+    "THE",
+    "Thena",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.0611,
+    2993869.916956375,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:XLMUSDT",
+   "values": [
+    "XLM",
+    "Stellar",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.1631,
+    2972729.855372798,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:GRAMUSDT",
+   "values": [
+    "GRAM",
+    "Gram (prev. Toncoin)",
+    "USDT",
+    "BINANCE",
+    "spot",
+    1.339,
+    2927354.829055125,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:CETUSUSDT",
+   "values": [
+    "CETUS",
+    "Cetus Protocol",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.01836,
+    2918197.3713894766,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:CRVUSDT",
+   "values": [
+    "CRV",
+    "Curve DAO Token",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.2381,
+    2827048.916697895,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:XAIUSDT",
+   "values": [
+    "XAI",
+    "Xai",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.00702,
+    2825576.307159327,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:DASHUSDT",
+   "values": [
+    "DASH",
+    "Dash",
+    "USDT",
+    "BINANCE",
+    "spot",
+    31.69,
+    2689389.335546748,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:PARTIUSDT",
+   "values": [
+    "PARTI",
+    "Particle Network",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.0265,
+    2635156.760815105,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:TRUMPUSDT",
+   "values": [
+    "TRUMP",
+    "OFFICIAL TRUMP",
+    "USDT",
+    "BINANCE",
+    "spot",
+    1.482,
+    2619924.4518140205,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:PYTHUSDT",
+   "values": [
+    "PYTH",
+    "Pyth Network",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.04189,
+    2602305.688825157,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:APTUSDT",
+   "values": [
+    "APT",
+    "Aptos",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.599,
+    2596333.035159815,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:INJUSDT",
+   "values": [
+    "INJ",
+    "Injective",
+    "USDT",
+    "BINANCE",
+    "spot",
+    4.46,
+    2512904.029024441,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:HFTUSDT",
+   "values": [
+    "HFT",
+    "Hashflow",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.010128,
+    2427061.695655857,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:BANANAS31USDT",
+   "values": [
+    "BANANAS31",
+    "Banana For Scale",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.008391,
+    2399684.8737009964,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:FFUSDT",
+   "values": [
+    "FF",
+    "Falcon Finance",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.06289,
+    2359176.672431534,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:KITEUSDT",
+   "values": [
+    "KITE",
+    "Kite",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.0979,
+    2325098.096095832,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:SOLVUSDT",
+   "values": [
+    "SOLV",
+    "Solv Protocol",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.0026,
+    2301317.7227789797,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:CHZUSDT",
+   "values": [
+    "CHZ",
+    "Chiliz",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.0133,
+    2266427.304163609,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:EURUSDT",
+   "values": [
+    "EUR",
+    "Euro",
+    "USDT",
+    "BINANCE",
+    "spot",
+    1.1562,
+    2231489.0876362496,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:SNDKBUSDT",
+   "values": [
+    "SNDKB",
+    "SanDisk Tokenized bStocks",
+    "USDT",
+    "BINANCE",
+    "spot",
+    1217.69,
+    2219961.5268815015,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:ORDIUSDT",
+   "values": [
+    "ORDI",
+    "ORDI",
+    "USDT",
+    "BINANCE",
+    "spot",
+    3.432,
+    2200448.6310695694,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:TOWNSUSDT",
+   "values": [
+    "TOWNS",
+    "Towns",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.00257,
+    2142416.0295994137,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:FORMUSDT",
+   "values": [
+    "FORM",
+    "Four",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.2301,
+    2130254.206087275,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:FILUSDT",
+   "values": [
+    "FIL",
+    "Filecoin",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.7095,
+    2113594.826811776,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:SPYBUSDT",
+   "values": [
+    "SPYB",
+    "State Street SPDR S&P 500 ETF Tokenized bStocks",
+    "USDT",
+    "BINANCE",
+    "spot",
+    774.47,
+    2096304.9430443875,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:NILUSDT",
+   "values": [
+    "NIL",
+    "Nillion",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.03737,
+    2080454.151368041,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:HBARUSDT",
+   "values": [
+    "HBAR",
+    "Hedera",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.06898,
+    2041275.4909393098,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:WLFIUSDT",
+   "values": [
+    "WLFI",
+    "World Liberty Financial",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.0518,
+    2015341.0771713136,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:ASTERUSDT",
+   "values": [
+    "ASTER",
+    "Aster",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.604,
+    1963084.1004597065,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:ARBUSDT",
+   "values": [
+    "ARB",
+    "Arbitrum",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.0776,
+    1943024.9482421682,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:LAUSDT",
+   "values": [
+    "LA",
+    "Lagrange",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.0555,
+    1936211.576710874,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:LISTAUSDT",
+   "values": [
+    "LISTA",
+    "Lista DAO",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.0613,
+    1896183.7365335745,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:XUSDUSDT",
+   "values": [
+    "XUSD",
+    "StraitsX USD",
+    "USDT",
+    "BINANCE",
+    "spot",
+    1.0008,
+    1789359.6244782552,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:MAGICUSDT",
+   "values": [
+    "MAGIC",
+    "Treasure",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.0416,
+    1787372.328102159,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:SHIBUSDT",
+   "values": [
+    "SHIB",
+    "Shiba Inu",
+    "USDT",
+    "BINANCE",
+    "spot",
+    4.63e-06,
+    1698789.5242083457,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:POLUSDT",
+   "values": [
+    "POL",
+    "Polygon (prev. MATIC)",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.07684,
+    1698252.5595343332,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:NEIROUSDT",
+   "values": [
+    "NEIRO",
+    "Neiro",
+    "USDT",
+    "BINANCE",
+    "spot",
+    6.754e-05,
+    1640611.5054564995,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:BIANRENSHENGUSDT",
+   "values": [
+    "BIANRENSHENG",
+    "Bi An Ren Sheng",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.5143,
+    1637040.380651693,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:COTIUSDT",
+   "values": [
+    "COTI",
+    "COTI",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.01221,
+    1629056.5324104482,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:DOTUSDT",
+   "values": [
+    "DOT",
+    "Polkadot",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.81,
+    1560541.3857820646,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:PEOPLEUSDT",
+   "values": [
+    "PEOPLE",
+    "ConstitutionDAO",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.00825,
+    1537369.769754646,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:CHIPUSDT",
+   "values": [
+    "CHIP",
+    "USD.AI",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.02317,
+    1531283.425420901,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:EULUSDT",
+   "values": [
+    "EUL",
+    "Euler",
+    "USDT",
+    "BINANCE",
+    "spot",
+    1.184,
+    1527677.353377788,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:LUNCUSDT",
+   "values": [
+    "LUNC",
+    "Terra Classic",
+    "USDT",
+    "BINANCE",
+    "spot",
+    5.041e-05,
+    1517134.4735817485,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:XPLUSDT",
+   "values": [
+    "XPL",
+    "Plasma",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.07716,
+    1516142.4098188456,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:BONKUSDT",
+   "values": [
+    "BONK",
+    "Bonk",
+    "USDT",
+    "BINANCE",
+    "spot",
+    2.46e-06,
+    1503186.2533916393,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:BIOUSDT",
+   "values": [
+    "BIO",
+    "Bio Protocol",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.02548,
+    1474634.769550803,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:ADXUSDT",
+   "values": [
+    "ADX",
+    "heyAura",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.0649,
+    1419866.0814787373,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:JTOUSDT",
+   "values": [
+    "JTO",
+    "Jito",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.5079,
+    1411715.803240839,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:PROVEUSDT",
+   "values": [
+    "PROVE",
+    "Succinct",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.1605,
+    1393200.6705958643,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:SKHYBUSDT",
+   "values": [
+    "SKHYB",
+    "SK Hynix Tokenized bStocks",
+    "USDT",
+    "BINANCE",
+    "spot",
+    139.21,
+    1383819.3592540235,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:IOTAUSDT",
+   "values": [
+    "IOTA",
+    "IOTA",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.0355,
+    1369313.063890026,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:ZROUSDT",
+   "values": [
+    "ZRO",
+    "LayerZero",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.843,
+    1367135.7644192076,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:PLUMEUSDT",
+   "values": [
+    "PLUME",
+    "Plume",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.012,
+    1357726.1000222913,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:BELUSDT",
+   "values": [
+    "BEL",
+    "Bella Protocol",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.1104,
+    1352573.4403641105,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:SPKUSDT",
+   "values": [
+    "SPK",
+    "Spark",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.014943,
+    1334905.7631660085,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:BOMEUSDT",
+   "values": [
+    "BOME",
+    "BOOK OF MEME",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.0007194,
+    1311410.6626824464,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:PHAUSDT",
+   "values": [
+    "PHA",
+    "Phala Network",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.024,
+    1305562.8062885217,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:EDENUSDT",
+   "values": [
+    "EDEN",
+    "OpenEden",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.04218,
+    1293262.8058044766,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:CAKEUSDT",
+   "values": [
+    "CAKE",
+    "PancakeSwap",
+    "USDT",
+    "BINANCE",
+    "spot",
+    1.447,
+    1288896.8747281912,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:HEMIUSDT",
+   "values": [
+    "HEMI",
+    "Hemi",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.00555,
+    1267796.9776141655,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:VICUSDT",
+   "values": [
+    "VIC",
+    "Viction",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.0294,
+    1266975.2927014115,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:ENSOUSDT",
+   "values": [
+    "ENSO",
+    "Enso",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.997,
+    1263997.3004010844,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:0GUSDT",
+   "values": [
+    "0G",
+    "0G",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.15,
+    1245356.5068078327,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:HAEDALUSDT",
+   "values": [
+    "HAEDAL",
+    "Haedal Protocol",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.01697,
+    1232193.174429083,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:OPUSDT",
+   "values": [
+    "OP",
+    "Optimism",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.0882,
+    1222530.2411095535,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:SEIUSDT",
+   "values": [
+    "SEI",
+    "Sei",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.04162,
+    1217280.9931295014,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:BCHUSDT",
+   "values": [
+    "BCH",
+    "Bitcoin Cash",
+    "USDT",
+    "BINANCE",
+    "spot",
+    216.6,
+    1211090.4800274228,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:TLMUSDT",
+   "values": [
+    "TLM",
+    "Alien Worlds",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.001608,
+    1195659.6400419688,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:C98USDT",
+   "values": [
+    "C98",
+    "Coin98",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.01459,
+    1172589.7766881604,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:ACTUSDT",
+   "values": [
+    "ACT",
+    "Act I : The AI Prophecy",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.00993,
+    1108864.803806326,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:RUNEUSDT",
+   "values": [
+    "RUNE",
+    "THORChain",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.435,
+    1108604.8790510457,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:QQQBUSDT",
+   "values": [
+    "QQQB",
+    "Invesco QQQ Trust Tokenized bStocks",
+    "USDT",
+    "BINANCE",
+    "spot",
+    722.98,
+    1104527.4695506245,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:AGLDUSDT",
+   "values": [
+    "AGLD",
+    "Adventure Gold",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.1658,
+    1101476.5328659515,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:BFUSDUSDT",
+   "values": [
+    "BFUSD",
+    "BFUSD",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.9993,
+    1096858.2172946592,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:RAREUSDT",
+   "values": [
+    "RARE",
+    "SuperRare",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.01329,
+    1084672.2993308802,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:YGGUSDT",
+   "values": [
+    "YGG",
+    "Yield Guild Games",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.02014,
+    1082780.3753786648,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:CUSDT",
+   "values": [
+    "C",
+    "Chainbase",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.0633,
+    1081025.328874492,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:CRCLBUSDT",
+   "values": [
+    "CRCLB",
+    "Circle Internet Group Tokenized bStocks",
+    "USDT",
+    "BINANCE",
+    "spot",
+    67.9,
+    1073368.4275665465,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:ORCAUSDT",
+   "values": [
+    "ORCA",
+    "Orca",
+    "USDT",
+    "BINANCE",
+    "spot",
+    1.07,
+    1066332.7328095785,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:JUPUSDT",
+   "values": [
+    "JUP",
+    "Jupiter",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.185,
+    1062415.1651681012,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:MIRAUSDT",
+   "values": [
+    "MIRA",
+    "Mira",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.042,
+    1058833.1329872853,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:NOMUSDT",
+   "values": [
+    "NOM",
+    "Nomina",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.00168,
+    1045938.3707525256,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:SUSDT",
+   "values": [
+    "S",
+    "Sonic",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.02371,
+    1015257.8954692696,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:1000SATSUSDT",
+   "values": [
+    "1000SATS",
+    "1000SATS",
+    "USDT",
+    "BINANCE",
+    "spot",
+    1.054e-05,
+    1013702.5835604004,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:SHELLUSDT",
+   "values": [
+    "SHELL",
+    "MyShell",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.0211,
+    1013252.0638055797,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:GUNUSDT",
+   "values": [
+    "GUN",
+    "Gunz",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.00303,
+    1012692.5937069645,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:GALAUSDT",
+   "values": [
+    "GALA",
+    "Gala",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.001806,
+    1012679.949933933,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:TNSRUSDT",
+   "values": [
+    "TNSR",
+    "Tensor",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.0326,
+    1007940.6705055828,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:MOVRUSDT",
+   "values": [
+    "MOVR",
+    "Moonriver",
+    "USDT",
+    "BINANCE",
+    "spot",
+    1.168,
+    1005599.8651220893,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:BBUSDT",
+   "values": [
+    "BB",
+    "BounceBit",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.01357,
+    994019.1596575433,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:RENDERUSDT",
+   "values": [
+    "RENDER",
+    "Render",
+    "USDT",
+    "BINANCE",
+    "spot",
+    1.323,
+    987937.8865286004,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:SOXLBUSDT",
+   "values": [
+    "SOXLB",
+    "Semicon Bull 3X ETF Tokenized bStocks",
+    "USDT",
+    "BINANCE",
+    "spot",
+    142.46,
+    980875.3153886661,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:ZENUSDT",
+   "values": [
+    "ZEN",
+    "Horizen",
+    "USDT",
+    "BINANCE",
+    "spot",
+    4.245,
+    970226.2609257797,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:CFXUSDT",
+   "values": [
+    "CFX",
+    "Conflux",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.04179,
+    965130.9539096489,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:KERNELUSDT",
+   "values": [
+    "KERNEL",
+    "KernelDAO",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.0358,
+    961872.6621304732,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:ERAUSDT",
+   "values": [
+    "ERA",
+    "Caldera",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.0678,
+    948260.5946398793,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:SOMIUSDT",
+   "values": [
+    "SOMI",
+    "Somnia",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.093,
+    947876.7550180695,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:TIAUSDT",
+   "values": [
+    "TIA",
+    "Celestia",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.3277,
+    925117.9671571914,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:DOGSUSDT",
+   "values": [
+    "DOGS",
+    "DOGS",
+    "USDT",
+    "BINANCE",
+    "spot",
+    3.713e-05,
+    910970.8448834723,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:OGNUSDT",
+   "values": [
+    "OGN",
+    "Origin Protocol",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.01656,
+    910713.4048085851,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:CTSIUSDT",
+   "values": [
+    "CTSI",
+    "Cartesi",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.0251,
+    907580.7087004613,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:LDOUSDT",
+   "values": [
+    "LDO",
+    "Lido DAO",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.288,
+    888114.1308484378,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:AXSUSDT",
+   "values": [
+    "AXS",
+    "Axie Infinity",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.903,
+    886815.4199845241,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:RIFUSDT",
+   "values": [
+    "RIF",
+    "Rootstock Infrastructure Framework",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.0663,
+    885036.1842272844,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:IOSTUSDT",
+   "values": [
+    "IOST",
+    "IOST",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.000613,
+    881852.47006021,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:DUSKUSDT",
+   "values": [
+    "DUSK",
+    "Dusk",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.0649,
+    875488.7035481053,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:ALICEUSDT",
+   "values": [
+    "ALICE",
+    "MyNeighborAlice",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.1198,
+    857904.0619390964,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:OGUSDT",
+   "values": [
+    "OG",
+    "OG Fan Token",
+    "USDT",
+    "BINANCE",
+    "spot",
+    2.73,
+    855473.1674354689,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:IOUSDT",
+   "values": [
+    "IO",
+    "io.net",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.1251,
+    848759.2605011129,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:FLOWUSDT",
+   "values": [
+    "FLOW",
+    "Flow",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.02986,
+    837154.6317456001,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:ETCUSDT",
+   "values": [
+    "ETC",
+    "Ethereum Classic",
+    "USDT",
+    "BINANCE",
+    "spot",
+    6.5,
+    818381.9238608743,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:HUMAUSDT",
+   "values": [
+    "HUMA",
+    "Huma Finance",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.02093,
+    798297.7041840082,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:FIDAUSDT",
+   "values": [
+    "FIDA",
+    "Bonfida",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.01845,
+    788306.3044481062,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:ETHFIUSDT",
+   "values": [
+    "ETHFI",
+    "ether.fi",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.3895,
+    784825.8352294822,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:CVXUSDT",
+   "values": [
+    "CVX",
+    "Convex Finance",
+    "USDT",
+    "BINANCE",
+    "spot",
+    1.646,
+    783202.9015567233,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:WBTCUSDT",
+   "values": [
+    "WBTC",
+    "Wrapped Bitcoin",
+    "USDT",
+    "BINANCE",
+    "spot",
+    64946.42,
+    777414.8911894634,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:NIGHTUSDT",
+   "values": [
+    "NIGHT",
+    "Midnight",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.0184,
+    756362.8051782352,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:PORTALUSDT",
+   "values": [
+    "PORTAL",
+    "Portal",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.0116,
+    752315.3554604546,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:MUBUSDT",
+   "values": [
+    "MUB",
+    "Micron Technology Tokenized bStocks",
+    "USDT",
+    "BINANCE",
+    "spot",
+    881.02,
+    746302.643796102,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:PENDLEUSDT",
+   "values": [
+    "PENDLE",
+    "Pendle",
+    "USDT",
+    "BINANCE",
+    "spot",
+    1.373,
+    744890.8858860981,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:MITOUSDT",
+   "values": [
+    "MITO",
+    "Mitosis",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.02411,
+    743653.3954551839,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:ACHUSDT",
+   "values": [
+    "ACH",
+    "Alchemy Pay",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.00452,
+    738195.981069947,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:RONINUSDT",
+   "values": [
+    "RON",
+    "Ronin",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.0527,
+    717688.6725269821,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:ATOMUSDT",
+   "values": [
+    "ATOM",
+    "Cosmos",
+    "USDT",
+    "BINANCE",
+    "spot",
+    1.375,
+    716454.6644206104,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:OPENUSDT",
+   "values": [
+    "OPEN",
+    "OpenLedger",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.2116,
+    716115.7366659351,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:VIRTUALUSDT",
+   "values": [
+    "VIRTUAL",
+    "Virtuals Protocol",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.5615,
+    713689.2136220213,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:NOTUSDT",
+   "values": [
+    "NOT",
+    "Notcoin",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.000364,
+    703413.9552877885,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:ALGOUSDT",
+   "values": [
+    "ALGO",
+    "Algorand",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.0861,
+    703241.1089877735,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:1MBABYDOGEUSDT",
+   "values": [
+    "1MBABYDOGE",
+    "Baby Doge Coin",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.0003337,
+    691964.5381457524,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:SCRUSDT",
+   "values": [
+    "SCR",
+    "Scroll",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.02103,
+    691199.3882099093,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:EIGENUSDT",
+   "values": [
+    "EIGEN",
+    "EigenCloud",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.1762,
+    686573.4036070142,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:MEGAUSDT",
+   "values": [
+    "MEGA",
+    "MegaETH",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.03647,
+    684872.8146618245,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:ROBOUSDT",
+   "values": [
+    "ROBO",
+    "Fabric Protocol",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.01373,
+    681121.2981287402,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:DIAUSDT",
+   "values": [
+    "DIA",
+    "DIA",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.1269,
+    669782.9506227906,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:PNUTUSDT",
+   "values": [
+    "PNUT",
+    "Peanut the Squirrel",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.0401,
+    656287.9247645837,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:TURBOUSDT",
+   "values": [
+    "TURBO",
+    "Turbo",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.000836,
+    642756.4098461727,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:STOUSDT",
+   "values": [
+    "STO",
+    "StakeStone",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.0405,
+    635754.1285950104,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:STGUSDT",
+   "values": [
+    "STG",
+    "Stargate Finance",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.1359,
+    631087.8252804986,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:MANTRAUSDT",
+   "values": [
+    "MANTRA",
+    "MANTRA",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.00573,
+    630623.4563147414,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:SAHARAUSDT",
+   "values": [
+    "SAHARA",
+    "Sahara AI",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.0084,
+    620179.8189848918,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:MORPHOUSDT",
+   "values": [
+    "MORPHO",
+    "Morpho",
+    "USDT",
+    "BINANCE",
+    "spot",
+    1.932,
+    613323.000529123,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:ATUSDT",
+   "values": [
+    "AT",
+    "APRO",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.1519,
+    612147.1758225823,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:QNTUSDT",
+   "values": [
+    "QNT",
+    "Quant",
+    "USDT",
+    "BINANCE",
+    "spot",
+    58.97,
+    608811.1020443124,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:PROMUSDT",
+   "values": [
+    "PROM",
+    "Prom",
+    "USDT",
+    "BINANCE",
+    "spot",
+    2.202,
+    607062.4007096925,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:TREEUSDT",
+   "values": [
+    "TREE",
+    "Treehouse",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.0377,
+    603974.5801904175,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:AIXBTUSDT",
+   "values": [
+    "AIXBT",
+    "aixbt",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.01846,
+    598071.6976980767,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:GRTUSDT",
+   "values": [
+    "GRT",
+    "The Graph",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.0146,
+    593961.3592147485,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:OSMOUSDT",
+   "values": [
+    "OSMO",
+    "Osmosis",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.0299,
+    586190.8513079439,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:FLOKIUSDT",
+   "values": [
+    "FLOKI",
+    "FLOKI",
+    "USDT",
+    "BINANCE",
+    "spot",
+    2.123e-05,
+    582206.6347866744,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:HYPERUSDT",
+   "values": [
+    "HYPER",
+    "Hyperlane",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.0653,
+    579483.4366145479,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:AVNTUSDT",
+   "values": [
+    "AVNT",
+    "Avantis",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.0926,
+    565741.6741332344,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:JOEUSDT",
+   "values": [
+    "JOE",
+    "JOE",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.0285,
+    565376.414338347,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:HOLOUSDT",
+   "values": [
+    "HOLO",
+    "Holoworld AI",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.0695,
+    565252.549256408,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:SXTUSDT",
+   "values": [
+    "SXT",
+    "Space and Time",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.00748,
+    564624.1738071044,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:BERAUSDT",
+   "values": [
+    "BERA",
+    "Berachain",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.1558,
+    558442.0070236407,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:TSLABUSDT",
+   "values": [
+    "TSLAB",
+    "Tesla Tokenized bStocks",
+    "USDT",
+    "BINANCE",
+    "spot",
+    330.11,
+    551337.3138909395,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:RESOLVUSDT",
+   "values": [
+    "RESOLV",
+    "Resolv",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.01753,
+    545028.8365810167,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:MAVUSDT",
+   "values": [
+    "MAV",
+    "Maverick Protocol",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.00913,
+    531430.560959462,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:WIFUSDT",
+   "values": [
+    "WIF",
+    "dogwifhat",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.1422,
+    529819.4309062413,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:SNXXBUSDT",
+   "values": [
+    "SNXXB",
+    "Tradr 2X Long SNDK ETF Tokenized bStocks",
+    "USDT",
+    "BINANCE",
+    "spot",
+    9.12,
+    528396.9575622511,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:MEMEUSDT",
+   "values": [
+    "MEME",
+    "Memecoin",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.000509,
+    525999.2586448961,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:OPNUSDT",
+   "values": [
+    "OPN",
+    "Opinion",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.0529,
+    525461.7175167782,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:XECUSDT",
+   "values": [
+    "XEC",
+    "eCash",
+    "USDT",
+    "BINANCE",
+    "spot",
+    6.79e-06,
+    524030.8211582214,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:KMNOUSDT",
+   "values": [
+    "KMNO",
+    "Kamino",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.01757,
+    523729.33826125495,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:ROSEUSDT",
+   "values": [
+    "ROSE",
+    "Oasis",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.00575,
+    511086.44141804,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:ARUSDT",
+   "values": [
+    "AR",
+    "Arweave",
+    "USDT",
+    "BINANCE",
+    "spot",
+    1.797,
+    510478.12863761163,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:EDUUSDT",
+   "values": [
+    "EDU",
+    "Open Campus",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.0365,
+    510287.01207377895,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:PYRUSDT",
+   "values": [
+    "PYR",
+    "Vulcan Forged (PYR)",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.063,
+    508788.13876635284,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:NVDABUSDT",
+   "values": [
+    "NVDAB",
+    "NVIDIA Tokenized bStocks",
+    "USDT",
+    "BINANCE",
+    "spot",
+    224.61,
+    504933.189651172,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:VANRYUSDT",
+   "values": [
+    "VANRY",
+    "Vanar Chain",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.003141,
+    504123.8894099905,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:NEXOUSDT",
+   "values": [
+    "NEXO",
+    "Nexo",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.732,
+    503008.24634224415,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:RSRUSDT",
+   "values": [
+    "RSR",
+    "Reserve Rights",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.001256,
+    500807.2671737135,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:1000CHEEMSUSDT",
+   "values": [
+    "1000CHEEMS",
+    "1000CHEEMS",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.000519,
+    497517.3285429933,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:USUALUSDT",
+   "values": [
+    "USUAL",
+    "Usual",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.00933,
+    483483.741386961,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:SENTUSDT",
+   "values": [
+    "SENT",
+    "Sentient",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.0134,
+    481351.7164902276,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:MEUSDT",
+   "values": [
+    "ME",
+    "Magic Eden",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.06388,
+    479946.43021347094,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:KORUBUSDT",
+   "values": [
+    "KORUB",
+    "South Korea Bull 3X ETF Tokenized bStocks",
+    "USDT",
+    "BINANCE",
+    "spot",
+    17.39,
+    459855.47581011313,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:TUSDUSDT",
+   "values": [
+    "TUSD",
+    "TrueUSD",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.9966,
+    455776.81332678103,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:LUMIAUSDT",
+   "values": [
+    "LUMIA",
+    "Lumia",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.0768,
+    450426.7430009335,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:AAOIBUSDT",
+   "values": [
+    "AAOIB",
+    "Applied Optoelectronics Tokenized bStocks",
+    "USDT",
+    "BINANCE",
+    "spot",
+    136.48,
+    449194.7287013716,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:ARPAUSDT",
+   "values": [
+    "ARPA",
+    "ARPA",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.00873,
+    446599.07695379877,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:REZUSDT",
+   "values": [
+    "REZ",
+    "Renzo",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.002822,
+    443573.0441850577,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:MSTRBUSDT",
+   "values": [
+    "MSTRB",
+    "Strategy Tokenized bStocks",
+    "USDT",
+    "BINANCE",
+    "spot",
+    102.71,
+    435991.69153691846,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:CGPTUSDT",
+   "values": [
+    "CGPT",
+    "ChainGPT",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.02058,
+    434934.67691010714,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:STRKUSDT",
+   "values": [
+    "STRK",
+    "Starknet",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.02482,
+    431765.82697616867,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:SLPUSDT",
+   "values": [
+    "SLP",
+    "Smooth Love Potion",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.000563,
+    431759.54668734974,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:DYDXUSDT",
+   "values": [
+    "DYDX",
+    "dYdX",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.11358,
+    429144.6637840032,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:TWTUSDT",
+   "values": [
+    "TWT",
+    "Trust Wallet Token",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.3908,
+    426919.69833221706,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:NBISBUSDT",
+   "values": [
+    "NBISB",
+    "Nebius Tokenized bStocks",
+    "USDT",
+    "BINANCE",
+    "spot",
+    193.2,
+    423580.01603825693,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:WUSDT",
+   "values": [
+    "W",
+    "Wormhole",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.00849,
+    421664.4287557191,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:KATUSDT",
+   "values": [
+    "KAT",
+    "Katana",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.0046,
+    416847.92366504954,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:YBUSDT",
+   "values": [
+    "YB",
+    "YieldBasis",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.075,
+    409470.4815584256,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:BIGTIMEUSDT",
+   "values": [
+    "BIGTIME",
+    "Big Time",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.00546,
+    406139.3291983267,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:IDUSDT",
+   "values": [
+    "ID",
+    "SPACE ID",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.028,
+    399700.529437348,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:CELRUSDT",
+   "values": [
+    "CELR",
+    "Celer Network",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.001911,
+    395270.54612243816,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:AIGENSYNUSDT",
+   "values": [
+    "AI",
+    "Gensyn",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.022,
+    392408.35505902476,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:OPGUSDT",
+   "values": [
+    "OPG",
+    "OpenGradient",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.0963,
+    390778.2275976506,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:KSMUSDT",
+   "values": [
+    "KSM",
+    "Kusama",
+    "USDT",
+    "BINANCE",
+    "spot",
+    3.05,
+    387536.71942140936,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:TRBUSDT",
+   "values": [
+    "TRB",
+    "Tellor",
+    "USDT",
+    "BINANCE",
+    "spot",
+    13.79,
+    387135.4555041797,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:SKLUSDT",
+   "values": [
+    "SKL",
+    "SKALE",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.00369,
+    382579.1973262433,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:TUSDT",
+   "values": [
+    "T",
+    "Threshold",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.00367,
+    376195.2502593086,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:VANAUSDT",
+   "values": [
+    "VANA",
+    "Vana",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.873,
+    376125.37207352545,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:AEVOUSDT",
+   "values": [
+    "AEVO",
+    "Aevo",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.0206,
+    375792.65323731065,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:SNXUSDT",
+   "values": [
+    "SNX",
+    "Synthetix",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.212,
+    374396.685741082,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:AIUSDT",
+   "values": [
+    "AI",
+    "Sleepless AI",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.0184,
+    371283.8777474006,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:VETUSDT",
+   "values": [
+    "VET",
+    "VeChain",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.004783,
+    370744.44137321366,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:ZKPUSDT",
+   "values": [
+    "ZKP",
+    "zkPass",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.0456,
+    367199.8135734896,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:METUSDT",
+   "values": [
+    "MET",
+    "Meteora",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.1652,
+    364695.74154125847,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:GOOGLBUSDT",
+   "values": [
+    "GOOGLB",
+    "Alphabet Tokenized bStocks",
+    "USDT",
+    "BINANCE",
+    "spot",
+    357.55,
+    361779.7377825033,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:SIGNUSDT",
+   "values": [
+    "SIGN",
+    "Sign",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.00694,
+    337489.96287955315,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:KAVAUSDT",
+   "values": [
+    "KAVA",
+    "Kava",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.0411,
+    336773.2312577304,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:ALPINEUSDT",
+   "values": [
+    "ALPINE",
+    "Alpine F1 Team Fan Token",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.333,
+    336141.97734982334,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:FLUXUSDT",
+   "values": [
+    "FLUX",
+    "Flux",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.0424,
+    334770.77697450615,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:WCTUSDT",
+   "values": [
+    "WCT",
+    "WalletConnect Token",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.03698,
+    334354.4623194973,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:ARKMUSDT",
+   "values": [
+    "ARKM",
+    "Arkham",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.0968,
+    334025.8434813795,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:ONEUSDT",
+   "values": [
+    "ONE",
+    "Harmony",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.00127,
+    330596.49948013376,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:SKYUSDT",
+   "values": [
+    "SKY",
+    "Sky",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.05402,
+    319637.6037015527,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:LINEAUSDT",
+   "values": [
+    "LINEA",
+    "Linea",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.002259,
+    319361.1532259103,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:ATMUSDT",
+   "values": [
+    "ATM",
+    "Atletico De Madrid Fan Token",
+    "USDT",
+    "BINANCE",
+    "spot",
+    1.578,
+    317758.90825196274,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:APEUSDT",
+   "values": [
+    "APE",
+    "ApeCoin",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.1326,
+    316101.8376629389,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:SANDUSDT",
+   "values": [
+    "SAND",
+    "The Sandbox",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.04168,
+    313648.7250672027,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:RADUSDT",
+   "values": [
+    "RAD",
+    "Radworks",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.212,
+    313251.0197373662,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:ZKUSDT",
+   "values": [
+    "ZK",
+    "zkSync",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.0079,
+    307376.388721322,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:INTCBUSDT",
+   "values": [
+    "INTCB",
+    "Intel Tokenized bStocks",
+    "USDT",
+    "BINANCE",
+    "spot",
+    102.17,
+    305883.58534080884,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:GTCUSDT",
+   "values": [
+    "GTC",
+    "Gitcoin",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.08896,
+    304752.2730874814,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:DRAMBUSDT",
+   "values": [
+    "DRAMB",
+    "Roundhill Memory ETF Tokenized bStocks",
+    "USDT",
+    "BINANCE",
+    "spot",
+    51.01,
+    302905.09792721603,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:AEROUSDT",
+   "values": [
+    "AERO",
+    "Aerodrome Finance",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.423,
+    302804.80926023197,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:INITUSDT",
+   "values": [
+    "INIT",
+    "Initia",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.0539,
+    302721.15981576004,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:RAYUSDT",
+   "values": [
+    "RAY",
+    "Raydium",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.6414,
+    301351.07157471875,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:CVCUSDT",
+   "values": [
+    "CVC",
+    "Civic",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.01914,
+    298782.2009768044,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:QIUSDT",
+   "values": [
+    "QI",
+    "BENQI",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.001332,
+    297282.91179624776,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:PIVXUSDT",
+   "values": [
+    "PIVX",
+    "PIVX",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.0249,
+    297190.0751683911,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:GENIUSUSDT",
+   "values": [
+    "GENIUS",
+    "Genius Terminal",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.3418,
+    296862.4532170799,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:NXPCUSDT",
+   "values": [
+    "NXPC",
+    "NEXPACE",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.2357,
+    292774.6671002417,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:FOGOUSDT",
+   "values": [
+    "FOGO",
+    "Fogo",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.00881,
+    288455.34231282555,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:MOVEUSDT",
+   "values": [
+    "MOVE",
+    "Movement",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.007,
+    287364.8304414967,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:DOLOUSDT",
+   "values": [
+    "DOLO",
+    "Dolomite",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.02427,
+    286913.2285298085,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:LUNAUSDT",
+   "values": [
+    "LUNA",
+    "Terra",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.0425,
+    284410.1304316794,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:SAPIENUSDT",
+   "values": [
+    "SAPIEN",
+    "Sapien",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.0829,
+    283740.493325288,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:BANANAUSDT",
+   "values": [
+    "BANANA",
+    "Banana Gun",
+    "USDT",
+    "BINANCE",
+    "spot",
+    3.621,
+    278523.7307480537,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:STXUSDT",
+   "values": [
+    "STX",
+    "Stacks",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.1314,
+    276078.2342833069,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:IMXUSDT",
+   "values": [
+    "IMX",
+    "Immutable",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.1113,
+    265767.8976550358,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:XTZUSDT",
+   "values": [
+    "XTZ",
+    "Tezos",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.204,
+    265172.7914585139,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:CFGUSDT",
+   "values": [
+    "CFG",
+    "Centrifuge",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.1647,
+    263635.26075575344,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:MANTAUSDT",
+   "values": [
+    "MANTA",
+    "Manta Network",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.05931,
+    263261.5968702716,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:ZILUSDT",
+   "values": [
+    "ZIL",
+    "Zilliqa",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.002397,
+    254276.29312557846,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:SPELLUSDT",
+   "values": [
+    "SPELL",
+    "Spell Token",
+    "USDT",
+    "BINANCE",
+    "spot",
+    8.02e-05,
+    251845.6552260173,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:ACMUSDT",
+   "values": [
+    "ACM",
+    "AC Milan Fan Token",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.276,
+    251332.64656694297,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:CKBUSDT",
+   "values": [
+    "CKB",
+    "Nervos Network",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.000878,
+    249504.30516790476,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:BARDUSDT",
+   "values": [
+    "BARD",
+    "Lombard",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.1115,
+    246334.46469874654,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:SSVUSDT",
+   "values": [
+    "SSV",
+    "ssv.network",
+    "USDT",
+    "BINANCE",
+    "spot",
+    2.156,
+    245437.81989791238,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:WBETHUSDT",
+   "values": [
+    "WBETH",
+    "Wrapped Beacon ETH",
+    "USDT",
+    "BINANCE",
+    "spot",
+    2113.82,
+    244837.78120110946,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:TURTLEUSDT",
+   "values": [
+    "TURTLE",
+    "Turtle",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.0469,
+    244488.295311132,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:SFPUSDT",
+   "values": [
+    "SFP",
+    "SafePal",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.242,
+    244410.54001946308,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:ZKCUSDT",
+   "values": [
+    "ZKC",
+    "Boundless",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.0391,
+    242660.81967335287,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:USTCUSDT",
+   "values": [
+    "USTC",
+    "TerraClassicUSD",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.00508,
+    240928.29165415085,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:BNSOLUSDT",
+   "values": [
+    "BNSOL",
+    "Binance Staked SOL",
+    "USDT",
+    "BINANCE",
+    "spot",
+    85.9,
+    238020.28167160702,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:LITEBUSDT",
+   "values": [
+    "LITEB",
+    "Lumentum Tokenized bStocks",
+    "USDT",
+    "BINANCE",
+    "spot",
+    913.01,
+    234920.00123341483,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:API3USDT",
+   "values": [
+    "API3",
+    "API3",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.1949,
+    233325.18626335575,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:THETAUSDT",
+   "values": [
+    "THETA",
+    "Theta Network",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.1345,
+    233243.07727250276,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:1INCHUSDT",
+   "values": [
+    "1INCH",
+    "1inch",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.0844,
+    230068.74453981404,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:BREVUSDT",
+   "values": [
+    "BREV",
+    "Brevis",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.0729,
+    229151.1618803744,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:JUVUSDT",
+   "values": [
+    "JUV",
+    "Juventus Fan Token",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.321,
+    227506.47380437414,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:BLURUSDT",
+   "values": [
+    "BLUR",
+    "Blur",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.01388,
+    226163.08955552496,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:KAIAUSDT",
+   "values": [
+    "KAIA",
+    "Kaia",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.0274,
+    225334.67689328783,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:2ZUSDT",
+   "values": [
+    "2Z",
+    "DoubleZero",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.05652,
+    223822.18644729772,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:WAXPUSDT",
+   "values": [
+    "WAXP",
+    "WAX",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.00396,
+    222465.33834873376,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:ANKRUSDT",
+   "values": [
+    "ANKR",
+    "Ankr",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.00361,
+    218048.1136231036,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:MBLUSDT",
+   "values": [
+    "MBL",
+    "MovieBloc",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.000628,
+    216586.01162771607,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:ASRUSDT",
+   "values": [
+    "ASR",
+    "AS Roma Fan Token",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.902,
+    215655.80355691,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:ENJUSDT",
+   "values": [
+    "ENJ",
+    "Enjin Coin",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.02541,
+    213506.8845740798,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:LPTUSDT",
+   "values": [
+    "LPT",
+    "Livepeer",
+    "USDT",
+    "BINANCE",
+    "spot",
+    1.267,
+    210680.29647347608,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:GPSUSDT",
+   "values": [
+    "GPS",
+    "GoPlus Security",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.00982,
+    209345.45475499035,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:BANDUSDT",
+   "values": [
+    "BAND",
+    "Band",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.1684,
+    207964.8885951852,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:SYRUPUSDT",
+   "values": [
+    "SYRUP",
+    "Maple Finance",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.1505,
+    207727.19919935742,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:CHRUSDT",
+   "values": [
+    "CHR",
+    "Chromia",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.01425,
+    205256.20201694802,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:AVAUSDT",
+   "values": [
+    "AVA",
+    "AVA (Travala)",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.2033,
+    201699.85779595128,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:EWYBUSDT",
+   "values": [
+    "EWYB",
+    "iShares MSCI South Korea ETF Tokenized bStocks",
+    "USDT",
+    "BINANCE",
+    "spot",
+    166.45,
+    201180.4524675732,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:CELOUSDT",
+   "values": [
+    "CELO",
+    "Celo",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.0632,
+    197816.42802063856,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:CTKUSDT",
+   "values": [
+    "CTK",
+    "Shentu",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.1161,
+    196864.02852055104,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:ANIMEUSDT",
+   "values": [
+    "ANIME",
+    "Animecoin",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.00257,
+    196856.8796955367,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:XVGUSDT",
+   "values": [
+    "XVG",
+    "Verge",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.002144,
+    195157.8681199992,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:TKOUSDT",
+   "values": [
+    "TKO",
+    "Toko Token",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.0511,
+    193734.2707164725,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:YFIUSDT",
+   "values": [
+    "YFI",
+    "Yearn",
+    "USDT",
+    "BINANCE",
+    "spot",
+    2065,
+    193646.0778009486,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:AUDIOUSDT",
+   "values": [
+    "AUDIO",
+    "Audius",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.0125,
+    191165.4437574618,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:SOXSBUSDT",
+   "values": [
+    "SOXSB",
+    "Direxion Semiconductor Bear 3X ETF Tokenized bStocks",
+    "USDT",
+    "BINANCE",
+    "spot",
+    41.14,
+    189314.945821969,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:GMTUSDT",
+   "values": [
+    "GMT",
+    "GMT",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.00688,
+    187615.50068611646,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:STORJUSDT",
+   "values": [
+    "STORJ",
+    "Storj",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.0455,
+    187064.8367214981,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:REDUSDT",
+   "values": [
+    "RED",
+    "RedStone",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.0896,
+    186829.502565383,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:GUSDT",
+   "values": [
+    "G",
+    "Gravity",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.00361,
+    185977.8259354938,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:METISUSDT",
+   "values": [
+    "METIS",
+    "Metis",
+    "USDT",
+    "BINANCE",
+    "spot",
+    2.55,
+    185027.22888067053,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:KGSTUSDT",
+   "values": [
+    "KGST",
+    "KGST",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.011444,
+    184892.74902153082,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:WINUSDT",
+   "values": [
+    "WIN",
+    "WINkLink",
+    "USDT",
+    "BINANCE",
+    "spot",
+    3.128e-05,
+    184278.64813013384,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:POWRUSDT",
+   "values": [
+    "POWR",
+    "Powerledger",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.039,
+    178249.341650769,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:SANTOSUSDT",
+   "values": [
+    "SANTOS",
+    "Santos FC Fan Token",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.488,
+    177742.77357442144,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:AWEUSDT",
+   "values": [
+    "AWE",
+    "AWE",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.05868,
+    177320.23600294383,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:AMPUSDT",
+   "values": [
+    "AMP",
+    "Amp",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.000389,
+    176340.81168287125,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:BATUSDT",
+   "values": [
+    "BAT",
+    "Basic Attention Token",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.0678,
+    176305.33087499897,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:DGBUSDT",
+   "values": [
+    "DGB",
+    "DigiByte",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.0038,
+    172498.36695931765,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:EGLDUSDT",
+   "values": [
+    "EGLD",
+    "MultiversX",
+    "USDT",
+    "BINANCE",
+    "spot",
+    2.69,
+    172425.63171974212,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:ACXUSDT",
+   "values": [
+    "ACX",
+    "Across Protocol",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.04081,
+    166441.65104220106,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:RPLUSDT",
+   "values": [
+    "RPL",
+    "Rocket Pool",
+    "USDT",
+    "BINANCE",
+    "spot",
+    1.54,
+    163940.4440651409,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:ALTUSDT",
+   "values": [
+    "ALT",
+    "AltLayer",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.00598,
+    163778.43758233517,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:COINBUSDT",
+   "values": [
+    "COINB",
+    "Coinbase Tokenized bStocks",
+    "USDT",
+    "BINANCE",
+    "spot",
+    154.97,
+    163701.87911790572,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:ILVUSDT",
+   "values": [
+    "ILV",
+    "Illuvium",
+    "USDT",
+    "BINANCE",
+    "spot",
+    3.09,
+    160565.94579624696,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:PSGUSDT",
+   "values": [
+    "PSG",
+    "Paris Saint-Germain Fan Token",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.528,
+    159964.64209687628,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:SCRTUSDT",
+   "values": [
+    "SCRT",
+    "Secret",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.0326,
+    159564.5945806661,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:LQTYUSDT",
+   "values": [
+    "LQTY",
+    "Liquity",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.1939,
+    156757.45170617243,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:SUPERUSDT",
+   "values": [
+    "SUPER",
+    "SuperVerse",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.0864,
+    153922.6663362711,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:PORTOUSDT",
+   "values": [
+    "PORTO",
+    "FC Porto Fan Token",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.465,
+    153775.51880506353,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:LAYERUSDT",
+   "values": [
+    "LAYER",
+    "Solayer",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.061,
+    149253.45519151542,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:LAZIOUSDT",
+   "values": [
+    "LAZIO",
+    "S.S. Lazio Fan Token",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.369,
+    149205.0202407585,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:CITYUSDT",
+   "values": [
+    "CITY",
+    "Manchester City Fan Token",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.374,
+    148908.33573647283,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:BARUSDT",
+   "values": [
+    "BAR",
+    "FC Barcelona Fan Token",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.269,
+    147852.15175313468,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:AXLUSDT",
+   "values": [
+    "AXL",
+    "Axelar",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.037,
+    146871.00311022438,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:BEAMXUSDT",
+   "values": [
+    "BEAM",
+    "Beam",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.001387,
+    145324.21563161447,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:JASMYUSDT",
+   "values": [
+    "JASMY",
+    "JasmyCoin",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.00405,
+    143047.72224620724,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:WOOUSDT",
+   "values": [
+    "WOO",
+    "WOO",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.01185,
+    138582.94051478905,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:MANAUSDT",
+   "values": [
+    "MANA",
+    "Decentraland",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.0663,
+    136850.47154986294,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:SUSHIUSDT",
+   "values": [
+    "SUSHI",
+    "SushiSwap",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.1645,
+    134847.076014876,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:CYBERUSDT",
+   "values": [
+    "CYBER",
+    "Cyber",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.315,
+    134060.53602311533,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:NEWTUSDT",
+   "values": [
+    "NEWT",
+    "Newton Protocol",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.0396,
+    132498.87774839954,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:AUCTIONUSDT",
+   "values": [
+    "AUCTION",
+    "Bounce Token",
+    "USDT",
+    "BINANCE",
+    "spot",
+    3.006,
+    130982.11633659052,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:STRAXUSDT",
+   "values": [
+    "STRAX",
+    "Xertra",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.00876,
+    129309.88506566713,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:HOTUSDT",
+   "values": [
+    "HOT",
+    "Holo",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.000345,
+    126760.11566118865,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:XVSUSDT",
+   "values": [
+    "XVS",
+    "Venus",
+    "USDT",
+    "BINANCE",
+    "spot",
+    2.84,
+    123594.204505627,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:AXTIBUSDT",
+   "values": [
+    "AXTIB",
+    "AXT Tokenized bStocks",
+    "USDT",
+    "BINANCE",
+    "spot",
+    91.69,
+    123438.87285162199,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:MINAUSDT",
+   "values": [
+    "MINA",
+    "Mina",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.0412,
+    120734.12000078928,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:NEOUSDT",
+   "values": [
+    "NEO",
+    "Neo",
+    "USDT",
+    "BINANCE",
+    "spot",
+    1.845,
+    119668.65128532241,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:AMDBUSDT",
+   "values": [
+    "AMDB",
+    "Advanced Micro Devices Tokenized bStocks",
+    "USDT",
+    "BINANCE",
+    "spot",
+    484.07,
+    119566.94126453256,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:ENSUSDT",
+   "values": [
+    "ENS",
+    "Ethereum Name Service",
+    "USDT",
+    "BINANCE",
+    "spot",
+    4.3,
+    118373.42300946903,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:FTTUSDT",
+   "values": [
+    "FTT",
+    "FTX Token",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.1989,
+    118008.83869794435,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:ONTUSDT",
+   "values": [
+    "ONT",
+    "Ontology",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.0387,
+    115982.2157346894,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:REQUSDT",
+   "values": [
+    "REQ",
+    "Request",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.0521,
+    112739.49681133406,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:MUUBUSDT",
+   "values": [
+    "MUUB",
+    "Direxion MU Bull 2X ETF Tokenized bStocks",
+    "USDT",
+    "BINANCE",
+    "spot",
+    26.84,
+    112270.69492087007,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:FRAXUSDT",
+   "values": [
+    "FRAX",
+    "Frax (prev. FXS)",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.3051,
+    112105.8052114643,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:GASUSDT",
+   "values": [
+    "GAS",
+    "Gas",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.948,
+    111299.86215987903,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:RLCUSDT",
+   "values": [
+    "RLC",
+    "iExec RLC",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.2772,
+    110801.04087727267,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:AAPLBUSDT",
+   "values": [
+    "AAPLB",
+    "Apple Tokenized bStocks",
+    "USDT",
+    "BINANCE",
+    "spot",
+    312.34,
+    110183.73480665522,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:QTUMUSDT",
+   "values": [
+    "QTUM",
+    "Qtum",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.672,
+    110124.70959194002,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:COWUSDT",
+   "values": [
+    "COW",
+    "CoW Protocol",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.1077,
+    109540.62172927098,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:BTTCUSDT",
+   "values": [
+    "BTT",
+    "BitTorrent-New",
+    "USDT",
+    "BINANCE",
+    "spot",
+    2.7e-07,
+    109370.55189720087,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:PUNDIXUSDT",
+   "values": [
+    "PUNDIX",
+    "Pundi X (New)",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.0794,
+    108667.39112843525,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:NMRUSDT",
+   "values": [
+    "NMR",
+    "Numeraire",
+    "USDT",
+    "BINANCE",
+    "spot",
+    8.52,
+    107349.653792924,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:USDEUSDT",
+   "values": [
+    "USDE",
+    "Ethena USDe",
+    "USDT",
+    "BINANCE",
+    "spot",
+    1.0006,
+    106980.98355693209,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:COMPUSDT",
+   "values": [
+    "COMP",
+    "Compound",
+    "USDT",
+    "BINANCE",
+    "spot",
+    16.58,
+    104178.12353114045,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:DCRUSDT",
+   "values": [
+    "DCR",
+    "Decred",
+    "USDT",
+    "BINANCE",
+    "spot",
+    12.83,
+    101250.27998250468,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:BNTUSDT",
+   "values": [
+    "BNT",
+    "Bancor",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.2732,
+    100725.95086411393,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:WALUSDT",
+   "values": [
+    "WAL",
+    "Walrus",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.0256,
+    97005.08785008221,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:USDSUSDT",
+   "values": [
+    "USDS",
+    "USDS",
+    "USDT",
+    "BINANCE",
+    "spot",
+    1.0006,
+    95007.60568643703,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:RVNUSDT",
+   "values": [
+    "RVN",
+    "Ravencoin",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.00359,
+    94016.55178959887,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:FUSDT",
+   "values": [
+    "F",
+    "SynFutures",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.00289,
+    93637.50536561158,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:SOPHUSDT",
+   "values": [
+    "SOPH",
+    "Sophon",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.00402,
+    92943.6392351347,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:VELODROMEUSDT",
+   "values": [
+    "VELO",
+    "Velodrome Finance",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.01772,
+    89689.04444697294,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:AUSDT",
+   "values": [
+    "A",
+    "Vaulta",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.0649,
+    87843.64700428388,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:SUNUSDT",
+   "values": [
+    "SUN",
+    "Sun (New)",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.018,
+    86277.58330853841,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:MASKUSDT",
+   "values": [
+    "MASK",
+    "Mask Network",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.374,
+    84847.91991798602,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:GNSUSDT",
+   "values": [
+    "GNS",
+    "Gains Network",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.524,
+    84262.78969430711,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:ASTRUSDT",
+   "values": [
+    "ASTR",
+    "Astar",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.004951,
+    83203.46878257209,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:STEEMUSDT",
+   "values": [
+    "STEEM",
+    "Steem",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.03733,
+    81409.75296986842,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:GMXUSDT",
+   "values": [
+    "GMX",
+    "GMX",
+    "USDT",
+    "BINANCE",
+    "spot",
+    6.45,
+    79774.4730669088,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:ARKUSDT",
+   "values": [
+    "ARK",
+    "Ark",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.0952,
+    75933.14966758802,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:MVLLBUSDT",
+   "values": [
+    "MVLLB",
+    "GraniteShares 2X Long MRVL ETF Tokenized bStocks",
+    "USDT",
+    "BINANCE",
+    "spot",
+    27.77,
+    71170.25132244595,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:MRVLBUSDT",
+   "values": [
+    "MRVLB",
+    "Marvell Technology Tokenized bStocks",
+    "USDT",
+    "BINANCE",
+    "spot",
+    221.59,
+    69014.0576066499,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:ONGUSDT",
+   "values": [
+    "ONG",
+    "Ontology Gas",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.04334,
+    67262.30916715781,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:KNCUSDT",
+   "values": [
+    "KNC",
+    "Kyber Network Crystal v2",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.1043,
+    66498.06664380149,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:LSKUSDT",
+   "values": [
+    "LSK",
+    "Lisk",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.0773,
+    65789.8064872837,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:VTHOUSDT",
+   "values": [
+    "VTHO",
+    "VeThor Token",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.000344,
+    65537.77383908627,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:AMATBUSDT",
+   "values": [
+    "AMATB",
+    "Applied Materials Tokenized bStocks",
+    "USDT",
+    "BINANCE",
+    "spot",
+    540.68,
+    63876.81487219132,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:HOODBUSDT",
+   "values": [
+    "HOODB",
+    "Robinhood Tokenized bStocks",
+    "USDT",
+    "BINANCE",
+    "spot",
+    94.18,
+    63318.19523244709,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:POLYXUSDT",
+   "values": [
+    "POLYX",
+    "Polymesh",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.0326,
+    60245.49253105488,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:UMAUSDT",
+   "values": [
+    "UMA",
+    "UMA",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.343,
+    59704.52111781501,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:COHRBUSDT",
+   "values": [
+    "COHRB",
+    "Coherent Tokenized bStocks",
+    "USDT",
+    "BINANCE",
+    "spot",
+    388.17,
+    58895.113802884625,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:WDCBUSDT",
+   "values": [
+    "WDCB",
+    "Western Digital Tokenized bStocks",
+    "USDT",
+    "BINANCE",
+    "spot",
+    434.76,
+    57915.88537647031,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:HIVEUSDT",
+   "values": [
+    "HIVE",
+    "Hive",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.042,
+    56957.26804435597,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:GNOUSDT",
+   "values": [
+    "GNO",
+    "Gnosis",
+    "USDT",
+    "BINANCE",
+    "spot",
+    106.45,
+    54790.753407887896,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:QKCUSDT",
+   "values": [
+    "QKC",
+    "QuarkChain",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.002006,
+    52414.29248125963,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:XNOUSDT",
+   "values": [
+    "XNO",
+    "Nano",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.407,
+    51059.04244909891,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:TFUELUSDT",
+   "values": [
+    "TFUEL",
+    "Theta Fuel",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.00744,
+    47429.41688177588,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:FLNCBUSDT",
+   "values": [
+    "FLNCB",
+    "Fluence Energy Tokenized bStocks",
+    "USDT",
+    "BINANCE",
+    "spot",
+    13.25,
+    47406.37309894701,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:CRWVBUSDT",
+   "values": [
+    "CRWVB",
+    "CoreWeave Tokenized bStocks",
+    "USDT",
+    "BINANCE",
+    "spot",
+    92.27,
+    45306.50192998997,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:BABABUSDT",
+   "values": [
+    "BABAB",
+    "Alibaba Tokenized bStocks",
+    "USDT",
+    "BINANCE",
+    "spot",
+    129.9,
+    44124.99704684713,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:QUICKUSDT",
+   "values": [
+    "QUICK",
+    "Quickswap[New]",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.00834,
+    40995.50177522969,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:GLMUSDT",
+   "values": [
+    "GLM",
+    "Golem",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.0924,
+    39442.56369680321,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:ZRXUSDT",
+   "values": [
+    "ZRX",
+    "0x Protocol",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.0822,
+    38037.182387850014,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:ICXUSDT",
+   "values": [
+    "ICX",
+    "ICON",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.0232,
+    37853.49221856219,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:METABUSDT",
+   "values": [
+    "METAB",
+    "Meta Tokenized bStocks",
+    "USDT",
+    "BINANCE",
+    "spot",
+    596.47,
+    36913.0332093891,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:SCUSDT",
+   "values": [
+    "SC",
+    "Siacoin",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.000507,
+    35832.987539394235,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:IBMBUSDT",
+   "values": [
+    "IBMB",
+    "IBM Tokenized bStocks",
+    "USDT",
+    "BINANCE",
+    "spot",
+    237.2,
+    34173.00517855927,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:RKLBBUSDT",
+   "values": [
+    "RKLBB",
+    "Rocket Lab Tokenized bStocks",
+    "USDT",
+    "BINANCE",
+    "spot",
+    85.2,
+    33692.88251351101,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:IQUSDT",
+   "values": [
+    "IQ",
+    "IQ",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.000657,
+    32988.06735644596,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:MTLUSDT",
+   "values": [
+    "MTL",
+    "Metal DAO",
+    "USDT",
+    "BINANCE",
+    "spot",
+    0.212,
+    32778.62791316899,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:IRENBUSDT",
+   "values": [
+    "IRENB",
+    "IREN Limited Tokenized bStocks",
+    "USDT",
+    "BINANCE",
+    "spot",
+    42.1,
+    32769.45621158699,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:CBRSBUSDT",
+   "values": [
+    "CBRSB",
+    "Cerebras Tokenized bStocks",
+    "USDT",
+    "BINANCE",
+    "spot",
+    227,
+    31566.926816741314,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:NFLXBUSDT",
+   "values": [
+    "NFLXB",
+    "Netflix Tokenized bStocks",
+    "USDT",
+    "BINANCE",
+    "spot",
+    74.24,
+    30940.000141264998,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:USARBUSDT",
+   "values": [
+    "USARB",
+    "USA Rare Earth Tokenized bStocks",
+    "USDT",
+    "BINANCE",
+    "spot",
+    19.82,
+    30936.899382011998,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:MSFTBUSDT",
+   "values": [
+    "MSFTB",
+    "Microsoft Tokenized bStocks",
+    "USDT",
+    "BINANCE",
+    "spot",
+    500.79,
+    30403.861632403903,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:NOKBUSDT",
+   "values": [
+    "NOKB",
+    "Nokia Tokenized bStocks",
+    "USDT",
+    "BINANCE",
+    "spot",
+    9.4,
+    30277.02459120801,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:CRDOBUSDT",
+   "values": [
+    "CRDOB",
+    "Credo Technology Tokenized bStocks",
+    "USDT",
+    "BINANCE",
+    "spot",
+    255.2,
+    27714.16275416521,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:BEBUSDT",
+   "values": [
+    "BEB",
+    "Bloom Energy Tokenized bStocks",
+    "USDT",
+    "BINANCE",
+    "spot",
+    221.28,
+    27455.438513952995,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:AVGOBUSDT",
+   "values": [
+    "AVGOB",
+    "Broadcom Tokenized bStocks",
+    "USDT",
+    "BINANCE",
+    "spot",
+    429.2,
+    27078.425476171396,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:QNTBUSDT",
+   "values": [
+    "QNTB",
+    "Quantinuum Tokenized bStocks",
+    "USDT",
+    "BINANCE",
+    "spot",
+    58.1,
+    26189.020761759006,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:TSMBUSDT",
+   "values": [
+    "TSM",
+    "Taiwan Semiconductor Manufacturing (Derivatives)",
+    "USDT",
+    "BINANCE",
+    "spot",
+    420.91,
+    25869.849692657004,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:TQQQBUSDT",
+   "values": [
+    "TQQQB",
+    "ProShares UltraPro QQQ Tokenized bStocks",
+    "USDT",
+    "BINANCE",
+    "spot",
+    74.25,
+    25704.67555731901,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:QCOMBUSDT",
+   "values": [
+    "QCOMB",
+    "Qualcomm Tokenized bStocks",
+    "USDT",
+    "BINANCE",
+    "spot",
+    168.41,
+    25220.70456202358,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:GLWBUSDT",
+   "values": [
+    "GLWB",
+    "Corning Tokenized bStocks",
+    "USDT",
+    "BINANCE",
+    "spot",
+    167.31,
+    24913.76614622399,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:BMNRBUSDT",
+   "values": [
+    "BMNRB",
+    "BitMine Immersion Technologies Tokenized bStocks",
+    "USDT",
+    "BINANCE",
+    "spot",
+    18.96,
+    24407.759791762015,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:INTWBUSDT",
+   "values": [
+    "INTWB",
+    "GraniteShares 2X Long INTC ETF Tokenized bStocks",
+    "USDT",
+    "BINANCE",
+    "spot",
+    24.57,
+    24279.47295711801,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:ALABBUSDT",
+   "values": [
+    "ALABB",
+    "Astera Labs Tokenized bStocks",
+    "USDT",
+    "BINANCE",
+    "spot",
+    338.62,
+    23976.9044561903,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:ORCLBUSDT",
+   "values": [
+    "ORCLB",
+    "Oracle Tokenized bStocks",
+    "USDT",
+    "BINANCE",
+    "spot",
+    147.39,
+    23790.327729547298,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:PLTRBUSDT",
+   "values": [
+    "PLTRB",
+    "Palantir Tokenized bStocks",
+    "USDT",
+    "BINANCE",
+    "spot",
+    173.45,
+    22217.072695601793,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:SMCIBUSDT",
+   "values": [
+    "SMCIB",
+    "Super Micro Computer Tokenized bStocks",
+    "USDT",
+    "BINANCE",
+    "spot",
+    31.67,
+    19235.910563823993,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:AMZNBUSDT",
+   "values": [
+    "AMZNB",
+    "Amazon Tokenized bStocks",
+    "USDT",
+    "BINANCE",
+    "spot",
+    275.1,
+    16352.918652173506,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:SMHBUSDT",
+   "values": [
+    "SMHB",
+    "VanEck Semiconductor ETF Tokenized bStocks",
+    "USDT",
+    "BINANCE",
+    "spot",
+    586.44,
+    14082.537363708001,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:PYPLBUSDT",
+   "values": [
+    "PYPLB",
+    "Paypal Tokenized bStocks",
+    "USDT",
+    "BINANCE",
+    "spot",
+    59.4,
+    13737.484156212999,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:ASMLBUSDT",
+   "values": [
+    "ASMLB",
+    "ASML Tokenized bStocks",
+    "USDT",
+    "BINANCE",
+    "spot",
+    1753.43,
+    13312.993208265561,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:ARMBUSDT",
+   "values": [
+    "ARMB",
+    "Arm Tokenized bStocks",
+    "USDT",
+    "BINANCE",
+    "spot",
+    283.2,
+    12619.009312926293,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:DELLBUSDT",
+   "values": [
+    "DELLB",
+    "Dell Tokenized bStocks",
+    "USDT",
+    "BINANCE",
+    "spot",
+    453.34,
+    11646.817573361799,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:ASTSBUSDT",
+   "values": [
+    "ASTSB",
+    "AST SpaceMobile Tokenized bStocks",
+    "USDT",
+    "BINANCE",
+    "spot",
+    72.86,
+    10528.307627693004,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:USDPUSDT",
+   "values": [
+    "USDP",
+    "Pax Dollar",
+    "USDT",
+    "BINANCE",
+    "spot",
+    1.0006,
+    10465.758903268994,
+    null
+   ]
+  },
+  {
+   "symbol": "BINANCE:GSBUSDT",
+   "values": [
+    "GSB",
+    "Goldman Sachs Tokenized bStocks",
+    "USDT",
+    "BINANCE",
+    "spot",
+    1031.29,
+    7357.16391244729,
+    null
+   ]
+  }
+ ]
+}

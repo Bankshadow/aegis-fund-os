@@ -1,0 +1,425 @@
+{
+  "criteria": "docs/E36_CRITERIA.md",
+  "primary": {
+    "window": 10,
+    "horizon": 10
+  },
+  "btc": {
+    "n_bars": 3276,
+    "median_quote_volume": 1202269370.3629632,
+    "by_window": {
+      "5": {
+        "regimes": {
+          "SPIKE": {
+            "n": 32,
+            "5": {
+              "continuation_mean": 0.018573996302437088,
+              "fade_mean": -0.018573996302437088,
+              "continuation_win": 0.625,
+              "fade_win": 0.375
+            },
+            "10": {
+              "continuation_mean": 0.054970516836313994,
+              "fade_mean": -0.054970516836313994,
+              "continuation_win": 0.6875,
+              "fade_win": 0.3125
+            },
+            "20": {
+              "continuation_mean": 0.094897017276548,
+              "fade_mean": -0.094897017276548,
+              "continuation_win": 0.71875,
+              "fade_win": 0.28125
+            }
+          },
+          "INCREASING": {
+            "n": 58,
+            "5": {
+              "continuation_mean": 0.002227961627091676,
+              "fade_mean": -0.002227961627091676,
+              "continuation_win": 0.43103448275862066,
+              "fade_win": 0.5689655172413793
+            },
+            "10": {
+              "continuation_mean": -0.006819231529837492,
+              "fade_mean": 0.006819231529837492,
+              "continuation_win": 0.43103448275862066,
+              "fade_win": 0.5689655172413793
+            },
+            "20": {
+              "continuation_mean": -0.010979433755373465,
+              "fade_mean": 0.010979433755373465,
+              "continuation_win": 0.46551724137931033,
+              "fade_win": 0.5344827586206896
+            }
+          },
+          "DECREASING": {
+            "n": 113,
+            "5": {
+              "continuation_mean": -0.005463100217850605,
+              "fade_mean": 0.005463100217850605,
+              "continuation_win": 0.46017699115044247,
+              "fade_win": 0.5398230088495575
+            },
+            "10": {
+              "continuation_mean": -0.009649657488787171,
+              "fade_mean": 0.009649657488787171,
+              "continuation_win": 0.4424778761061947,
+              "fade_win": 0.5575221238938053
+            },
+            "20": {
+              "continuation_mean": -0.014750136575663157,
+              "fade_mean": 0.014750136575663157,
+              "continuation_win": 0.4690265486725664,
+              "fade_win": 0.5309734513274337
+            }
+          },
+          "FLAT": {
+            "n": 3039,
+            "5": {
+              "continuation_mean": 0.002029307456876181,
+              "fade_mean": -0.002029307456876181,
+              "continuation_win": 0.4814083580125041,
+              "fade_win": 0.5185916419874959
+            },
+            "10": {
+              "continuation_mean": 0.0023880833689673,
+              "fade_mean": -0.0023880833689673,
+              "continuation_win": 0.49720302731161564,
+              "fade_win": 0.5024679170779862
+            },
+            "20": {
+              "continuation_mean": 0.004850554671137165,
+              "fade_mean": -0.004850554671137165,
+              "continuation_win": 0.4981901941428101,
+              "fade_win": 0.5018098058571898
+            }
+          }
+        },
+        "primary_boot": {
+          "a_mean": -0.006819231529837492,
+          "b_mean": 0.0023880833689673,
+          "diff": -0.009207314898804792,
+          "n_a": 58,
+          "n_b": 3039,
+          "percentile": 0.2857
+        },
+        "spike_vs_rest_fade_boot": {
+          "a_mean": -0.054970516836313994,
+          "b_mean": -0.0017979621910679442,
+          "diff": -0.05317255464524605,
+          "n_a": 32,
+          "n_b": 3210,
+          "percentile": 0.0059
+        },
+        "control_b_price_only_fade": {
+          "5": {
+            "n": 392,
+            "mean": -0.005359978962009999
+          },
+          "10": {
+            "n": 392,
+            "mean": -0.01593274106357684
+          },
+          "20": {
+            "n": 392,
+            "mean": -0.021008543583640914
+          }
+        },
+        "control_c_volume_only_fade": {
+          "5": {
+            "n": 48,
+            "mean": -0.00556304666125437
+          },
+          "10": {
+            "n": 48,
+            "mean": -0.018307234490118313
+          },
+          "20": {
+            "n": 48,
+            "mean": -0.031697652968136224
+          }
+        }
+      },
+      "10": {
+        "regimes": {
+          "SPIKE": {
+            "n": 31,
+            "5": {
+              "continuation_mean": 0.02795847322639328,
+              "fade_mean": -0.02795847322639328,
+              "continuation_win": 0.7096774193548387,
+              "fade_win": 0.2903225806451613
+            },
+            "10": {
+              "continuation_mean": 0.06120264861311312,
+              "fade_mean": -0.06120264861311312,
+              "continuation_win": 0.7741935483870968,
+              "fade_win": 0.22580645161290322
+            },
+            "20": {
+              "continuation_mean": 0.09995284448749099,
+              "fade_mean": -0.09995284448749099,
+              "continuation_win": 0.8064516129032258,
+              "fade_win": 0.1935483870967742
+            }
+          },
+          "INCREASING": {
+            "n": 0,
+            "5": {
+              "continuation_mean": null,
+              "fade_mean": null,
+              "continuation_win": null,
+              "fade_win": null
+            },
+            "10": {
+              "continuation_mean": null,
+              "fade_mean": null,
+              "continuation_win": null,
+              "fade_win": null
+            },
+            "20": {
+              "continuation_mean": null,
+              "fade_mean": null,
+              "continuation_win": null,
+              "fade_win": null
+            }
+          },
+          "DECREASING": {
+            "n": 0,
+            "5": {
+              "continuation_mean": null,
+              "fade_mean": null,
+              "continuation_win": null,
+              "fade_win": null
+            },
+            "10": {
+              "continuation_mean": null,
+              "fade_mean": null,
+              "continuation_win": null,
+              "fade_win": null
+            },
+            "20": {
+              "continuation_mean": null,
+              "fade_mean": null,
+              "continuation_win": null,
+              "fade_win": null
+            }
+          },
+          "FLAT": {
+            "n": 3211,
+            "5": {
+              "continuation_mean": 0.0016837782693431048,
+              "fade_mean": -0.0016837782693431048,
+              "continuation_win": 0.47897851136717534,
+              "fade_win": 0.5210214886328247
+            },
+            "10": {
+              "continuation_mean": 0.0017543547384253006,
+              "fade_mean": -0.0017543547384253006,
+              "continuation_win": 0.4933042665836188,
+              "fade_win": 0.5063843039551541
+            },
+            "20": {
+              "continuation_mean": 0.0038540733193589416,
+              "fade_mean": -0.0038540733193589416,
+              "continuation_win": 0.49579570227343506,
+              "fade_win": 0.5042042977265649
+            }
+          }
+        },
+        "primary_boot": null,
+        "spike_vs_rest_fade_boot": {
+          "a_mean": -0.06120264861311312,
+          "b_mean": -0.0017543547384253006,
+          "diff": -0.05944829387468782,
+          "n_a": 31,
+          "n_b": 3211,
+          "percentile": 0.0028
+        },
+        "control_b_price_only_fade": {
+          "5": {
+            "n": 392,
+            "mean": -0.005359978962009999
+          },
+          "10": {
+            "n": 392,
+            "mean": -0.01593274106357684
+          },
+          "20": {
+            "n": 392,
+            "mean": -0.021008543583640914
+          }
+        },
+        "control_c_volume_only_fade": {
+          "5": {
+            "n": 51,
+            "mean": -0.01451916721468724
+          },
+          "10": {
+            "n": 51,
+            "mean": -0.015284392994232907
+          },
+          "20": {
+            "n": 51,
+            "mean": -0.033283583003536725
+          }
+        }
+      },
+      "20": {
+        "regimes": {
+          "SPIKE": {
+            "n": 37,
+            "5": {
+              "continuation_mean": 0.024555175689380357,
+              "fade_mean": -0.024555175689380357,
+              "continuation_win": 0.6216216216216216,
+              "fade_win": 0.3783783783783784
+            },
+            "10": {
+              "continuation_mean": 0.048006150386944155,
+              "fade_mean": -0.048006150386944155,
+              "continuation_win": 0.7297297297297297,
+              "fade_win": 0.2702702702702703
+            },
+            "20": {
+              "continuation_mean": 0.09095075663356983,
+              "fade_mean": -0.09095075663356983,
+              "continuation_win": 0.7567567567567568,
+              "fade_win": 0.24324324324324326
+            }
+          },
+          "INCREASING": {
+            "n": 0,
+            "5": {
+              "continuation_mean": null,
+              "fade_mean": null,
+              "continuation_win": null,
+              "fade_win": null
+            },
+            "10": {
+              "continuation_mean": null,
+              "fade_mean": null,
+              "continuation_win": null,
+              "fade_win": null
+            },
+            "20": {
+              "continuation_mean": null,
+              "fade_mean": null,
+              "continuation_win": null,
+              "fade_win": null
+            }
+          },
+          "DECREASING": {
+            "n": 0,
+            "5": {
+              "continuation_mean": null,
+              "fade_mean": null,
+              "continuation_win": null,
+              "fade_win": null
+            },
+            "10": {
+              "continuation_mean": null,
+              "fade_mean": null,
+              "continuation_win": null,
+              "fade_win": null
+            },
+            "20": {
+              "continuation_mean": null,
+              "fade_mean": null,
+              "continuation_win": null,
+              "fade_win": null
+            }
+          },
+          "FLAT": {
+            "n": 3199,
+            "5": {
+              "continuation_mean": 0.0017746713952737985,
+              "fade_mean": -0.0017746713952737985,
+              "continuation_win": 0.4804626445764301,
+              "fade_win": 0.5195373554235698
+            },
+            "10": {
+              "continuation_mean": 0.001874431403709893,
+              "fade_mean": -0.001874431403709893,
+              "continuation_win": 0.4935917474210691,
+              "fade_win": 0.5060956548921538
+            },
+            "20": {
+              "continuation_mean": 0.003906600861083716,
+              "fade_mean": -0.003906600861083716,
+              "continuation_win": 0.49609252891528605,
+              "fade_win": 0.503907471084714
+            }
+          }
+        },
+        "primary_boot": null,
+        "spike_vs_rest_fade_boot": {
+          "a_mean": -0.048006150386944155,
+          "b_mean": -0.001874431403709893,
+          "diff": -0.04613171898323426,
+          "n_a": 37,
+          "n_b": 3199,
+          "percentile": 0.0083
+        },
+        "control_b_price_only_fade": {
+          "5": {
+            "n": 390,
+            "mean": -0.005612546080088134
+          },
+          "10": {
+            "n": 390,
+            "mean": -0.015267842664945542
+          },
+          "20": {
+            "n": 390,
+            "mean": -0.02033864920181617
+          }
+        },
+        "control_c_volume_only_fade": {
+          "5": {
+            "n": 65,
+            "mean": -0.009439699471238653
+          },
+          "10": {
+            "n": 65,
+            "mean": -0.01626258452715563
+          },
+          "20": {
+            "n": 65,
+            "mean": -0.026476753561616752
+          }
+        }
+      }
+    }
+  },
+  "gates": {
+    "G1": {
+      "pass": false,
+      "detail": null
+    },
+    "G2": {
+      "pass": false,
+      "spike_fade": -0.06120264861311312,
+      "control_b": -0.01593274106357684
+    },
+    "G3": {
+      "pass": false,
+      "diffs": [
+        -0.009207314898804792,
+        null,
+        null
+      ]
+    },
+    "G4": {
+      "pass": false,
+      "n_increasing": 0,
+      "n_flat": 3211
+    },
+    "G5": {
+      "pass": null,
+      "note": "held-out untouched until BTC primary survives"
+    }
+  },
+  "verdict_g1_g4": false,
+  "held_out_touched": false
+}

@@ -1,0 +1,159 @@
+{
+ "experiment": "E39",
+ "criteria": "docs/E39_CRITERIA.md",
+ "engine": "dynamic_grid/crowding_fade.py",
+ "panel": "C:\\Users\\User\\Desktop\\Claude Project\\Grid Trading Strategies\\data\\crowding\\btcusdt_1h_panel.json",
+ "bars": 500,
+ "thresholds": {
+  "ls": 1.5,
+  "funding": 0.0001,
+  "oi_lookback": 24,
+  "impulse_atr_mult": 0.5
+ },
+ "arms": {
+  "S_full": {
+   "n_signal_bars": 0,
+   "4": {
+    "n": 0,
+    "mean": null,
+    "win_rate": null
+   },
+   "12": {
+    "n": 0,
+    "mean": null,
+    "win_rate": null
+   },
+   "24": {
+    "n": 0,
+    "mean": null,
+    "win_rate": null
+   }
+  },
+  "S_fund": {
+   "n_signal_bars": 5,
+   "4": {
+    "n": 5,
+    "mean": -0.0016479567482933443,
+    "win_rate": 0.4
+   },
+   "12": {
+    "n": 5,
+    "mean": 0.0036401187132976353,
+    "win_rate": 0.6
+   },
+   "24": {
+    "n": 5,
+    "mean": -0.0002531860430681432,
+    "win_rate": 0.4
+   }
+  },
+  "S_ls": {
+   "n_signal_bars": 51,
+   "4": {
+    "n": 51,
+    "mean": -1.2052030318960718e-05,
+    "win_rate": 0.47058823529411764
+   },
+   "12": {
+    "n": 49,
+    "mean": 0.001054486144856769,
+    "win_rate": 0.46938775510204084
+   },
+   "24": {
+    "n": 45,
+    "mean": 0.000980958394056862,
+    "win_rate": 0.4444444444444444
+   }
+  },
+  "S_oi": {
+   "n_signal_bars": 33,
+   "4": {
+    "n": 33,
+    "mean": 0.0011196587746156105,
+    "win_rate": 0.6060606060606061
+   },
+   "12": {
+    "n": 31,
+    "mean": 0.002361014422210079,
+    "win_rate": 0.5483870967741935
+   },
+   "24": {
+    "n": 30,
+    "mean": 0.0031069577079298138,
+    "win_rate": 0.5
+   }
+  },
+  "S_imp": {
+   "n_signal_bars": 83,
+   "4": {
+    "n": 83,
+    "mean": 0.00012013113576651707,
+    "win_rate": 0.5180722891566265
+   },
+   "12": {
+    "n": 81,
+    "mean": 0.0014164019268574509,
+    "win_rate": 0.5061728395061729
+   },
+   "24": {
+    "n": 77,
+    "mean": 0.0015237593602455697,
+    "win_rate": 0.44155844155844154
+   }
+  },
+  "S_rand": {
+   "n_signal_bars": 0,
+   "4": {
+    "n": 0,
+    "mean": null,
+    "win_rate": null
+   },
+   "12": {
+    "n": 0,
+    "mean": null,
+    "win_rate": null
+   },
+   "24": {
+    "n": 0,
+    "mean": null,
+    "win_rate": null
+   }
+  }
+ },
+ "primary": {
+  "n_full": 0,
+  "n_fund": 5,
+  "bootstrap": null
+ },
+ "gates": {
+  "G1 primary >= 95%": false,
+  "G2 S_full fade mean > 0": false,
+  "G3 beats S_imp and S_rand": false,
+  "G4 n >= 20 for full and fund": false
+ },
+ "secondary": {
+  "buy_and_hold": {
+   "return": -0.031662769068138696,
+   "maxDD": 0.055855238014673805,
+   "robust": -0.1433732450974863,
+   "final_equity": 9683.372309318613,
+   "n_turnover_legs": 2
+  },
+  "cash_on_S_full": {
+   "return": -0.03166276906813692,
+   "maxDD": 0.05585523801467358,
+   "robust": -0.1433732450974841,
+   "final_equity": 9683.37230931863,
+   "n_turnover_legs": 2
+  },
+  "cash_on_S_fund": {
+   "return": -0.03642029142637515,
+   "maxDD": 0.06049390073575343,
+   "robust": -0.157408092897882,
+   "final_equity": 9635.797085736249,
+   "n_turnover_legs": 4
+  }
+ },
+ "verdict": "FAIL",
+ "note": "runner reconstructed 2026-08-12 after an accidental overwrite; verified against the recorded E39 section"
+}

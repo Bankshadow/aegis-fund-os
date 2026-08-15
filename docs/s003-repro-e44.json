@@ -1,0 +1,151 @@
+{
+ "experiment": "E44",
+ "criteria": "docs/E44_CRITERIA.md",
+ "spec": "s003_agent_spec.md",
+ "baseline": {
+  "portR": 49.06,
+  "minFold": 3.71,
+  "sumOOS": 32.26
+ },
+ "bounds": [
+  "2024-08-01",
+  "2025-02-01",
+  "2025-08-01",
+  "2026-08-01"
+ ],
+ "primary": {
+  "per_symbol": {
+   "SOL-USD": {
+    "bars": 1097,
+    "first": "2023-08-12",
+    "last": "2026-08-12",
+    "ohlc_violations": 0,
+    "trades": 49,
+    "portR": 27.076409340289466,
+    "wins": 18
+   },
+   "LINK-USD": {
+    "bars": 1097,
+    "first": "2023-08-12",
+    "last": "2026-08-12",
+    "ohlc_violations": 0,
+    "trades": 52,
+    "portR": 22.14328979085126,
+    "wins": 17
+   }
+  },
+  "portR": 49.219699131140715,
+  "fold_r": [
+   15.51001211174623,
+   3.711983493851504,
+   10.337793265950326
+  ],
+  "fold_n": [
+   30,
+   21,
+   33
+  ],
+  "minFold": 3.711983493851504,
+  "sumOOS": 29.55978887154806,
+  "trades": 101,
+  "exit_mix": {
+   "BE_SL": 11,
+   "EOD": 1,
+   "SL": 54,
+   "TP3": 35
+  }
+ },
+ "stress_sl_first": {
+  "per_symbol": {
+   "SOL-USD": {
+    "bars": 1097,
+    "first": "2023-08-12",
+    "last": "2026-08-12",
+    "ohlc_violations": 0,
+    "trades": 49,
+    "portR": 21.076409340289466,
+    "wins": 16
+   },
+   "LINK-USD": {
+    "bars": 1097,
+    "first": "2023-08-12",
+    "last": "2026-08-12",
+    "ohlc_violations": 0,
+    "trades": 52,
+    "portR": 19.14328979085126,
+    "wins": 16
+   }
+  },
+  "portR": 40.219699131140715,
+  "fold_r": [
+   12.51001211174623,
+   3.711983493851504,
+   4.337793265950327
+  ],
+  "fold_n": [
+   30,
+   21,
+   33
+  ],
+  "minFold": 3.711983493851504,
+  "sumOOS": 20.55978887154806,
+  "trades": 101,
+  "exit_mix": {
+   "BE_SL": 14,
+   "EOD": 1,
+   "SL": 54,
+   "TP3": 32
+  }
+ },
+ "held_out": {
+  "per_symbol": {
+   "BTC-USD": {
+    "bars": 1097,
+    "first": "2023-08-12",
+    "last": "2026-08-12",
+    "ohlc_violations": 0,
+    "trades": 56,
+    "portR": -13.844474709522832,
+    "wins": 9
+   },
+   "ETH-USD": {
+    "bars": 1097,
+    "first": "2023-08-12",
+    "last": "2026-08-12",
+    "ohlc_violations": 0,
+    "trades": 52,
+    "portR": 2.8161665996439376,
+    "wins": 13
+   }
+  },
+  "portR": -11.028308109878894,
+  "fold_r": [
+   -11.669720216042588,
+   -0.5635894679451581,
+   -2.273811108696809
+  ],
+  "fold_n": [
+   24,
+   22,
+   40
+  ],
+  "minFold": -11.669720216042588,
+  "sumOOS": -14.507120792684555,
+  "trades": 108,
+  "exit_mix": {
+   "BE_SL": 11,
+   "EOD": 1,
+   "SL": 74,
+   "TP3": 22
+  }
+ },
+ "checks": {
+  "W1": true,
+  "W2": true,
+  "W3": true,
+  "X1": true,
+  "X2": true,
+  "X3": true
+ },
+ "reproduced": true
+}

@@ -1,0 +1,380 @@
+{
+ "experiment": "E38",
+ "criteria": "docs/E38_CRITERIA.md",
+ "claim": {
+  "trades": 73,
+  "win_rate": 0.78
+ },
+ "tolerance": {
+  "trades": 0.25,
+  "win_rate": 0.1
+ },
+ "windows": {
+  "W1_2024-07_2026-08": {
+   "buy_hold": {
+    "total_return": -0.03259307207405304,
+    "max_dd": 0.5344740218167796,
+    "robust": -1.1015411157076123
+   },
+   "arms": [
+    {
+     "reentry": "cross_only",
+     "halt_mode": "permanent",
+     "trades": 20,
+     "win_rate": 0.75,
+     "profit_factor": 1.8435772926358203,
+     "total_return": 1.1007733965545072,
+     "max_dd": 0.30285468203878513,
+     "robust": 0.495064032476937,
+     "liquidations": 0,
+     "ruined": false,
+     "halted_at": 1035,
+     "daily_stops": 2,
+     "trades_per_month": 0.8114863363696957,
+     "exit_reasons": {
+      "profit_lock": 17,
+      "stop_3atr": 3
+     }
+    },
+    {
+     "reentry": "cross_only",
+     "halt_mode": "daily",
+     "trades": 99,
+     "win_rate": 0.5858585858585859,
+     "profit_factor": 1.0912049031602131,
+     "total_return": -0.8976917852991623,
+     "max_dd": 0.9791097888927983,
+     "robust": -2.855911363084759,
+     "liquidations": 0,
+     "ruined": false,
+     "halted_at": 4503,
+     "daily_stops": 16,
+     "trades_per_month": 4.016857365029994,
+     "exit_reasons": {
+      "profit_lock": 70,
+      "stop_3atr": 29
+     }
+    },
+    {
+     "reentry": "cross_only",
+     "halt_mode": "off",
+     "trades": 99,
+     "win_rate": 0.5858585858585859,
+     "profit_factor": 1.0912049031602131,
+     "total_return": -0.8976917852991623,
+     "max_dd": 0.9791097888927983,
+     "robust": -2.855911363084759,
+     "liquidations": 0,
+     "ruined": false,
+     "halted_at": -1,
+     "daily_stops": 32,
+     "trades_per_month": 4.016857365029994,
+     "exit_reasons": {
+      "profit_lock": 70,
+      "stop_3atr": 29
+     }
+    },
+    {
+     "reentry": "rearm",
+     "halt_mode": "permanent",
+     "trades": 4,
+     "win_rate": 0.75,
+     "profit_factor": 1.8904908072699103,
+     "total_return": 0.5126604351527451,
+     "max_dd": 0.29740718029314306,
+     "robust": -0.08215392543354105,
+     "liquidations": 0,
+     "ruined": false,
+     "halted_at": 153,
+     "daily_stops": 0,
+     "trades_per_month": 0.16229726727393912,
+     "exit_reasons": {
+      "profit_lock": 4
+     }
+    },
+    {
+     "reentry": "rearm",
+     "halt_mode": "daily",
+     "trades": 192,
+     "win_rate": 0.546875,
+     "profit_factor": 0.6984671582268648,
+     "total_return": -0.9999029029925016,
+     "max_dd": 0.9999549008761662,
+     "robust": -2.999812704744834,
+     "liquidations": 0,
+     "ruined": true,
+     "halted_at": 4461,
+     "daily_stops": 32,
+     "trades_per_month": 7.7902688291490785,
+     "exit_reasons": {
+      "profit_lock": 123,
+      "daily_loss_limit": 1,
+      "stop_3atr": 65,
+      "drawdown_halt": 3
+     }
+    },
+    {
+     "reentry": "rearm",
+     "halt_mode": "off",
+     "trades": 179,
+     "win_rate": 0.5586592178770949,
+     "profit_factor": 0.6764163301126899,
+     "total_return": -0.9998734232229155,
+     "max_dd": 0.9999412082628365,
+     "robust": -2.9997558397485884,
+     "liquidations": 0,
+     "ruined": true,
+     "halted_at": -1,
+     "daily_stops": 66,
+     "trades_per_month": 7.262802710508776,
+     "exit_reasons": {
+      "profit_lock": 114,
+      "stop_3atr": 65
+     }
+    },
+    {
+     "reentry": "rearm_after_win",
+     "halt_mode": "permanent",
+     "trades": 4,
+     "win_rate": 0.75,
+     "profit_factor": 1.8904908072699103,
+     "total_return": 0.5126604351527451,
+     "max_dd": 0.29740718029314306,
+     "robust": -0.08215392543354105,
+     "liquidations": 0,
+     "ruined": false,
+     "halted_at": 153,
+     "daily_stops": 0,
+     "trades_per_month": 0.16229726727393912,
+     "exit_reasons": {
+      "profit_lock": 4
+     }
+    },
+    {
+     "reentry": "rearm_after_win",
+     "halt_mode": "daily",
+     "trades": 134,
+     "win_rate": 0.5373134328358209,
+     "profit_factor": 0.8973747577196908,
+     "total_return": -0.9974707649998225,
+     "max_dd": 0.9988252338005412,
+     "robust": -2.995121232600905,
+     "liquidations": 0,
+     "ruined": true,
+     "halted_at": 4428,
+     "daily_stops": 22,
+     "trades_per_month": 5.436958453676961,
+     "exit_reasons": {
+      "profit_lock": 87,
+      "daily_loss_limit": 1,
+      "stop_3atr": 45,
+      "drawdown_halt": 1
+     }
+    },
+    {
+     "reentry": "rearm_after_win",
+     "halt_mode": "off",
+     "trades": 142,
+     "win_rate": 0.5492957746478874,
+     "profit_factor": 0.687003137852005,
+     "total_return": -0.999558376541808,
+     "max_dd": 0.9997948769839355,
+     "robust": -2.999148130509679,
+     "liquidations": 0,
+     "ruined": true,
+     "halted_at": -1,
+     "daily_stops": 50,
+     "trades_per_month": 5.761552988224839,
+     "exit_reasons": {
+      "profit_lock": 94,
+      "stop_3atr": 48
+     }
+    }
+   ]
+  },
+  "W2_2022-06_2024-07": {
+   "buy_hold": {
+    "total_return": 1.8333664732737862,
+    "max_dd": 0.3678777099317663,
+    "robust": 1.0976110534102537
+   },
+   "arms": [
+    {
+     "reentry": "cross_only",
+     "halt_mode": "permanent",
+     "trades": 14,
+     "win_rate": 0.5714285714285714,
+     "profit_factor": 1.5054136474663733,
+     "total_return": 0.3541423261022032,
+     "max_dd": 0.40060519177220305,
+     "robust": -0.4470680574422029,
+     "liquidations": 0,
+     "ruined": false,
+     "halted_at": 663,
+     "daily_stops": 2,
+     "trades_per_month": 0.5680404354587869,
+     "exit_reasons": {
+      "profit_lock": 13,
+      "stop_3atr": 1
+     }
+    },
+    {
+     "reentry": "cross_only",
+     "halt_mode": "daily",
+     "trades": 94,
+     "win_rate": 0.5212765957446809,
+     "profit_factor": 0.9900192764176725,
+     "total_return": -0.8523174227900555,
+     "max_dd": 0.9486977879215953,
+     "robust": -2.749712998633246,
+     "liquidations": 0,
+     "ruined": false,
+     "halted_at": 4341,
+     "daily_stops": 18,
+     "trades_per_month": 3.8139857809375695,
+     "exit_reasons": {
+      "profit_lock": 63,
+      "stop_3atr": 31
+     }
+    },
+    {
+     "reentry": "cross_only",
+     "halt_mode": "off",
+     "trades": 94,
+     "win_rate": 0.5212765957446809,
+     "profit_factor": 0.9900192764176725,
+     "total_return": -0.8523174227900555,
+     "max_dd": 0.9486977879215953,
+     "robust": -2.749712998633246,
+     "liquidations": 0,
+     "ruined": false,
+     "halted_at": -1,
+     "daily_stops": 34,
+     "trades_per_month": 3.8139857809375695,
+     "exit_reasons": {
+      "profit_lock": 63,
+      "stop_3atr": 31
+     }
+    },
+    {
+     "reentry": "rearm",
+     "halt_mode": "permanent",
+     "trades": 3,
+     "win_rate": 0.6666666666666666,
+     "profit_factor": 0.27981048269759234,
+     "total_return": -0.27617832442413215,
+     "max_dd": 0.32674105901143996,
+     "robust": -0.9296604424470121,
+     "liquidations": 0,
+     "ruined": false,
+     "halted_at": 143,
+     "daily_stops": 0,
+     "trades_per_month": 0.12172295045545435,
+     "exit_reasons": {
+      "profit_lock": 2,
+      "stop_3atr": 1
+     }
+    },
+    {
+     "reentry": "rearm",
+     "halt_mode": "daily",
+     "trades": 167,
+     "win_rate": 0.6347305389221557,
+     "profit_factor": 0.7919035062498996,
+     "total_return": -0.9041247664521449,
+     "max_dd": 0.9767199683393554,
+     "robust": -2.8575647031308558,
+     "liquidations": 0,
+     "ruined": true,
+     "halted_at": 4024,
+     "daily_stops": 20,
+     "trades_per_month": 6.775910908686959,
+     "exit_reasons": {
+      "profit_lock": 123,
+      "stop_3atr": 44
+     }
+    },
+    {
+     "reentry": "rearm",
+     "halt_mode": "off",
+     "trades": 167,
+     "win_rate": 0.6347305389221557,
+     "profit_factor": 0.7919035062498996,
+     "total_return": -0.9041247664521449,
+     "max_dd": 0.9767199683393554,
+     "robust": -2.8575647031308558,
+     "liquidations": 0,
+     "ruined": true,
+     "halted_at": -1,
+     "daily_stops": 47,
+     "trades_per_month": 6.775910908686959,
+     "exit_reasons": {
+      "profit_lock": 123,
+      "stop_3atr": 44
+     }
+    },
+    {
+     "reentry": "rearm_after_win",
+     "halt_mode": "permanent",
+     "trades": 3,
+     "win_rate": 0.6666666666666666,
+     "profit_factor": 0.27981048269759234,
+     "total_return": -0.27617832442413215,
+     "max_dd": 0.32674105901143996,
+     "robust": -0.9296604424470121,
+     "liquidations": 0,
+     "ruined": false,
+     "halted_at": 143,
+     "daily_stops": 0,
+     "trades_per_month": 0.12172295045545435,
+     "exit_reasons": {
+      "profit_lock": 2,
+      "stop_3atr": 1
+     }
+    },
+    {
+     "reentry": "rearm_after_win",
+     "halt_mode": "daily",
+     "trades": 128,
+     "win_rate": 0.5859375,
+     "profit_factor": 1.2188268554754467,
+     "total_return": 0.20764308990081792,
+     "max_dd": 0.9148363446959583,
+     "robust": -1.6220295994910987,
+     "liquidations": 0,
+     "ruined": true,
+     "halted_at": 4514,
+     "daily_stops": 18,
+     "trades_per_month": 5.193512552766052,
+     "exit_reasons": {
+      "profit_lock": 94,
+      "stop_3atr": 31,
+      "drawdown_halt": 3
+     }
+    },
+    {
+     "reentry": "rearm_after_win",
+     "halt_mode": "off",
+     "trades": 131,
+     "win_rate": 0.6106870229007634,
+     "profit_factor": 1.2194486935333002,
+     "total_return": 0.23134664910459546,
+     "max_dd": 0.9148363446959583,
+     "robust": -1.5983260402873212,
+     "liquidations": 0,
+     "ruined": true,
+     "halted_at": -1,
+     "daily_stops": 34,
+     "trades_per_month": 5.315235503221507,
+     "exit_reasons": {
+      "profit_lock": 99,
+      "stop_3atr": 32
+     }
+    }
+   ]
+  }
+ },
+ "identified": [],
+ "I3_unique": false,
+ "Q": {}
+}

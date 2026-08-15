@@ -1,0 +1,114 @@
+{
+ "source": "tradingview.com/script/hbScFl8K",
+ "note": "diagnostic only; nothing tuned, selected or promoted",
+ "d1_intraday": {
+  "buckets": [
+   0,
+   4,
+   8,
+   12,
+   16,
+   20
+  ],
+  "mean_share": {
+   "0": 0.14906439881858966,
+   "4": 0.14464861519792754,
+   "8": 0.14445644101775781,
+   "12": 0.24222316292153165,
+   "16": 0.18537264598973924,
+   "20": 0.13423473605445413
+  },
+  "flat_share": 0.16666666666666666,
+  "max_over_min": 1.8044745349912303,
+  "complete_days": 333
+ },
+ "d2_ep_signal": {
+  "signal_days": 178,
+  "total_days": 3276,
+  "distinct_episodes": 60,
+  "signal_share_in_bull": 0.5280898876404494,
+  "base_share_in_bull": 0.5185305591677504,
+  "horizons": {
+   "1": {
+    "n_signal": 178,
+    "signal_mean": 0.0026538546551719963,
+    "signal_median": -0.0004822058871519208,
+    "signal_win_rate": 0.4943820224719101,
+    "base_mean": 0.0014543155061587183,
+    "base_median": 0.0005650260706233645,
+    "base_win_rate": 0.5111450381679389,
+    "percentile_vs_random": 0.6748,
+    "bull_signal_mean": 0.0008530727908396688,
+    "bull_base_mean": 0.001679049500003983,
+    "bull_percentile": 0.3966,
+    "n_episodes": 60,
+    "episode_mean": -0.002843271820567687,
+    "episode_win_rate": 0.43333333333333335,
+    "episode_percentile": 0.166
+   },
+   "5": {
+    "n_signal": 178,
+    "signal_mean": 0.01316687409262654,
+    "signal_median": 0.00641912488688956,
+    "signal_win_rate": 0.5449438202247191,
+    "base_mean": 0.00726310772226472,
+    "base_median": 0.0036039997442027794,
+    "base_win_rate": 0.5313359828798533,
+    "percentile_vs_random": 0.8433,
+    "bull_signal_mean": 0.016925371146528645,
+    "bull_base_mean": 0.009066503720099832,
+    "bull_percentile": 0.8649,
+    "n_episodes": 60,
+    "episode_mean": 0.005229166731776504,
+    "episode_win_rate": 0.5166666666666667,
+    "episode_percentile": 0.4183
+   },
+   "10": {
+    "n_signal": 178,
+    "signal_mean": 0.029639391038921672,
+    "signal_median": 0.01882121109933743,
+    "signal_win_rate": 0.6067415730337079,
+    "base_mean": 0.014854547520073464,
+    "base_median": 0.007120659390512429,
+    "base_win_rate": 0.5404164115125536,
+    "percentile_vs_random": 0.9601,
+    "bull_signal_mean": 0.027871337025862246,
+    "bull_base_mean": 0.018321674076862665,
+    "bull_percentile": 0.819,
+    "n_episodes": 60,
+    "episode_mean": 0.008972255689184349,
+    "episode_win_rate": 0.48333333333333334,
+    "episode_percentile": 0.3501
+   },
+   "20": {
+    "n_signal": 178,
+    "signal_mean": 0.05593643252676596,
+    "signal_median": 0.0342311684402139,
+    "signal_win_rate": 0.5617977528089888,
+    "base_mean": 0.03097886176093761,
+    "base_median": 0.009016659252018222,
+    "base_win_rate": 0.5347051597051597,
+    "percentile_vs_random": 0.9698,
+    "bull_signal_mean": 0.058166378485351895,
+    "bull_base_mean": 0.03666782354939389,
+    "bull_percentile": 0.9019,
+    "n_episodes": 60,
+    "episode_mean": 0.02125598316806556,
+    "episode_win_rate": 0.43333333333333335,
+    "episode_percentile": 0.3382
+   }
+  },
+  "signal_dates_sample": [
+   "2017-09-15",
+   "2017-09-18",
+   "2017-10-12",
+   "2017-10-13",
+   "2017-10-20",
+   "2017-10-29",
+   "2017-11-16",
+   "2017-11-27",
+   "2017-12-06",
+   "2017-12-07"
+  ]
+ }
+}
