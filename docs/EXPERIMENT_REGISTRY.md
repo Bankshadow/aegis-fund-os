@@ -27,17 +27,17 @@ surviving engine. Nothing in the repo made a number look taken.
 | E33 | research | Screened Trend-Vote Basket | `docs/E33_CRITERIA.md` | FAIL |
 | E34 | research | BTC decision cadence | `docs/E34_CRITERIA.md` | FAIL |
 | E35 | research | Golden pocket 0.618–0.66 | `docs/E35_CRITERIA.md` | FAIL |
-| **E36** | **COLLIDED** | (a) Volume Patterns / Koroush · (b) EMA9/21 + loose RSI | `docs/E36_CRITERIA.md` holds **(b)**; **(a) was overwritten and is lost** | both FAIL |
+| **E36** | **COLLIDED — resolved by labelling, 2026-08-16** | **(a) E36-volume**: Volume Patterns / Koroush · **(b) E36-emarsi**: EMA9/21 + loose RSI | `docs/E36_CRITERIA.md` holds **(b)** only. **(a)'s pre-registration was overwritten and is lost** — its log entry is a post-hoc summary and (a) is therefore **NOT a pre-registered experiment** | both FAIL |
 | E37 | research | EMA9/21 + RSI 45/55, 5x, DSL exits | `docs/E37_CRITERIA.md` | ⚖️ |
 | E38 | research | Spec identification: re-entry × halt | `docs/E38_CRITERIA.md` | FAIL |
 | E39 | osmo | Crowded-long liquidation fade (S1) | `docs/E39_CRITERIA.md` | FAIL |
-| E40 | osmo | Fee/DEX-vol rotation (S2) — criteria doc | `docs/E40_CRITERIA.md` | see E41 |
-| E41 | osmo | DEX-vol relative-strength rotation (S2) — log entry | (uses `E40_CRITERIA.md`) | FAIL |
+| E40 | **RETIRED** | never ran under this number — the trend-sizing study passed through it (E39 → E40 → E42) while the collision was being untangled | `docs/E40_CRITERIA.md` is a **superseded draft**, kept as the audit trail | — · **do not reuse** |
+| E41 | osmo | DEX-vol relative-strength rotation (S2) | `docs/E41_CRITERIA.md` | FAIL — G2/G5a fail, G1/G3/G4 pass |
 | E42 | research | Trend filter as size, not switch | `docs/E42_CRITERIA.md` | ⚖️ |
 | E43 | osmo | Hyperliquid fees as BTC risk-on overlay (S3) | `docs/E43_CRITERIA.md` | FAIL |
 | E44 | research | S003 reproduction: fade failed-breakout, SOL+LINK daily | `docs/E44_CRITERIA.md` | ✅ reproduced |
-| E45 | research | S003 on full history: the years the designer never saw | `docs/E45_CRITERIA.md` | running |
-| E46 | research | S003 tuning: one module at a time + selection value | `docs/E46_CRITERIA.md` | running |
+| E45 | research | S003 on full history: the years the designer never saw | `docs/E45_CRITERIA.md` | **MIXED** — Y1 passes (portR positive on never-seen data) but Y2 and Y4 fail |
+| E46 | research | S003 tuning: one module at a time + selection value | `docs/E46_CRITERIA.md` | **NO_HIT** — T1/T2/T3 all fail; no module change transfers |
 | E47 | research | Sizing overlays vs simply trading smaller, at matched DD | `docs/E47_CRITERIA.md` | done — U1/U2/U3 pass, but E48 shows the pass is a placebo effect |
 | E48 | research | Adversarial attack on V4 equity-curve filter + promotion rule | `docs/E48_CRITERIA.md` | **NOT PROMOTED** — W1 placebo + W5 per-asset failed |
 | E49 | research | Risk-per-trade table with drawdown as a bootstrap distribution | `docs/E49_CRITERIA.md` | done — 6%/trade ruins 19.4% of resampled paths; tolerance->risk table published |
@@ -56,12 +56,34 @@ surviving engine. Nothing in the repo made a number look taken.
 
 **Next free number: E59.**
 
-## Open inconsistencies
+## Resolved inconsistencies
 
-- **E36 criteria for the Koroush volume experiment is lost.** The protocol is
-  summarised in `docs/VALIDATION_LOG.md` § E36 (2026-08-11), but that summary was
-  written after the results were known and therefore **is not a
-  pre-registration**. Restore from a personal copy if one exists; otherwise the
-  experiment stands on its log entry alone and should be labelled as such.
-- **E40 / E41 are the same experiment** (Osmo S2): the criteria doc is numbered
-  E40, the log entry E41. Pick one.
+Both items from the 2026-08-12 numbering collision were closed on 2026-08-16.
+They are kept here rather than deleted: how a ledger recovered from a mistake
+is part of the evidence.
+
+- **E40 / E41 — resolved.** They were never the same experiment; the registry
+  row was simply stale. `docs/E41_CRITERIA.md` exists and is the Osmo S2
+  pre-registration in its own right (its header records the move from E40).
+  `docs/E40_CRITERIA.md` is an earlier draft of the **trend-sizing** study,
+  which travelled E39 → E40 → E42 during the collision and finished as **E42**
+  (`docs/E42_CRITERIA.md`, `docs/trend-sizing-e42.json`, log § E42). The
+  artefacts E40_CRITERIA.md points at — `trend-sizing-e40.json` and a log § E40
+  — were never produced. **E40 is retired: no experiment ran under it, and the
+  number must never be reused.**
+
+- **E36 — resolved by labelling, not by restoration.** The Koroush volume
+  pre-registration was overwritten and no copy was found. Both E36 experiments
+  keep their number and are now disambiguated as **E36-volume** (Koroush) and
+  **E36-emarsi** (EMA9/21 + loose RSI). `docs/E36_CRITERIA.md` is the
+  pre-registration for **E36-emarsi only**.
+
+  > **E36-volume is not a pre-registered experiment.** Its log entry was
+  > written after the results were known. It may be cited as a record of what
+  > was run; it may **not** be cited as evidence that criteria were declared in
+  > advance. Its FAIL verdict is unaffected — a negative result needs no
+  > pre-registration to be believed, which is precisely the asymmetry this
+  > ledger exists to preserve.
+
+  If a personal copy of the original criteria ever turns up, restore it and
+  reverse this label; until then the honest reading is the one above.

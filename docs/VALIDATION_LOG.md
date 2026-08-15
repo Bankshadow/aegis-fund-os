@@ -159,7 +159,19 @@ Binance public เก็บ L/S และ OI ได้แค่ ~30 วัน �
 
 ---
 
-## E36: Volume Patterns (Koroush) บน BTC daily — 2026-08-11
+## E36-volume: Volume Patterns (Koroush) บน BTC daily — 2026-08-11
+
+> ### ⚠️ รายการนี้ **ไม่ใช่การทดลองที่ประกาศเกณฑ์ก่อนรัน** (ติดป้าย 2026-08-16)
+>
+> `docs/E36_CRITERIA.md` ที่บรรทัดล่างอ้างถึง **ถูกเขียนทับไปแล้ว** และไฟล์
+> ปัจจุบันเป็นเกณฑ์ของ **E36-emarsi** คนละการทดลอง · เกณฑ์ G1–G5 ที่สรุปไว้
+> ข้างล่างนี้ **เขียนขึ้นหลังรู้ผลแล้ว** จึงไม่ใช่ pre-registration
+>
+> **อ้างได้**ว่าเป็นบันทึกว่ารันอะไรไป · **อ้างไม่ได้**ว่าเกณฑ์ถูกประกาศล่วงหน้า
+> · คำตัดสิน FAIL ไม่กระทบ — ผลลบไม่ต้องการ pre-registration มารับรอง
+> ซึ่งเป็นความไม่สมมาตรที่สมุดเล่มนี้มีไว้เพื่อรักษา
+>
+> ดู `docs/EXPERIMENT_REGISTRY.md` § Resolved inconsistencies
 
 **เกณฑ์**: `docs/E36_CRITERIA.md` — G1–G5 + primary ประกาศก่อนเขียนโค้ด
 **ผลดิบ**: `docs/volume-regime-e36.json` · **เอนจิน**: `dynamic_grid/volume_regime.py`
@@ -1539,7 +1551,12 @@ ladder จึงแทบไม่ทำงานที่ 1x (W2: 4 เทร�
 
 ---
 
-## E36: ทำซ้ำ "EMA9/21 + loose RSI, 5x" บน 4h 2 ปี — 2026-08-11
+## E36-emarsi: ทำซ้ำ "EMA9/21 + loose RSI, 5x" บน 4h 2 ปี — 2026-08-11
+
+> **หมายเหตุเลขชน (2026-08-16)**: หมายเลข E36 ถูกอ้างสิทธิ์สองครั้งในวันเดียว
+> รายการนี้คือตัวที่ **`docs/E36_CRITERIA.md` เป็นเกณฑ์ให้จริง** และเป็น
+> pre-registration ที่ถูกต้อง · อีกตัวคือ **E36-volume** (Koroush) ซึ่ง
+> เกณฑ์สูญหาย — ดู `docs/EXPERIMENT_REGISTRY.md` § Resolved inconsistencies
 
 **เกณฑ์**: `docs/E36_CRITERIA.md` — V1–V7 + การตีความ "loose RSI" 4 แบบ ประกาศก่อนเขียนโค้ด
 **ผลดิบ**: `docs/ema-rsi-e36.json` · **สัญญาณ**: `dynamic_grid/ema_rsi.py` ·
