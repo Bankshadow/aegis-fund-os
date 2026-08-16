@@ -47,14 +47,12 @@ surviving engine. Nothing in the repo made a number look taken.
 | E53 | research | Walk-forward optimisation of M1-LS + placebo gate | `docs/E53_CRITERIA.md` | P2 FAIL — optimising loses to fixing; k=30 exposed as an isolated spike |
 | E54 | research | Ten-specialist candidate bake-off under a max-statistic placebo ceiling | `docs/E54_CRITERIA.md` | **NO SURVIVORS** — 6/10 negative; also corrected two E52 harness defects |
 | E55 | research | Closing the four gaps between `final_logic.md` and the code: portfolio S017 cooldown, 4% shared sizing, spec-faithful vol overlay, BE-bar rule | `docs/E55_CRITERIA.md` | **A FAIL** (S017 wins on one coin, flips under sl_first, 3/9 neighbours) · B: 4%/trade demands a 70% DD tolerance · **C FAIL** (loses to its own shuffled scales; clamp 4.0 never binds) · **D: the undocumented BE-bar rule is worth 28% of portR** |
-
 | E56 | research | The unmeasured corner: pessimistic intrabar x literal BE-arming-bar x real costs, all three at once | `docs/E56_CRITERIA.md` | **EDGE REAL BUT THIN** (Z2/Z3 pass, Z4 fails exactly as E50 Y3 did) — and the premise was wrong: the BE axis is **nested inside** the intrabar axis, so the "third corner" never existed and E50 had already measured the floor |
-
 | E57 | research | Implementation independence: S003 re-run on `backtrader` (GPL-3.0, isolated venv outside the repo, nothing vendored) | `docs/E57_CRITERIA.md` | **REPRODUCED** — +71.81 vs +72.81, 100% entry-date match, SOL agrees to 9 dp; the undocumented BE-arming rule turns out to be standard event-driven behaviour. R0 failed as written (mis-scoped over the ATR seed region — criteria defect, logged) |
-
 | E58 | research | S003 vs buy & hold as paired distributions, at matched drawdown | `docs/E58_CRITERIA.md` | **NOT WORTH IT** — S2 60.0% (needs 90%), S2b 57.0% (needs 60%); W_COMMON 10.8%/10.4%. The realised 2x win at matched DD survives resampling only 57% of the time. Per the declared decision table the forward paper log is **cancelled** |
+| E59 | research | BORA x S003: does real taker-buy order flow add edge over S003's price-only absorption proxy? BTCUSDT daily | `docs/E59_CRITERIA.md` | **TRADES LESS, DOES NOT READ FLOW** — BORA's own two tests (§22 control group, §25 incremental edge) both PASS while the filter loses to a duty-matched placebo (16/20 random seeds beat it). Baseline S003 on BTC daily is −58.14 R, so any filter that cuts trade count "improves" it |
 
-**Next free number: E59.**
+**Next free number: E60.**
 
 ## Resolved inconsistencies
 
