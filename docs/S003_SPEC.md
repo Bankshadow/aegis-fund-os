@@ -26,6 +26,23 @@ Everything the original spec layered on top — the portfolio cooldown, the
 volatility overlay, 4%-of-equity sizing — was tested and rejected. §8 lists
 each with the reason.
 
+> ### ⚠️ Every number below is vendor-specific (E60, 2026-08-16)
+>
+> All of it is computed from the **Yahoo** daily bars in `data/s003/`. Re-run on
+> **Binance** spot bars over the same window, the same rules give:
+>
+> | | Yahoo | Binance |
+> |---|---|---|
+> | **SOL** | **+34.14 R** | **−4.64 R** ← sign flip |
+> | LINK | +40.99 R | +10.11 R |
+>
+> Both datasets pass a data-quality gate. This is not a bug and not a
+> preference between vendors — it is the instability E51 found across a 31-coin
+> universe, now measured on half of the pair this entire spec rests on.
+>
+> **Quote a vendor with every figure. Do not treat §10 as vendor-independent.**
+> An implementation reproducing §10 on Binance bars is not broken.
+
 **Research artifact. No live orders. Do not size this from these numbers.**
 
 ---
@@ -205,6 +222,9 @@ Above 2% the p90 drawdown exceeds what almost anyone holds through.
 
 ## 10. Acceptance tests — an implementation is correct when it reproduces these
 
+**Vendor: Yahoo daily bars, `data/s003/{SOL,LINK}-USD_full.json`.** These
+targets are not reproducible on another vendor's bars — see §0.
+
 Data: `SOL-USD` 2020-04-10 → 2026-08-11 (**2315** bars after tail-drop),
 `LINK-USD` 2017-11-09 → 2026-08-12 (**3199** bars). Fees 0.05%/side.
 
@@ -229,6 +249,9 @@ entry dates.
 - **portR as the interval `[+43.76, +72.81] R`**, never one end. The lower
   bound is §6.3 removed and fills assumed pessimistic; the upper is the spec as
   written. The truth is inside.
+- **The vendor.** That interval is a Yahoo-bars interval. On Binance bars the
+  same rules put SOL below zero (§0). A figure without a vendor attached is
+  incomplete.
 - Drawdown as a **distribution** (p90), not the single realised path.
 - The comparison against **buy & hold at the same drawdown**, as a win rate over
   resampled histories — which is the test S003 fails.
