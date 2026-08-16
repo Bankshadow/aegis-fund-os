@@ -52,7 +52,9 @@ surviving engine. Nothing in the repo made a number look taken.
 | E58 | research | S003 vs buy & hold as paired distributions, at matched drawdown | `docs/E58_CRITERIA.md` | **NOT WORTH IT** — S2 60.0% (needs 90%), S2b 57.0% (needs 60%); W_COMMON 10.8%/10.4%. The realised 2x win at matched DD survives resampling only 57% of the time. Per the declared decision table the forward paper log is **cancelled** |
 | E59 | research | BORA x S003: does real taker-buy order flow add edge over S003's price-only absorption proxy? BTCUSDT daily | `docs/E59_CRITERIA.md` | **TRADES LESS, DOES NOT READ FLOW** — BORA's own two tests (§22 control group, §25 incremental edge) both PASS while the filter loses to a duty-matched placebo (16/20 random seeds beat it). Baseline S003 on BTC daily is −58.14 R, so any filter that cuts trade count "improves" it |
 
-**Next free number: E60.**
+| E60 | research | BORA with the validation patch applied (Group C placebo, 30-trade floor, beat-doing-nothing) x S003 on SOL+LINK, Binance flow data | `docs/E60_CRITERIA.md` | **PRIMARY ARM UNANSWERABLE** — the 30-trade floor rejects M1 at every threshold (15 trades at Zt=2.0, which unpatched BORA would have passed). W8 fails (12.6% / 37.6% vs the 60% bar). **W2 found a vendor sign flip on SOL** (Binance −4.64 vs Yahoo +34.14, same window) — E51's instability, on half the pair E44–E58 rests on. Post-hoc lead: M3 absorption-percentile clears Group C but needs its own pre-registration |
+
+**Next free number: E61.**
 
 ## Resolved inconsistencies
 

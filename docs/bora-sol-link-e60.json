@@ -1,0 +1,200 @@
+{
+ "experiment": "E60",
+ "criteria": "docs/E60_CRITERIA.md",
+ "patch": "docs/BORA_V2_VALIDATION_PATCH.md",
+ "quality": {
+  "SOL": {
+   "bars": 2186,
+   "dup_ts": 0,
+   "zero_vol": 0,
+   "taker_le_quote": true,
+   "span": [
+    "2020-08-11",
+    "2026-08-05"
+   ]
+  },
+  "LINK": {
+   "bars": 2759,
+   "dup_ts": 0,
+   "zero_vol": 0,
+   "taker_le_quote": true,
+   "span": [
+    "2019-01-16",
+    "2026-08-05"
+   ]
+  }
+ },
+ "vendor_gap": {
+  "SOL": {
+   "binance": -4.641342355085334,
+   "yahoo_same_window": 34.13820467771276,
+   "window": [
+    "2020-08-11",
+    "2026-08-05"
+   ],
+   "sign_flip": true
+  },
+  "LINK": {
+   "binance": 10.11467728731343,
+   "yahoo_same_window": 40.99203252807731,
+   "window": [
+    "2019-01-16",
+    "2026-08-05"
+   ],
+   "sign_flip": false
+  }
+ },
+ "any_sign_flip": true,
+ "trade_floor": 30,
+ "m0_portR": 5.473334932228096,
+ "gated_signals": 296,
+ "arms": {
+  "M1|zt=1.5": {
+   "arm": "M1",
+   "param": "zt=1.5",
+   "trades": 25,
+   "duty": 0.03698224852071006,
+   "portR": 7.680862177455723,
+   "vs_m0": 2.2075272452276273,
+   "eligible": false
+  },
+  "M2|zt=1.5": {
+   "arm": "M2",
+   "param": "zt=1.5",
+   "trades": 48,
+   "duty": 0.07453416149068323,
+   "portR": -8.527908274638609,
+   "vs_m0": -14.001243206866704,
+   "eligible": true
+  },
+  "M4|zt=1.5": {
+   "arm": "M4",
+   "param": "zt=1.5",
+   "trades": 294,
+   "duty": 0.9514563106796117,
+   "portR": 1.452727465877542,
+   "vs_m0": -4.020607466350554,
+   "eligible": true
+  },
+  "M1|zt=2.0": {
+   "arm": "M1",
+   "param": "zt=2.0",
+   "trades": 15,
+   "duty": 0.021929824561403508,
+   "portR": 11.809990037355323,
+   "vs_m0": 6.336655105127227,
+   "eligible": false
+  },
+  "M2|zt=2.0": {
+   "arm": "M2",
+   "param": "zt=2.0",
+   "trades": 27,
+   "duty": 0.0406015037593985,
+   "portR": 2.702865712282551,
+   "vs_m0": -2.770469219945545,
+   "eligible": false
+  },
+  "M4|zt=2.0": {
+   "arm": "M4",
+   "param": "zt=2.0",
+   "trades": 298,
+   "duty": 0.9675324675324676,
+   "portR": -4.586145981866605,
+   "vs_m0": -10.059480914094701,
+   "eligible": true
+  },
+  "M1|zt=2.5": {
+   "arm": "M1",
+   "param": "zt=2.5",
+   "trades": 5,
+   "duty": 0.0071633237822349575,
+   "portR": 3.9516441453921876,
+   "vs_m0": -1.5216907868359084,
+   "eligible": false
+  },
+  "M2|zt=2.5": {
+   "arm": "M2",
+   "param": "zt=2.5",
+   "trades": 14,
+   "duty": 0.02040816326530612,
+   "portR": -5.129914270626605,
+   "vs_m0": -10.603249202854702,
+   "eligible": false
+  },
+  "M4|zt=2.5": {
+   "arm": "M4",
+   "param": "zt=2.5",
+   "trades": 297,
+   "duty": 0.9867109634551495,
+   "portR": 0.45251819673065957,
+   "vs_m0": -5.020816735497436,
+   "eligible": true
+  },
+  "M3|q=90": {
+   "arm": "M3",
+   "param": "q=90",
+   "trades": 98,
+   "duty": 0.1590909090909091,
+   "portR": 31.340960785094072,
+   "vs_m0": 25.867625852865977,
+   "eligible": true
+  },
+  "M3|q=95": {
+   "arm": "M3",
+   "param": "q=95",
+   "trades": 60,
+   "duty": 0.09146341463414634,
+   "portR": 14.996039467639074,
+   "vs_m0": 9.522704535410977,
+   "eligible": true
+  }
+ },
+ "placebo": null,
+ "stress_sl_first_015": {
+  "M0": {
+   "portR": -20.993627985416836,
+   "trades": 298
+  },
+  "M1": {
+   "portR": 11.429970112065961,
+   "trades": 15
+  }
+ },
+ "w8": {
+  "M0": {
+   "matched_risk": 0.06267614169817304,
+   "total": -0.6691146049902955,
+   "maxDD": 0.9585050759653674,
+   "wealth_win": 0.126
+  },
+  "M3 q=90": {
+   "matched_risk": 0.22848375184576625,
+   "total": 2.9448657993747176,
+   "maxDD": 0.9585050759653674,
+   "wealth_win": 0.376
+  }
+ },
+ "posthoc_group_c": {
+  "arm": "M3 q=90",
+  "duty": 0.1590909090909091,
+  "p90": 28.222778296213768,
+  "median": 3.201617218768137,
+  "beat": 0,
+  "portR": 31.340960785094072,
+  "beats_p90": true
+ },
+ "bh": {
+  "total": 10.562799394643909,
+  "maxDD": 0.9585050759653675,
+  "days": 2186
+ },
+ "checks": {
+  "W1": true,
+  "W4": null,
+  "W5": null,
+  "W6": null,
+  "W7": null,
+  "W8": false
+ },
+ "verdict": "PRIMARY ARM UNANSWERABLE AT THIS SAMPLE SIZE"
+}
