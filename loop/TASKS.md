@@ -16,3 +16,4 @@ Format: `- [ ] <title> | check: <command>`
 - [x] Add independent paper-review decision ledger | check: python -m unittest tests.test_loop_review
 - [x] Project paper-review decisions into Loop snapshot and Aegis | check: python -m unittest tests.test_loop_snapshot
 - [x] Add Loop CLI for verified snapshot export | check: python -m unittest tests.test_loop_cli
+- [x] Filtrate EXM7777 Grok Bot playbook into a fail-closed lane registry | check: python -m unittest tests.test_grok_bot_lanes

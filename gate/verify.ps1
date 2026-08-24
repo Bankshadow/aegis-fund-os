@@ -8,6 +8,10 @@ Write-Host "=== GATE: strategy framework unit tests ==="
 python -m unittest tests.test_strategy_framework -v
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
+Write-Host "=== GATE: grok bot lane filtration ==="
+python -m unittest tests.test_grok_bot_lanes -v
+if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
 Write-Host "=== GATE: fund ops unit tests ==="
 python -m unittest discover -s tests -p "test_fund*.py" -v
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }

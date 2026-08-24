@@ -53,6 +53,15 @@ Meaningful diffs: review from the **other** lineage when available
 (`/codex:review` adversarial on load-bearing strategy/risk changes).
 Verdict file > chat praise.
 
+## Grok Bot lanes (EXM7777 filtration, not a BUILD 7 install)
+
+Source: https://x.com/EXM7777/status/2091905664704745583
+
+Adopt one-job-per-lane, vault-over-memory, read-first, approval-wins. The
+article's ten revenue workflows (UGC, outbound, paid media, …) are **not**
+a trigger to install scout/overnight/factory/swarm. Print the filtrated
+roster with `python agent/lanes.py`. Details: `docs/GROK_BOT_LANES.md`.
+
 ## Fan-outs (BUILD 7) — install only when triggered
 
 | Fan-out | Install when |
