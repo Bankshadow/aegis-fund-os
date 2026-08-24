@@ -37,9 +37,10 @@ fan-outs / factory / swarm install only when their trigger conditions appear
 | 5 Advisor inversion | done | `agent/executor_advisor.py` + stuck-protocol skill |
 | 6 Two-lane review | optional | use `/codex:review` when available |
 | 7 Fan-outs | deferred | install only on trigger |
+| 7.10 Grok Bot lanes | **filtration only** | `.claude/skills/grok-bot-lanes/`, `agent/lanes.py`, `docs/vault/` — **not** a fan-out/swarm install ([EXM7777](https://x.com/EXM7777/status/2091905664704745583)) |
 | 8 Factory SQLite | deferred | solo research pace — BUILD 3 enough |
 | 9 Swarm | deferred | only if goals split & mechanical |
-| 10 Standing goals | light | `STATE.md` |
+| 10 Standing goals | light | `STATE.md` + `docs/vault/` (vault is source of truth; STATE is compost) |
 | 11 Human seat | you | HANDOFF duties |
 | 12 Ops | light | watch cheap-tier share + gate |
 
@@ -49,8 +50,12 @@ fan-outs / factory / swarm install only when their trigger conditions appear
 powershell -File gate/verify.ps1
 python agent/router.py "should we promote dual after E23?"
 python agent/executor_advisor.py
+python agent/lanes.py
 powershell -File loop/ralph.ps1 -BudgetUsd 2 -MaxIters 2
 ```
+
+Lane roster (EXM7777 filtrated): `docs/GROK_BOT_LANES.md`. One job per lane.
+Vault over memory. Do not treat that article as permission to spawn ten bots.
 
 ## Trading-specific never list
 

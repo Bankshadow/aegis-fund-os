@@ -21,8 +21,22 @@
 - E25 conservative geometry: FAIL (−0.0154) — better DD but still < cash; C2 miss.
 - Live trading and third-party capital: forbidden until Phase 3 gates clear.
 - Agent stack gate green (`gate/verify.ps1` SHIP); `run_demo.py --fast` OK (2026-07-15).
+- EXM7777 Grok Bot playbook filtrated (2026-08-24): one job per lane, vault
+  over memory, approval wins, money/order paths forbidden even if approved.
+  Native KEEP lanes are education_evidence / research_loop / runtime_watchdog.
+  The article's ten revenue bots are REJECT. Not a BUILD 7 swarm install.
+  See `docs/GROK_BOT_LANES.md`, `docs/vault/`, `python agent/lanes.py`.
 
 ## Verified since previous handoff
+
+- Filtrated EXM7777 Grok Bot article (2026-08-24,
+  https://x.com/EXM7777/status/2091905664704745583) into a fail-closed lane
+  registry (`agent/lanes.py`), skill, vault (`docs/vault/`), and gate tests.
+  Adopted one-job-per-lane / vault-over-memory / read-first / approval-wins /
+  verify-before-done. Rejected UGC/Higgsfield, outbound, paid media, SEO
+  auditor, clipping factory, ghostwriting, and any 10-bot swarm. BUILD 7
+  fan-outs remain deferred. Education slice 5 is still student feedback, not
+  a new page from that article.
 
 - Added a native, no-n8n runtime watchdog locally (2026-07-24):
   `.github/workflows/runtime-watchdog.yml` polls only the token-gated,

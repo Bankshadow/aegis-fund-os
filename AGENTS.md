@@ -59,4 +59,4 @@ gate/verify.ps1
 
 ## Read next
 
-`docs/HANDOFF_CURSOR.md` → `docs/VALIDATION_LOG.md` → `docs/PRIVATE_FUND_ROADMAP.md` → `ROUTING.md`
+`docs/HANDOFF_CURSOR.md` → `docs/VALIDATION_LOG.md` → `docs/PRIVATE_FUND_ROADMAP.md` → `ROUTING.md` → `docs/GROK_BOT_LANES.md`

@@ -38,6 +38,12 @@ edge คือปัญหาที่แท้จริง ส่วน engine 
 **อย่าเพิ่มหน้าใหม่แบบเดา** — การสร้างของที่ไม่มีคนใช้คือสิ่งที่ pivot นี้กำลังแก้
 ห้ามเทรดจริงเหมือนเดิม ทุกหน้าเป็น read-only research
 
+บทความ Grok Bot ของ EXM7777 (2026-08-24) ถูก **กรอง** เข้า stack แล้ว:
+`docs/GROK_BOT_LANES.md` + `agent/lanes.py` + `docs/vault/` — รับกติกา
+one-job-per-lane / vault เหนือ memory / อนุมัติชนะ allow / ตรวจก่อน done
+**ไม่ได้** ติดตั้ง 10 บอทรายได้ (UGC, outbound, paid media). BUILD 7 ยัง deferred.
+slice 5 ยังมาจากนักเรียน ไม่ใช่จากบทความนั้น
+
 ---
 
 ## 0. อ่านก่อน — สถานะสด ณ 2026-07-23 (Graph L2/L3 + D1 migrations)

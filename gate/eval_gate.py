@@ -72,6 +72,37 @@ def _():
     assert "ห้าม" in text or "ไม่แนะนำ" in text
 
 
+@case("grok_bot_lanes_skill_exists")
+def _():
+    skill = _read(".claude/skills/grok-bot-lanes/SKILL.md")
+    assert "2091905664704745583" in skill
+    assert "BUILD 7" in skill
+    assert "vault" in skill.lower()
+    for rel in (
+        "docs/vault/README.md",
+        "docs/vault/offer.md",
+        "docs/vault/icp.md",
+        "docs/vault/refuse.md",
+        "docs/vault/rulings.md",
+        "docs/vault/voice.md",
+        "docs/GROK_BOT_LANES.md",
+        "agent/lanes.py",
+    ):
+        assert (ROOT / rel).is_file(), f"missing {rel}"
+
+
+@case("grok_bot_lanes_not_a_swarm_install")
+def _():
+    skill = _read(".claude/skills/grok-bot-lanes/SKILL.md").lower()
+    assert "not a build 7 install" in skill
+    assert "reject" in skill
+    offer = _read("docs/vault/offer.md").lower()
+    assert "education" in offer
+    assert "not a live trading bot" in offer
+    refuse = _read("docs/vault/refuse.md").lower()
+    assert "never send live orders" in refuse
+
+
 def main() -> int:
     failed = []
     for name, fn in CASES:

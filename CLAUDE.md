@@ -27,6 +27,7 @@ Recommended: Dual 75/25 rule-based + percentile regime. **No live trading.**
 ## Routing
 
 See `ROUTING.md`. Fable plans/advises; Sol/Sonnet execute; gate votes last.
+Grok Bot article lanes: filtrate only (`docs/GROK_BOT_LANES.md`); never a 10-bot swarm.
 
 ## Smoke
 

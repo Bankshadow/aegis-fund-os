@@ -8,6 +8,9 @@ cd "$ROOT"
 echo "=== GATE: strategy framework unit tests ==="
 python -m unittest tests.test_strategy_framework -v
 
+echo "=== GATE: grok bot lane filtration ==="
+python -m unittest tests.test_grok_bot_lanes -v
+
 echo "=== GATE: fund ops unit tests (if present) ==="
 python -m unittest tests.test_fund_ops tests.test_fund_mvp_weeks_2_to_8 -v 2>/dev/null || \
   python -m unittest discover -s tests -p 'test_fund*.py' -v
