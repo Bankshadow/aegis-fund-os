@@ -14,15 +14,16 @@ import {
  * rather than imported, so this module works under plain Node (the precompute
  * script) as well as under Vite. Read-only research: no order, no live data.
  *
- * They are also expensive — the comparison view alone is 972 backtests and roughly
- * 8.9s of CPU. That is fine at build time and NOT fine inside a Cloudflare Worker
- * request, which is why `scripts/precompute-walkforward.mjs` runs everything ahead
- * of time and the server functions only look results up.
+ * They are also expensive — the comparison view alone is 1,296 backtests (four
+ * mechanisms) and roughly 12s of CPU. That is fine at build time and NOT fine
+ * inside a Cloudflare Worker request, which is why `scripts/precompute-walkforward.mjs`
+ * runs everything ahead of time and the server functions only look results up.
  */
 const VARIANTS = {
   baseline: {},
   trailing: { trailing: true },
   "exposure-cap": { exposureCap: true },
+  "inventory-recycle": { inventoryRecycle: true },
 } as const;
 
 export type WalkForwardVariant = keyof typeof VARIANTS;
@@ -111,7 +112,7 @@ export type OverfitView = {
 
 export type WalkForwardComparison = {
   variants: WalkForwardView[];
-  // Per-fold robust and cycles across the three variants, so a student can see
+  // Per-fold robust and cycles across the mechanism variants, so a student can see
   // which folds a mechanism actually moved (and which it silenced to cycles=0).
   folds: Array<{
     index: number;
@@ -222,7 +223,7 @@ export function buildOverfitView(bars: MarketBar[]): OverfitView {
   };
 }
 
-/** Lines the three mechanisms up for the E26 -> E28 -> E29 teaching comparison. */
+/** Lines the four mechanisms up for the E26 -> E28 -> E29 -> E30 teaching comparison. */
 export function buildComparison(views: WalkForwardView[]): WalkForwardComparison {
   const folds = views[0].folds.map((fold, i) => ({
     index: fold.index,

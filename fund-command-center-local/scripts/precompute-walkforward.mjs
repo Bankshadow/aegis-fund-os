@@ -1,8 +1,8 @@
 /**
  * Precompute every Walk-Forward Lab view at build time.
  *
- * These views are pure and expensive: the comparison alone is 972 backtests and
- * ~8.9s of CPU. Running that inside a Cloudflare Worker request is not just slow, it
+ * These views are pure and expensive: the comparison alone is 1,296 backtests and
+ * ~12s of CPU. Running that inside a Cloudflare Worker request is not just slow, it
  * risks blowing the Worker CPU limit outright — and per-isolate memoisation does not
  * help, because every cold isolate pays it again. The fixture and the engine are
  * static, so the answer can never change between deploys: compute it once here and

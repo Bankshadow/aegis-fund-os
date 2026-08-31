@@ -23,9 +23,14 @@ const tone = (value: number) => (value >= 0 ? "text-positive" : "text-destructiv
 
 // Plain-Thai mechanism names; the E-number stays in parentheses for traceability
 // back to VALIDATION_LOG without making a student decode it.
-const LABELS = ["grid ธรรมดา (E26)", "+ ยก grid ตามราคา (E28)", "+ จำกัดการถือครอง (E29)"];
+const LABELS = [
+  "grid ธรรมดา (E26)",
+  "+ ยก grid ตามราคา (E28)",
+  "+ จำกัดการถือครอง (E29)",
+  "+ คืนท่า 50/50 (E30)",
+];
 
-// Each transition's honest teaching point, straight from VALIDATION_LOG §E26-E29.
+// Each transition's honest teaching point, straight from VALIDATION_LOG §E26-E30.
 const NARRATIVE = [
   {
     title: "ก้าวที่ 1 — ยก grid ตามราคา: กลับมาเทรดได้ แต่แลกด้วยความเจ็บที่มากขึ้น (E26 → E28)",
@@ -34,6 +39,10 @@ const NARRATIVE = [
   {
     title: "ก้าวที่ 2 — จำกัดการถือครอง: ตัวเลขเฉลี่ยดีขึ้น แต่แยกดูราย fold แล้วไม่ใช่ของจริง (E28 → E29)",
     body: "พอห้ามถือหุ้นเกินความจุของ grid เดิม ตัวเลขเฉลี่ยดูดีขึ้นชัด (คะแนนรวม −19.91 → −12.17, ขาดทุนหนักสุด 16.8% → 13.5%) แต่พอแยกดูทีละช่วงกลับไม่ใช่แบบนั้น: ส่วนใหญ่ที่ตัวเลขขยับเป็นเพราะระบบไป 'เลือก' รูปแบบ grid คนละแบบ ไม่ใช่ตัวกลไกเอง และช่วงที่ดูดีขึ้นมากที่สุดคือช่วงที่มัน 'หยุดเทรดไปเลย' (เทรดจริงเหลือ 78% จาก 100%) — ไม่อยู่ในตลาดก็ไม่ขาดทุน ตัวเลขความเสี่ยงเลยสวยขึ้นแบบหลอก ๆ · บทเรียน: ค่าเฉลี่ยที่ดีขึ้นอาจไม่ได้แปลว่ากลไกได้ผล ต้องแยกดูเสมอ",
+  },
+  {
+    title: "ก้าวที่ 3 — คืนท่า 50/50: กลไกถูกทิศ แต่ผลเล็กเกินกว่าจะมี edge (E28 → E30)",
+    body: "หน้าจอ Minara บน Hyperliquid ชี้ว่าบัญชีที่ทำเงินแบบมีคุณภาพส่วนใหญ่ไม่ใช่การทายทิศทาง แต่หมุนสองฝั่งแล้วคืน inventory หลังเคลื่อนสั้น ๆ E30 ทำแบบนั้นตอนยกกริด: ขายส่วนที่ถือเกินท่าตั้งต้น แล้ววางกริดใหม่ทั้งสองฝั่ง ผลคือยังเทรดครบทุกช่วง (100% ไม่หยุดแบบ E29) ขาดทุนหนักสุดลดลงนิดเดียว 16.84% → 16.46% คะแนนรวม −19.91 → −19.62 แต่ยังแพ้การถือเฉย ๆ อยู่ดี · 9 ใน 18 ช่วงมีไม้ไม่ถึง 20 ไม้ — กริดหุ้นไทยรายวันไม่มีจังหวะแบบ Type 1 ของ Minara ที่หมุนหลายพันไม้ · บทเรียน: คัดลอก 'สมดุล 50/50' มาได้ แต่คัดลอกสภาพคล่องและจังหวะมาไม่ได้",
   },
 ];
 
@@ -55,14 +64,14 @@ function WalkForwardCompare() {
       <PageHeader
         kicker="EDUCATION · READ-ONLY RESEARCH · NO LIVE ORDER"
         title="เปรียบเทียบกลไก: เพิ่มทีละอย่าง แล้วดูว่าอะไรดีขึ้นจริง"
-        subtitle="กลไกทั้งสามทดสอบบนช่วงเวลาชุดเดียวกันทั้งหมด ต่างกันแค่กลไกที่เปิด — จึงเทียบกันได้ตรง ๆ (ตรงกับงานวิจัย E26 → E28 → E29)"
+        subtitle="กลไกทั้งสี่ทดสอบบนช่วงเวลาชุดเดียวกันทั้งหมด ต่างกันแค่กลไกที่เปิด — จึงเทียบกันได้ตรง ๆ (ตรงกับงานวิจัย E26 → E28 → E29 → E30)"
       />
       <div className="space-y-6 p-6">
         <WalkForwardGlossary />
 
         <Panel title="ผลรวมข้างกัน" subtitle="engine เดียวกัน ช่วงเวลาเดียวกัน ต่างกันแค่กลไกที่เปิด">
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[640px] text-sm">
+            <table className="w-full min-w-[800px] text-sm">
               <thead>
                 <tr className="text-left text-xs uppercase text-muted-foreground">
                   <th className="p-2">ตัวชี้วัด</th>
@@ -89,7 +98,7 @@ function WalkForwardCompare() {
           </div>
         </Panel>
 
-        <Panel title="อ่านผล" subtitle="แต่ละก้าวแก้อะไร (สรุปจาก VALIDATION_LOG §E26–E29)">
+        <Panel title="อ่านผล" subtitle="แต่ละก้าวแก้อะไร (สรุปจาก VALIDATION_LOG §E26–E30)">
           <div className="space-y-4">
             {NARRATIVE.map((item) => (
               <div className="rounded-md border p-4" key={item.title}>
@@ -100,9 +109,10 @@ function WalkForwardCompare() {
             <div className="rounded-md border border-destructive/40 p-4">
               <div className="font-semibold text-destructive">บทสรุป</div>
               <p className="mt-1 text-sm text-muted-foreground">
-                ทั้งสามกลไก (และอีก 6 การทดลองก่อนหน้า, E20–E29) ไม่ผ่าน validation gate — geometry, regime filter,
-                trailing และ exposure cap ไม่ทำให้ grid มี edge จริงบน AOT รายวัน นี่คือบทเรียนที่จับต้องได้:
-                กลไกที่ดู "ปรับปรุงตัวเลขเฉลี่ย" อาจเป็นแค่ selection artifact หรือการหยุดเทรด ไม่ใช่ edge
+                ทั้งสี่กลไก (และอีก 6 การทดลองก่อนหน้า, E20–E30) ไม่ผ่าน validation gate — geometry, regime filter,
+                trailing, exposure cap และ inventory recycle ไม่ทำให้ grid มี edge จริงบน AOT รายวัน นี่คือบทเรียนที่จับต้องได้:
+                กลไกที่ดู "ปรับปรุงตัวเลขเฉลี่ย" อาจเป็นแค่ selection artifact หรือการหยุดเทรด ไม่ใช่ edge และแม้กลไกจะถูกทิศ
+                (E30 คืนท่า 50/50 โดยไม่หยุดเทรด) ผลก็ยังเล็กเกินกว่าจะชนะการถือเฉย ๆ บนหุ้นไทยรายวัน
               </p>
             </div>
           </div>
@@ -110,7 +120,7 @@ function WalkForwardCompare() {
 
         <Panel title="Robust ราย fold ข้ามกลไก" subtitle="fold ที่ cycles=0 คือกลไกทำให้หยุดเทรด (สีแดงที่ช่อง cycles)">
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[720px] text-sm">
+            <table className="w-full min-w-[880px] text-sm">
               <thead>
                 <tr className="text-left text-xs uppercase text-muted-foreground">
                   <th className="p-2">Fold</th>

@@ -14,7 +14,7 @@ const { bars } = parseMarketCsv(fs.readFileSync(DATA, "utf8"));
 const conservative = (result) => result.modeResults.find((r) => r.mode === "CONSERVATIVE_OHLC");
 const round2 = (value) => Math.round(value * 100) / 100;
 
-// These are the committed E26/E28/E29 headline numbers (VALIDATION_LOG §E26-E29).
+// These are the committed E26/E28/E29/E30 headline numbers (VALIDATION_LOG §E26-E30).
 // The in-app Walk-Forward Lab renders exactly this function's output, so pinning
 // them here guarantees the education view can never drift from the research it
 // teaches. If a change moves these, the research record must move with it.
@@ -38,6 +38,14 @@ test("E29 exposure cap reproduces the committed walk-forward numbers", () => {
   assert.equal(round2(r.meanRobust), -12.17);
   assert.equal(round2(r.meanDrawdown), 13.52);
   assert.equal(round2(r.meanAlpha), -8.28);
+});
+
+test("E30 inventory recycle reproduces the committed walk-forward numbers", () => {
+  const r = conservative(runAotWalkForward(bars, { inventoryRecycle: true }));
+  assert.equal(round2(r.meanRobust), -19.62);
+  assert.equal(round2(r.meanDrawdown), 16.46);
+  assert.equal(round2(r.meanAlpha), -9.86);
+  assert.equal(round2(r.engagedPct), 100);
 });
 
 test("cost override is opt-in and pins the honest lesson: no edge even at zero cost", () => {
@@ -128,4 +136,21 @@ test("exposure cap is inert without re-anchor accumulation on the folds where it
     return Math.abs(a.robust - b.robust) < 1e-6 && Math.abs(a.alpha - b.alpha) < 1e-6;
   });
   assert.equal(identical.length, 6);
+});
+
+test("inventory recycle is inert without excess longs on the folds where it never fires", () => {
+  // 11/18 folds are bit-identical between E28 and E30 (recycle never bit on OOS).
+  const e28 = runAotWalkForward(bars, { trailing: true });
+  const e30 = runAotWalkForward(bars, { inventoryRecycle: true });
+  const identical = e28.folds.filter((fold, i) => {
+    const a = fold.oos.CONSERVATIVE_OHLC;
+    const b = e30.folds[i].oos.CONSERVATIVE_OHLC;
+    return Math.abs(a.robust - b.robust) < 1e-6 && Math.abs(a.alpha - b.alpha) < 1e-6;
+  });
+  assert.equal(identical.length, 11);
+  // And unlike E29, recycle must not silence the book: every OOS fold still trades.
+  assert.equal(
+    e30.folds.filter((fold) => fold.oos.CONSERVATIVE_OHLC.completedCycles >= 1).length,
+    18,
+  );
 });
