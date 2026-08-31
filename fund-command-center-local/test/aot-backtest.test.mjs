@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import {
+  classifyOperationalFingerprint,
   computeRegimeStates,
   parseMarketCsv,
   runAotBacktest,
@@ -295,6 +296,109 @@ test("trailing never moves the ladder down", () => {
     falling,
   );
   assert.equal(trailed.metrics.reAnchors, 0, "a falling market must not drag the grid down");
+});
+
+// --- inventory recycle (E30 mechanism) + Minara fingerprint -----------------
+const recycleWindow = { startDate: "2024-01-01", endDate: "2024-01-02" };
+// Price starts ABOVE the grid so the first arming is all-buy (no sell levels
+// to flatten the book on the way up). The dump fills buys; the close then
+// lifts the ladder, which is the only moment E30 is allowed to recycle.
+const recycleBars = [
+  { timestamp: "2024-01-01T00:00:00Z", open: 45, high: 45.5, low: 42, close: 45.2 },
+  { timestamp: "2024-01-02T00:00:00Z", open: 45.2, high: 46, low: 45, close: 45.8 },
+];
+const recycleCfg = {
+  ...config,
+  ...recycleWindow,
+  trailing: { mode: "TRAIL_UP" },
+  inventoryRecycle: { mode: "RESTORE_INITIAL" },
+};
+
+test("null inventory recycle reproduces trailing-only numbers", () => {
+  const trailed = runAotBacktest(
+    { ...config, ...recycleWindow, trailing: { mode: "TRAIL_UP" } },
+    recycleBars,
+  );
+  const nulled = runAotBacktest(
+    { ...config, ...recycleWindow, trailing: { mode: "TRAIL_UP" }, inventoryRecycle: null },
+    recycleBars,
+  );
+  assert.equal(nulled.metrics.finalPortfolioValue, trailed.metrics.finalPortfolioValue);
+  assert.equal(nulled.metrics.endingInventory, trailed.metrics.endingInventory);
+  assert.equal(nulled.metrics.inventoryRecycles, 0);
+});
+
+test("recycle sells excess inventory at re-anchor and restores the starting share count", () => {
+  const trailed = runAotBacktest(
+    { ...config, ...recycleWindow, trailing: { mode: "TRAIL_UP" } },
+    recycleBars,
+  );
+  const recycled = runAotBacktest(recycleCfg, recycleBars);
+  assert.ok(trailed.metrics.reAnchors > 0, "the close above 44 must lift the grid");
+  assert.equal(recycled.metrics.reAnchors, trailed.metrics.reAnchors);
+  assert.ok(recycled.metrics.inventoryRecycles > 0, "excess longs must be flattened");
+  assert.ok(
+    recycled.metrics.endingInventory < trailed.metrics.endingInventory,
+    `recycle ending inventory ${recycled.metrics.endingInventory} must be below trailing ${trailed.metrics.endingInventory}`,
+  );
+  assert.ok(
+    recycled.metrics.endingInventory <= config.initialInventory,
+    "RESTORE_INITIAL must not leave the book heavier than the starting share count",
+  );
+  assert.ok(
+    recycled.metrics.isReconciled,
+    "the flatten must keep the lot-weighted ledger inside the ฿0.01 tolerance",
+  );
+  assert.equal(
+    recycled.cycles.length,
+    trailed.cycles.length,
+    "a recycle fill is turnover, not a grid cycle",
+  );
+  assert.equal(
+    recycled.events.some(
+      (event) => event.type === "STRATEGY_DECISION" && event.payload.inventoryRecycle,
+    ),
+    true,
+    "the audit stream must record the recycle",
+  );
+});
+
+test("recycle does not fire when inventory never exceeds the starting share count", () => {
+  // Ranging inside the original grid: trailing never lifts, so recycle is inert.
+  const ranged = runAotBacktest({ ...config, trailing: { mode: "TRAIL_UP" }, inventoryRecycle: { mode: "RESTORE_INITIAL" } }, bars);
+  const trailed = runAotBacktest({ ...config, trailing: { mode: "TRAIL_UP" } }, bars);
+  assert.equal(ranged.metrics.reAnchors, 0);
+  assert.equal(ranged.metrics.inventoryRecycles, 0);
+  assert.equal(ranged.metrics.finalPortfolioValue, trailed.metrics.finalPortfolioValue);
+});
+
+test("Minara fingerprint: two-sided vs directional vs concentrated", () => {
+  const twoSided = classifyOperationalFingerprint({
+    fills: [
+      ...Array.from({ length: 50 }, () => ({ side: "BUY", gross: 100 })),
+      ...Array.from({ length: 50 }, () => ({ side: "SELL", gross: 100 })),
+    ],
+    netPnl: 30.5,
+  });
+  assert.equal(twoSided.operationalType, "TWO_SIDED");
+  assert.equal(twoSided.buyNotionalShare, 0.5);
+  assert.ok(Math.abs(twoSided.netPnlBpsOfNotional - 30.5) < 1e-9);
+
+  const directional = classifyOperationalFingerprint({
+    fills: [
+      ...Array.from({ length: 70 }, () => ({ side: "BUY", gross: 100 })),
+      ...Array.from({ length: 30 }, () => ({ side: "SELL", gross: 100 })),
+    ],
+    netPnl: 0,
+  });
+  assert.equal(directional.operationalType, "DIRECTIONAL");
+  assert.equal(directional.buyNotionalShare, 0.7);
+
+  const concentrated = classifyOperationalFingerprint({
+    fills: Array.from({ length: 14 }, () => ({ side: "BUY", gross: 100 })),
+    netPnl: 0,
+  });
+  assert.equal(concentrated.operationalType, "CONCENTRATED");
 });
 
 test("invalid OHLC fails closed before simulation", () => {

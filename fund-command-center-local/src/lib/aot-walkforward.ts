@@ -40,6 +40,7 @@ export type WalkForwardOptions = {
   regime?: boolean;
   trailing?: boolean;
   exposureCap?: boolean;
+  inventoryRecycle?: boolean;
   // Cost override for the education view: let a student watch the grid edge survive
   // gross and die net. Omitted keys fall back to the Thai-retail default, so the
   // no-argument call still reproduces the committed E-series numbers exactly.
@@ -75,6 +76,11 @@ export type FoldMeasure = {
   forcedLiquidation: boolean;
   endingInventory: number;
   maxCapitalDeployed: number;
+  inventoryRecycles: number;
+  recycledQuantity: number;
+  buyNotionalShare: number | null;
+  netPnlBpsOfNotional: number | null;
+  operationalType: string;
 };
 
 /**
@@ -165,6 +171,11 @@ function toFoldMeasure(run: ReturnType<typeof runAotBacktest>): FoldMeasure {
     forcedLiquidation: m.forcedLiquidation,
     endingInventory: m.endingInventory,
     maxCapitalDeployed: m.maxCapitalDeployed,
+    inventoryRecycles: m.inventoryRecycles,
+    recycledQuantity: m.recycledQuantity,
+    buyNotionalShare: m.buyNotionalShare,
+    netPnlBpsOfNotional: m.netPnlBpsOfNotional,
+    operationalType: m.operationalType,
   };
 }
 
@@ -198,7 +209,8 @@ function configFor(geometry: Geometry, window: MarketBar[], executionMode: Execu
   // Standard grid posture: half the book in stock so sells above the reference
   // level are possible from bar one; the rest in cash to buy the way down.
   const inventory = Math.floor(CAPITAL / 2 / firstClose / 100) * 100;
-  const trailingOn = Boolean(options.trailing) || Boolean(options.exposureCap);
+  const trailingOn =
+    Boolean(options.trailing) || Boolean(options.exposureCap) || Boolean(options.inventoryRecycle);
   const costs = { ...COSTS, ...(options.costs ?? {}) };
   return {
     symbol: "AOT",
@@ -220,6 +232,7 @@ function configFor(geometry: Geometry, window: MarketBar[], executionMode: Execu
     regimeFilter: options.regime ? REGIME_FILTER : null,
     trailing: trailingOn ? { mode: "TRAIL_UP" } : null,
     exposureCap: options.exposureCap ? { mode: "GRID_CAPACITY" } : null,
+    inventoryRecycle: options.inventoryRecycle ? { mode: "RESTORE_INITIAL" } : null,
   };
 }
 
