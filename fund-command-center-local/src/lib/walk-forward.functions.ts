@@ -25,7 +25,7 @@ export type {
  * The Walk-Forward Lab views are served from `scripts/precompute-walkforward.mjs`
  * output, not computed per request.
  *
- * They are pure and expensive — the comparison is 972 backtests, ~8.9s of CPU — and
+ * They are pure and expensive — the comparison is 1,296 backtests, ~12s of CPU — and
  * a Worker request is the wrong place for that: it is slow for the student and can
  * exceed the Worker CPU limit outright. Per-isolate memoisation was not enough,
  * since every cold isolate pays the cost again. The fixture and engine are static,
@@ -45,7 +45,7 @@ const viewKey = (variant: WalkForwardVariant, cost: CostPresetId) => `${variant}
 export const getWalkForwardView = createServerFn({ method: "GET" })
   .validator(
     z.object({
-      variant: z.enum(["baseline", "trailing", "exposure-cap"]).default("baseline"),
+      variant: z.enum(["baseline", "trailing", "exposure-cap", "inventory-recycle"]).default("baseline"),
       // Closed preset set, not free-form numbers: every reachable combination is
       // precomputed, so no student request can trigger a walk-forward on the Worker.
       cost: z.enum(["thai", "zero", "heavy"]).default("thai"),

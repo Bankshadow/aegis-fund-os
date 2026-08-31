@@ -9,7 +9,7 @@
  * Walk-Forward Lab shows the SAME numbers as this research. This file is now a thin
  * CLI wrapper: read the CSV, run the shared function, print, optionally write JSON.
  *
- *   node scripts/aot-walkforward.mjs [--regime] [--trailing] [--exposure-cap] [--out report.json]
+ *   node scripts/aot-walkforward.mjs [--regime] [--trailing] [--exposure-cap] [--inventory-recycle] [--out report.json]
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -25,6 +25,7 @@ const options = {
   regime: process.argv.includes("--regime"),
   trailing: process.argv.includes("--trailing"),
   exposureCap: process.argv.includes("--exposure-cap"),
+  inventoryRecycle: process.argv.includes("--inventory-recycle"),
 };
 
 const dateOnly = (timestamp) => timestamp.slice(0, 10);

@@ -28,6 +28,36 @@ export type TrailingConfig = { mode: "TRAIL_UP" };
  */
 export type ExposureCapConfig = { mode: "GRID_CAPACITY" };
 /**
+ * Inventory recycle at re-anchor (E30). Minara's screen of 43,618 Hyperliquid
+ * addresses found that 8 of the 12 strongest profitable accounts were
+ * high-turnover two-sided systems: ~50/50 buy/sell flow, ~30 bps per unit of
+ * notional, inventory reduced after short directional moves, then quoting
+ * resumed on both sides. E29's exposure cap did the opposite — it stopped
+ * adding longs and several folds simply stopped trading (cycles → 0).
+ * RESTORE_INITIAL sells inventory above the protocol's starting share count
+ * at the re-anchor close (full costs), then the lifted grid re-arms, so
+ * two-sided capacity comes back instead of stalling. Not a tuned fraction —
+ * the target is `initialInventory`. `null` reproduces E28 exactly.
+ */
+export type InventoryRecycleConfig = { mode: "RESTORE_INITIAL" };
+/**
+ * Minara operational fingerprint (not a trading signal). Type 1 winners were
+ * two-sided (~49.4/50.6 fill flow); Type 2 was high-frequency but imbalanced
+ * (~70% buys); Type 3 was concentrated directional (14 fills, all buys).
+ * Thresholds are taken from that split, declared a priori, and used only to
+ * describe a run — they never change an order.
+ */
+export type OperationalType = "TWO_SIDED" | "DIRECTIONAL" | "CONCENTRATED";
+export type OperationalFingerprint = {
+  buyFillShare: number | null;
+  buyNotionalShare: number | null;
+  grossFillNotional: number;
+  netPnlBpsOfNotional: number | null;
+  inventoryRecycles: number;
+  recycledQuantity: number;
+  operationalType: OperationalType;
+};
+/**
  * Percentile-rank trend detector (E14 established percentile rank as the
  * detector that works on this project's data). It was built to answer one E26
  * finding: a grid sells its inventory into a rally and then watches price run
@@ -84,6 +114,7 @@ export type BacktestConfig = {
   regimeFilter?: RegimeFilterConfig | null;
   trailing?: TrailingConfig | null;
   exposureCap?: ExposureCapConfig | null;
+  inventoryRecycle?: InventoryRecycleConfig | null;
 };
 export type BacktestOrder = {
   id: string;
@@ -216,6 +247,13 @@ export type BacktestMetrics = {
   regimeSuspendedBars: number;
   regimeBarCounts: Record<RegimeState, number>;
   reAnchors: number;
+  inventoryRecycles: number;
+  recycledQuantity: number;
+  buyFillShare: number | null;
+  buyNotionalShare: number | null;
+  grossFillNotional: number;
+  netPnlBpsOfNotional: number | null;
+  operationalType: OperationalType;
   annual: Array<{
     year: string;
     startEquity: number;
@@ -300,6 +338,45 @@ export function computeRegimeStates(
       rank >= upperRank ? "TREND_UP" : rank <= lowerRank ? "TREND_DOWN" : "RANGE";
   }
   return states;
+}
+
+/**
+ * Classify a fill tape the way Minara attributed strategy from public fills:
+ * cadence (fill count) plus buy/sell notional balance. Concentrated directional
+ * accounts in that screen had 14 fills; the two-sided group sat at 49.4/50.6;
+ * the intraday group was ~70% buys. The 20-fill / 15pp bands are taken from
+ * that split and are not trading parameters.
+ */
+export function classifyOperationalFingerprint(input: {
+  fills: Array<{ side: "BUY" | "SELL"; gross: number }>;
+  netPnl: number;
+  inventoryRecycles?: number;
+  recycledQuantity?: number;
+}): OperationalFingerprint {
+  const fills = input.fills;
+  const buyFills = fills.filter((fill) => fill.side === "BUY");
+  const grossFillNotional = fills.reduce((sum, fill) => sum + fill.gross, 0);
+  const buyNotional = buyFills.reduce((sum, fill) => sum + fill.gross, 0);
+  const buyFillShare = fills.length ? buyFills.length / fills.length : null;
+  const buyNotionalShare = grossFillNotional > 0 ? buyNotional / grossFillNotional : null;
+  const netPnlBpsOfNotional =
+    grossFillNotional > 0 ? (input.netPnl / grossFillNotional) * 10_000 : null;
+  const balance = buyNotionalShare ?? buyFillShare;
+  const operationalType: OperationalType =
+    fills.length < 20
+      ? "CONCENTRATED"
+      : balance != null && Math.abs(balance - 0.5) <= 0.15
+        ? "TWO_SIDED"
+        : "DIRECTIONAL";
+  return {
+    buyFillShare,
+    buyNotionalShare,
+    grossFillNotional,
+    netPnlBpsOfNotional,
+    inventoryRecycles: input.inventoryRecycles ?? 0,
+    recycledQuantity: input.recycledQuantity ?? 0,
+    operationalType,
+  };
 }
 
 export function analyzeMarketData(bars: MarketBar[]) {
@@ -503,7 +580,9 @@ export function runAotBacktest(
     maxDeployed = d(0),
     ambiguousBars = 0,
     regimeSuspendedBars = 0,
-    reAnchors = 0;
+    reAnchors = 0,
+    inventoryRecycles = 0,
+    recycledQuantity = d(0);
   const regimeBarCounts: Record<RegimeState, number> = { RANGE: 0, TREND_UP: 0, TREND_DOWN: 0 };
   const orders: BacktestOrder[] = [],
     fills: BacktestFill[] = [],
@@ -575,13 +654,81 @@ export function runAotBacktest(
    * Lift the whole ladder so `price` sits back inside it, keeping the existing
    * width ratio and spacing. Open orders are genuinely cancelled — not held —
    * because E27 showed a held order simply fills later at its stale price.
-   * Cash and inventory are untouched: this re-prices future intent, it does not
-   * liquidate anything.
+   * Cash and inventory are untouched unless E30 recycle is on: that path sells
+   * inventory above the starting share count at this close, then re-arms.
    */
-  const reAnchor = (price: Decimal, timestamp: string) => {
+  const recycleTowardInitial = (bar: MarketBar, mark: Decimal) => {
+    if (config.inventoryRecycle?.mode !== "RESTORE_INITIAL") return;
+    const target = d(config.initialInventory ?? 0);
+    const qty = floorLot(inventory.sub(target), lot);
+    if (!qty.gte(lot)) return;
+    const signedPrice = mark.mul(d(1).sub(d(config.slippageRate).div(100)));
+    const gross = signedPrice.mul(qty),
+      costs = costFor(gross, config),
+      slip = signedPrice.sub(mark).abs().mul(qty);
+    cash = cash.add(gross).sub(costs.total);
+    inventory = inventory.sub(qty);
+    const basis = inventory.gt(0)
+      ? inventoryCost.mul(qty).div(inventory.add(qty))
+      : inventoryCost;
+    inventoryCost = inventoryCost.sub(basis);
+    realized = realized.add(gross.sub(costs.total).sub(basis));
+    averageCost = inventory.gt(0) ? inventoryCost.div(inventory) : d(0);
+    fees = fees.add(costs.total);
+    slippageTotal = slippageTotal.add(slip);
+    inventoryRecycles += 1;
+    recycledQuantity = recycledQuantity.add(qty);
+    const order: BacktestOrder = {
+      id: `REC-${inventoryRecycles}`,
+      gridIndex: -1,
+      side: "SELL",
+      limitPrice: n(mark),
+      quantity: n(qty),
+      status: "FILLED",
+      createdAt: bar.timestamp,
+      filledAt: bar.timestamp,
+    };
+    orders.push(order);
+    const fill: BacktestFill = {
+      id: `FILL-${fills.length + 1}`,
+      orderId: order.id,
+      timestamp: bar.timestamp,
+      side: "SELL",
+      quantity: n(qty),
+      limitPrice: n(mark),
+      fillPrice: n(signedPrice),
+      gross: n(gross),
+      commission: n(costs.commission),
+      exchangeFee: n(costs.exchangeFee),
+      vat: n(costs.vat),
+      slippage: n(slip),
+    };
+    fills.push(fill);
+    emit(
+      bar.timestamp,
+      "STRATEGY_DECISION",
+      {
+        inventoryRecycle: inventoryRecycles,
+        recycledQuantity: n(qty),
+        targetInventory: n(target),
+      },
+      order.id,
+    );
+    emit(
+      bar.timestamp,
+      "FILL",
+      { side: "SELL", quantity: fill.quantity, fillPrice: fill.fillPrice, gross: fill.gross, recycle: true },
+      fill.id,
+    );
+    emit(bar.timestamp, "FEE", { commission: fill.commission, exchangeFee: fill.exchangeFee, vat: fill.vat }, fill.id);
+    emit(bar.timestamp, "LOT_UPDATE", { inventory: n(inventory), averageCost: n(averageCost) }, fill.id);
+  };
+  const reAnchor = (price: Decimal, bar: MarketBar) => {
     const top = d(levels[levels.length - 1]);
     if (!top.gt(0) || !price.gt(top)) return;
+    recycleTowardInitial(bar, price);
     const shift = price.div(top);
+    const timestamp = bar.timestamp;
     for (const [index, order] of active) {
       order.status = "CANCELLED";
       emit(timestamp, "ORDER_CANCELLED", { gridIndex: index, reason: "TRAILING_REANCHOR" }, order.id);
@@ -762,7 +909,7 @@ export function runAotBacktest(
     }
     // Decided on the close, after this bar's fills, so the lift never front-runs
     // a move it has not yet seen.
-    if (config.trailing?.mode === "TRAIL_UP") reAnchor(d(bar.close), bar.timestamp);
+    if (config.trailing?.mode === "TRAIL_UP") reAnchor(d(bar.close), bar);
     const deployed = inventory.mul(d(bar.close));
     deployedSum = deployedSum.add(deployed);
     if (deployed.gt(maxDeployed)) maxDeployed = deployed;
@@ -946,6 +1093,12 @@ export function runAotBacktest(
     .sub(realized)
     .sub(unrealizedPnl)
     .sub(dividendIncome);
+  const fingerprint = classifyOperationalFingerprint({
+    fills,
+    netPnl: n(reportedNetPnl),
+    inventoryRecycles,
+    recycledQuantity: n(recycledQuantity),
+  });
   const metrics: BacktestMetrics = {
     startEquity: n(startEquity),
     initialCash: n(initialCash),
@@ -991,6 +1144,13 @@ export function runAotBacktest(
     regimeSuspendedBars,
     regimeBarCounts,
     reAnchors,
+    inventoryRecycles,
+    recycledQuantity: n(recycledQuantity),
+    buyFillShare: fingerprint.buyFillShare,
+    buyNotionalShare: fingerprint.buyNotionalShare,
+    grossFillNotional: fingerprint.grossFillNotional,
+    netPnlBpsOfNotional: fingerprint.netPnlBpsOfNotional,
+    operationalType: fingerprint.operationalType,
     annual,
     monthly,
   };

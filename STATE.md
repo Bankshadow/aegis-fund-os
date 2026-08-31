@@ -19,6 +19,9 @@
 - E23 dual tune: best Line-B attempt so far (mean robust −0.0078, delta +0.0301) — still not > 0 / not promoted.
 - E24 separate short_cfg: FAIL (−0.0205) — worse than E23, especially ETH.
 - E25 conservative geometry: FAIL (−0.0154) — better DD but still < cash; C2 miss.
+- E30 inventory recycle (Minara Type 1): ⚖️ M1–M5 pass, gate FAIL. Engaged stays 100%
+  (unlike E29's 78%), mean robust −19.91 → −19.62, maxDD 16.84% → 16.46%, alpha
+  −9.40 → −9.86. Mechanism works, effect too small. Do not tune the recycle target.
 - Live trading and third-party capital: forbidden until Phase 3 gates clear.
 - Agent stack gate green (`gate/verify.ps1` SHIP); `run_demo.py --fast` OK (2026-07-15).
 
@@ -299,19 +302,20 @@
 **Decision (user-approved this session): pivot the product surface from "grid bot
 that trades" to "education/analytics tool that teaches", using the same engine.**
 
-Why: E20–E29 is nine consecutive grid-mechanism experiments that do not clear the
-validation gate. Geometry, regime filter (E27), trailing (E28) and exposure cap
-(E29) each failed to give the grid a real edge on daily AOT. Continuing to build
-ops/safety plumbing around a strategy with no demonstrated edge was the actual
-problem — the work was real but nobody was using it. The engine, the walk-forward
-harness and the evidence ledger are genuinely good, and teaching *why* the grid
-loses needs no edge at all. The user is a Thai grid-trading educator, so this
-lands on real users (students) instead of hypothetical ones.
+Why: E20–E30 is ten consecutive grid-mechanism experiments that do not clear the
+validation gate. Geometry, regime filter (E27), trailing (E28), exposure cap
+(E29) and inventory recycle (E30) each failed to give the grid a real edge on
+daily AOT. Continuing to build ops/safety plumbing around a strategy with no
+demonstrated edge was the actual problem — the work was real but nobody was
+using it. The engine, the walk-forward harness and the evidence ledger are
+genuinely good, and teaching *why* the grid loses needs no edge at all. The
+user is a Thai grid-trading educator, so this lands on real users (students)
+instead of hypothetical ones.
 
 **Shipped this session — Walk-Forward Lab, four education slices (all verified
 live in the app, all committed):**
 1. `/walk-forward` — per-fold OOS table, verdict vs the gate, summary tiles.
-2. `/walk-forward-compare` — E26 → E28 → E29 side by side with the honest
+2. `/walk-forward-compare` — E26 → E28 → E29 → E30 side by side with the honest
    narrative for each transition.
 3. Interactive cost model on `/walk-forward` — presets Thai retail / zero / heavy.
 4. `/walk-forward-overfit` — the overfitting lesson (see below).
@@ -339,11 +343,13 @@ deliberately excluded from `runCount`, since nothing is selected on them and
 inflating the reported multiple-testing count would misstate the research. A test
 pins that diagnostics change neither the numbers nor the run count (324).
 
-**Next:** put it in front of students and let their feedback choose slice 5. Do
-not add more surface speculatively — building unused surface is what this pivot
-was correcting. Live trading remains forbidden; these views are read-only research.
+**Next:** E30 (Minara Type 1 recycle) was the user-requested next mechanism. Put
+the updated lab in front of students. Do not tune the E30 target. Live trading
+remains forbidden; these views are read-only research.
 
 ## Last session
+
+- **E30: two-sided inventory recycle from Minara Hyperliquid screen — ⚖️ M1–M5 pass, gate FAIL (2026-08-31).** Source: [Minara, 43,618 Hyperliquid addresses → 12 accounts](https://x.com/minara/status/2094395962571755769). Dominant profitable pattern was Type 1 high-turnover two-sided execution (8/12), not concentrated directional (1/12). Criteria declared in `AOT_VALIDATION_CRITERIA.md` §6d before the run. One variable from E28: `inventoryRecycle: RESTORE_INITIAL` sells shares above the protocol starting inventory at the trailing close (full Thai-retail costs), then re-arms. **Result: M1 engaged 100% (E29 was 78%), M2 maxDD 16.84% → 16.46%, M3 alpha −9.86 > −10.79, M4 robust −19.91 → −19.62, M5 no cycles→0 among changed folds (11/18 bit-identical to E28; 6 pure-mechanism; 1 selection).** C1/C2/C7 still fail. Fingerprint: mean buy-notional share 50.3% (two-sided in intent) but 9/18 folds are `CONCENTRATED` (<20 fills) — daily AOT is not Hyperliquid cadence. Do NOT tune the target. Raw folds in `docs/aot-walkforward-e30.json`. Walk-Forward Lab compare page now includes E30. Live trading remains forbidden.
 
 - **E29: exposure cap on trailing — ⚖️ M1–M3 pass on the mean, but decomposition
   kills the mechanism claim; gate still FAILs (2026-07-25).** Criteria declared in

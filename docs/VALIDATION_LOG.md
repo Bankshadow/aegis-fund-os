@@ -35,6 +35,62 @@
 | E27 | 2026-07-23 | Percentile-rank regime filter (กลไกแก้ "แพ้ขาขึ้น") | ❌ **ไม่ผ่าน และแย่ลง** — alpha −10.79 → −12.19; 4 fold ที่แย่ที่สุดไม่ขยับ |
 | E28 | 2026-07-23 | Trailing re-anchor grid (ยกทั้ง grid ตามราคา) | ⚖️ **ผ่านกลไก (M1–M3) แต่ไม่ผ่าน gate** — alpha −10.79 → −9.40, engaged 83% → **100%** แลกกับ DD 15.17% → 16.84% |
 | E29 | 2026-07-25 | Exposure cap ตอน re-anchor (E28 + จำกัด long ที่ความจุ grid เดิม) | ⚖️ **M1–M3 ผ่านบน mean แต่ decomposition ล้ม** — robust −19.91 → −12.17, DD 16.84% → 13.52% แต่ 9/12 fold ที่เปลี่ยนเป็น selection artifact และผลดีมาจาก fold ที่ **หยุดเทรด** (engaged 100% → 78%) ไม่ใช่กลไก · gate ยัง FAIL |
+| E30 | 2026-08-31 | Inventory recycle ตอน re-anchor (E28 + ขายส่วนเกินกลับท่า 50/50 ตาม Minara Type 1) | ⚖️ **M1–M5 ผ่าน แต่ gate FAIL** — engaged คง 100% (ไม่ disengage แบบ E29), DD 16.84% → 16.46%, robust −19.91 → −19.62, alpha −9.40 → −9.86 · กลไกทำงานตามที่ออกแบบแต่ผลเล็กเกินกว่าจะมี edge · ห้ามจูน target |
+
+---
+
+## E30: Two-sided inventory recycle ตอน re-anchor บน AOT — 2026-08-31
+
+**ที่มา**: Minara วิเคราะห์ 43,618 ที่อยู่ Hyperliquid แล้วคัด 12 บัญชีที่ทำเงินแบบมีคุณภาพ
+([x.com/minara/status/2094395962571755769](https://x.com/minara/status/2094395962571755769)).
+กลุ่มหลัก **8/12** ไม่ใช่การทายทิศทาง แต่เป็น high-turnover two-sided execution
+(ซื้อ/ขาย ~49.4/50.6, ~30.5 bps ต่อกรอสโนชันแนล, ลด inventory หลังเคลื่อนสั้น ๆ
+แล้วกลับมา quote สองฝั่ง). กลุ่มทิศทางเข้มข้นมีแค่ 1/12
+
+**สมมติฐาน (ประกาศก่อนรัน, `AOT_VALIDATION_CRITERIA.md` §6d)**: E29 จำกัด long
+แล้วหลาย fold **หยุดเทรด** (cycles → 0) ซึ่งทำให้ DD สวยขึ้นแบบ tautology
+Minara Type 1 ทำคนละอย่าง — recycle แล้วเทรดต่อ. ตอน TRAIL_UP re-anchor
+ให้ขายส่วนที่เกิน `initialInventory` ที่ราคาปิด (ต้นทุนไทยครบ) แล้ว arm grid ใหม่
+
+**Protocol**: เหมือน E28 ทุกประการ เปลี่ยนตัวแปรเดียวคือ
+`inventoryRecycle: RESTORE_INITIAL` · target = initial inventory ของโปรโตคอล
+ไม่มีเลขจูน · ไม้ recycle ไม่นับเป็น grid cycle · **ไม่มีรอบจูน** · ปิด recycle
+แล้วได้ตัวเลข E28 เดิม (ยืนยัน: 11/18 fold ที่ recycle ไม่ยิงบน OOS ให้ผลตรง E28
+บิตต่อบิต)
+
+**ผล (CONSERVATIVE_OHLC, 18 fold)**
+
+| ตัวชี้วัด | E28 | E30 | เกณฑ์กลไก (ประกาศก่อน) | ผ่าน? |
+|---|---|---|---|---|
+| engaged | 100% | **100%** | M1: = 100% | ✅ |
+| mean maxDD | 16.84% | **16.46%** | M2: < 16.84% | ✅ |
+| mean alpha | −9.40 | **−9.86** | M3: > −10.79 | ✅ |
+| mean robust | −19.91 | **−19.62** | M4: > −19.91 | ✅ |
+| cycles→0 ขับ mean? | — | **ไม่** (0/7 fold ที่เปลี่ยน) | M5 | ✅ |
+| C1/C2/C7 | ตก | **ยังตก** | gate | ❌ |
+
+**Decomposition (M5)**: 11/18 fold เหมือน E28 บิตต่อบิต (recycle ไม่ยิงบน OOS).
+ใน 7 fold ที่เปลี่ยน มี **6 fold เป็นกลไกล้วน** (เรขาคณิต IS ชุดเดิม, recycle 1–5 ครั้ง)
+และ **1 fold เป็น selection artifact** (f14, ARITHMETIC 8→10, recycle=0).
+ทั้ง 7 fold ยังเทรดอยู่ — ไม่มี cycles→0. กลไกล้วนสุทธิ: f7 robust −19.67→−10.22
+(+9.45, DD 33.18→29.08) เป็นตัวดึง mean; f6 แย่ลง −4.19 เพราะ flatten ตัด alpha
+ของขาขึ้น. ค่าเฉลี่ยขยับเพียง +0.29 robust / −0.38 DD — **ทิศถูกแต่เล็ก**
+
+**Fingerprint (ไม่ใช่เกณฑ์ gate)**: buy-notional share เฉลี่ย 50.3% — ท่าสองฝั่งจริง
+ตามที่ Minara วัดจาก Type 1. แต่ 9/18 fold ได้ `CONCENTRATED` เพราะ fills < 20
+(กริดรายวัน AOT ไม่ใช่ Hyperliquid ที่หมุนหลายพันไม้) และ bps ที่รายงานใช้ MTM
+net PnL จึง **เทียบ 30.5 bps ของ Minara (closed PnL) ไม่ได้**. บทเรียนที่วัดแล้ว:
+คัดลอก "สมดุล 50/50" มาได้ แต่คัดลอก **จังหวะ/สภาพคล่อง** ของ Type 1 มาที่หุ้นไทย
+รายวันไม่ได้
+
+**คำตัดสิน**: ตามตาราง §6d ผ่าน M1–M5 ตก C1–C7 = **⚖️ recycle ลด DD ได้โดยยังเทรดอยู่
+— ทิศถูก บันทึกผลบางส่วน ยังไม่ promote**. ห้ามจูน target/สัดส่วน
+(บทเรียน E23–E25/E27/E29). raw ต่อ fold ใน `docs/aot-walkforward-e30.json`
+
+**ทำซ้ำ**:
+```
+node --experimental-strip-types fund-command-center-local/scripts/aot-walkforward.mjs --inventory-recycle --out docs/aot-walkforward-e30.json
+```
 
 ---
 

@@ -23,6 +23,11 @@ const VARIANTS: Array<{ id: WalkForwardVariant; label: string; note: string }> =
     label: "+ จำกัดการถือครอง",
     note: "ยก grid ตามราคาได้ แต่ห้ามถือหุ้นเกินความจุของ grid เดิม เพื่อคุมความเจ็บตอนราคากลับตัว (งานวิจัย E29)",
   },
+  {
+    id: "inventory-recycle",
+    label: "+ คืนท่า 50/50 ตอนยกกริด",
+    note: "พอราคาทะลุแล้วยกกริด ให้ขายส่วนที่ถือเกินท่าตั้งต้น แล้ววางกริดใหม่ทั้งสองฝั่ง — ไม่ใช่ห้ามซื้อแล้วหยุดเทรด (งานวิจัย E30, จากหน้าจอ Minara)",
+  },
 ];
 
 type WalkForwardSearch = { variant: WalkForwardVariant; cost: CostPresetId };
@@ -41,7 +46,11 @@ export const Route = createFileRoute("/walk-forward")({
   head: () => ({ meta: [{ title: "Walk-Forward Lab · Aegis Fund OS" }] }),
   validateSearch: (search: Record<string, unknown>): WalkForwardSearch => ({
     variant:
-      search.variant === "trailing" || search.variant === "exposure-cap" ? search.variant : "baseline",
+      search.variant === "trailing" ||
+      search.variant === "exposure-cap" ||
+      search.variant === "inventory-recycle"
+        ? search.variant
+        : "baseline",
     cost: search.cost === "zero" || search.cost === "heavy" ? search.cost : "thai",
   }),
   loaderDeps: ({ search }) => ({ ...search }),
@@ -80,7 +89,7 @@ function WalkForwardLab() {
       <PageHeader
         kicker="EDUCATION · READ-ONLY RESEARCH · NO LIVE ORDER"
         title="Walk-Forward Lab"
-        subtitle="ทดสอบกลยุทธ์ grid กับหุ้น AOT รายวัน ปี 2005–2026 แบ่งเป็น 18 ช่วง แต่ละช่วงใช้ข้อมูล 2 ปีแรกตั้งค่า แล้ววัดผลจริงในปีถัดไปที่ยังไม่เคยเห็น (จำลองการเทรดจริงที่ทำนายอนาคตไม่ได้) · engine เดียวกับงานวิจัย E26–E29"
+        subtitle="ทดสอบกลยุทธ์ grid กับหุ้น AOT รายวัน ปี 2005–2026 แบ่งเป็น 18 ช่วง แต่ละช่วงใช้ข้อมูล 2 ปีแรกตั้งค่า แล้ววัดผลจริงในปีถัดไปที่ยังไม่เคยเห็น (จำลองการเทรดจริงที่ทำนายอนาคตไม่ได้) · engine เดียวกับงานวิจัย E26–E30"
       />
       <div className="space-y-6 p-6">
         <WalkForwardGlossary
@@ -216,7 +225,7 @@ function WalkForwardLab() {
 
         <p className="text-xs text-muted-foreground">
           Research/education เท่านั้น ไม่ใช่คำแนะนำการลงทุน ไม่มีการส่งคำสั่งจริง · เกณฑ์เต็มใน docs/AOT_VALIDATION_CRITERIA.md ·
-          บันทึกผลใน docs/VALIDATION_LOG.md § E26–E29
+          บันทึกผลใน docs/VALIDATION_LOG.md § E26–E30
         </p>
       </div>
     </EducationShell>

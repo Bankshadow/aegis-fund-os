@@ -7,36 +7,43 @@
 ## 0-NEW. อ่านก่อนสุด — เปลี่ยนทิศ: research → education (2026-07-25)
 
 **ผู้ใช้อนุมัติแล้ว: เปลี่ยนหน้าตาผลิตภัณฑ์จาก "bot ที่เทรด" เป็น "เครื่องมือสอน"
-โดยใช้ engine ตัวเดิม** เหตุผล: E20–E29 คือ 9 การทดลองติดกันที่ไม่ผ่าน gate —
-geometry, regime filter (E27), trailing (E28), exposure cap (E29) ไม่มีตัวไหน
-ทำให้ grid มี edge จริงบน AOT รายวัน การสร้าง ops/safety ห่อกลยุทธ์ที่ยังไม่มี
-edge คือปัญหาที่แท้จริง ส่วน engine + walk-forward harness + evidence ledger
-นั้นดีจริง และการสอนว่า **ทำไม grid ถึงแพ้** ไม่ต้องใช้ edge เลย
+โดยใช้ engine ตัวเดิม** เหตุผล: E20–E30 คือ 10 การทดลองติดกันที่ไม่ผ่าน gate —
+geometry, regime filter (E27), trailing (E28), exposure cap (E29), inventory
+recycle (E30) ไม่มีตัวไหนทำให้ grid มี edge จริงบน AOT รายวัน การสร้าง
+ops/safety ห่อกลยุทธ์ที่ยังไม่มี edge คือปัญหาที่แท้จริง ส่วน engine +
+walk-forward harness + evidence ledger นั้นดีจริง และการสอนว่า **ทำไม grid
+ถึงแพ้** ไม่ต้องใช้ edge เลย
 
 **ที่ทำเสร็จ (verify สดในแอปทุกหน้า · commit แล้ว):**
 1. `/walk-forward` — ตาราง OOS ราย fold + verdict + สรุป
-2. `/walk-forward-compare` — E26 → E28 → E29 ข้างกัน + คำอธิบายตรงไปตรงมา
+2. `/walk-forward-compare` — E26 → E28 → E29 → E30 ข้างกัน + คำอธิบายตรงไปตรงมา
 3. ต้นทุนปรับได้ใน `/walk-forward` — Thai retail / 0 / สูง
 4. `/walk-forward-overfit` — บทเรียน overfitting
 
 **กติกาสำคัญที่ต้องรักษา:** walk-forward เป็น **pure function เดียว**
 `src/lib/aot-walkforward.ts` ใช้ร่วมกันทั้ง CLI research (ตอนนี้เป็น wrapper บาง ๆ)
-และ server functions ในแอป มีเทสต์ pin ค่า E26/E28/E29 + invariant 6/18 fold
+และ server functions ในแอป มีเทสต์ pin ค่า E26/E28/E29/E30 + invariant 6/18
+(E29) และ 11/18 (E30)
 → **หน้า education drift จากงานวิจัยไม่ได้** ห้ามแยกสองทาง
 
-**สองคำอ้างที่ "วัดแล้ว" และผลค้านสัญชาตญาณ — เขียน copy ตามหลักฐาน ไม่ใช่ตามที่คิด:**
+**สามคำอ้างที่ "วัดแล้ว" และผลค้านสัญชาตญาณ — เขียน copy ตามหลักฐาน ไม่ใช่ตามที่คิด:**
 - "grid แพ้เพราะค่าธรรมเนียม" **ผิด**: ต้นทุน 0 alpha ยัง ≈ −11.2 → ต้นทุนไม่ใช่สาเหตุ
 - "เลือก geometry ที่ชนะ in-sample" **ไม่มีค่า**: ตรงกับ OOS 3/18 = 16.7% ซึ่ง
   เท่ากับสุ่มเป๊ะ (1/6); อันดับเฉลี่ย 3.56 vs สุ่ม 3.50; แม้เลือกแบบรู้อนาคตก็ได้
   −16.61 ยังติดลบหนัก
+- "คัดลอกบัญชี Hyperliquid ที่ชนะ (Minara Type 1: สองฝั่ง ~50/50 แล้ว recycle
+  inventory)" **ไม่ transfer มาที่ AOT รายวัน**: E30 ทำกลไกนั้นได้จริง (engaged
+  คง 100%, ไม่หยุดเทรดแบบ E29) แต่ robust ขยับแค่ −19.91 → −19.62 และ 9/18 fold
+  มีไม้ < 20 — ไม่มีจังหวะแบบ Type 1 ที่หมุนหลายพันไม้ · ห้ามจูน target
 
 **ความสมบูรณ์ของงานวิจัย:** Overfitting Lab วัด OOS ของ candidate ที่ถูกปฏิเสธ —
 เป็น opt-in (`diagnostics`) และ **ไม่นับใน `runCount`** เพราะไม่มีการเลือกอะไรจากมัน
 ถ้านับจะรายงาน multiple-testing count ผิด · มีเทสต์ pin ว่า runCount ยัง 324
 
-**งานถัดไป:** เอาไปให้นักเรียนใช้จริง แล้วให้ feedback เลือกว่า slice 5 คืออะไร
+**งานถัดไป:** เอา lab ที่มี E30 ไปให้นักเรียนใช้ แล้วให้ feedback เลือกว่าบทถัดไปคืออะไร
 **อย่าเพิ่มหน้าใหม่แบบเดา** — การสร้างของที่ไม่มีคนใช้คือสิ่งที่ pivot นี้กำลังแก้
 ห้ามเทรดจริงเหมือนเดิม ทุกหน้าเป็น read-only research
+ห้ามจูน E30 target; ห้าม reopen dual (D1) จากบทความ Minara — นั่นไม่ใช่กลไกใหม่ของสาย B
 
 ---
 
